@@ -1,5 +1,6 @@
-import React from 'react';
-import { Settings, Bell, Shield, HelpCircle, LogOut } from 'lucide-react';
+import React, { useState } from 'react';
+import { Bell, Shield, HelpCircle, LogOut, User, Lock, ChevronRight, Store } from 'lucide-react';
+import { storeConfig } from '../src/config/store';
 
 const SettingsView: React.FC = () => {
     const settingsItems = [
@@ -27,15 +28,15 @@ const SettingsView: React.FC = () => {
                         <img src="https://images.unsplash.com/photo-1583336130561-1d934b1262d1?q=80&w=300&auto=format&fit=crop" alt="User" className="w-full h-full object-cover" />
                     </div>
                     <div>
-                        <h3 className="font-bold text-lg text-slate-900 dark:text-white">Azmi Brewer</h3>
-                        <p className="text-indigo-600 font-medium text-sm">Owner & Manager</p>
+                        <h3 className="font-bold text-lg text-slate-900 dark:text-white">Store Owner</h3>
+                        <p className="text-primary font-medium text-sm">Owner & Manager</p>
                     </div>
                 </div>
 
                 {/* Company Bio */}
-                <div className="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-xl mb-6 border border-indigo-100 dark:border-indigo-500/20">
+                <div className="bg-primary/5 dark:bg-primary/20 p-4 rounded-xl mb-6 border border-primary/10 dark:border-primary/20">
                     <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
-                        <span className="font-bold text-indigo-600 dark:text-indigo-400">BrewCart Wholesale</span> – Rakan Bekalan Digital No. 1 Anda. Kami membekalkan stok minuman premium terus ke pintu kedai anda. Berpangkalan di Kota Kinabalu, berkhidmat untuk seluruh Borneo.
+                        <span className="font-bold text-primary dark:text-primary/70">{storeConfig.storeName} Admin</span> – Your Digital Supply Partner. We supply premium stock directly to your doorstep.
                     </p>
                 </div>
 

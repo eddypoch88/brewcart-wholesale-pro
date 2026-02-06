@@ -42,11 +42,11 @@ const SpendingTrends: React.FC = () => {
 
       <div className="space-y-6">
         <h3 className="font-semibold text-slate-500 dark:text-slate-500 uppercase tracking-wide text-xs pl-1">Top Selling Categories</h3>
-        
+
         <div className="space-y-2">
           <div className="flex justify-between items-end">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-slate-800 dark:text-white tracking-tight">35% Draft Pints</span>
+              <span className="text-sm font-semibold text-slate-800 dark:text-white tracking-tight">35% Premium Items</span>
             </div>
             <span className="material-icons-round text-xs text-emerald-500 transform rotate-45">arrow_upward</span>
           </div>
@@ -59,7 +59,7 @@ const SpendingTrends: React.FC = () => {
         <div className="space-y-2">
           <div className="flex justify-between items-end">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-slate-800 dark:text-white tracking-tight">25% Cans/Bottles</span>
+              <span className="text-sm font-semibold text-slate-800 dark:text-white tracking-tight">25% Standard Goods</span>
             </div>
           </div>
           <div className="h-2 w-full bg-slate-100 dark:bg-gray-800 rounded-full overflow-hidden">
@@ -71,7 +71,7 @@ const SpendingTrends: React.FC = () => {
         <div className="space-y-2">
           <div className="flex justify-between items-end">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-slate-800 dark:text-white tracking-tight">20% Keg Sales</span>
+              <span className="text-sm font-semibold text-slate-800 dark:text-white tracking-tight">20% Services</span>
             </div>
           </div>
           <div className="h-2 w-full bg-slate-100 dark:bg-gray-800 rounded-full overflow-hidden">
@@ -96,7 +96,7 @@ const SpendingTrends: React.FC = () => {
         <div className="space-y-2 pb-6">
           <div className="flex justify-between items-end">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-slate-800 dark:text-white tracking-tight">5% Kitchen/Snacks</span>
+              <span className="text-sm font-semibold text-slate-800 dark:text-white tracking-tight">5% Accessories</span>
             </div>
           </div>
           <div className="h-2 w-full bg-slate-100 dark:bg-gray-800 rounded-full overflow-hidden">

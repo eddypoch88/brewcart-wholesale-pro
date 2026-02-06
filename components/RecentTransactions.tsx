@@ -1,16 +1,16 @@
 import React from 'react';
-import { Transaction } from '../types';
+import { Transaction } from '../src/shared/shared-types';
 
 const MOCK_ORDERS: Transaction[] = [
   {
     id: 1,
     title: 'Order #8821',
-    subtitle: 'Table 4 - 3x IPAs, 1x Nachos',
+    subtitle: 'Table 4 - 3x Premium Items',
     amount: '+ RM 120.00',
     date: '2 mins ago',
     type: 'income',
     status: 'Pending',
-    icon: 'sports_bar',
+    icon: 'inventory_2',
     // Rule: Products/Items -> Blue
     iconBg: 'bg-blue-50 dark:bg-blue-900/20',
     iconColor: 'text-blue-600 dark:text-blue-400',
@@ -18,7 +18,7 @@ const MOCK_ORDERS: Transaction[] = [
   {
     id: 2,
     title: 'Order #8822',
-    subtitle: 'Takeaway - 6-Pack Stout',
+    subtitle: 'Pickup - Standard Order',
     amount: '+ RM 180.00',
     date: '15 mins ago',
     type: 'income',
@@ -31,7 +31,7 @@ const MOCK_ORDERS: Transaction[] = [
   {
     id: 3,
     title: 'Supplier Payment',
-    subtitle: 'Hops & Malt Shipment',
+    subtitle: 'Inventory Restock',
     amount: '- RM 4,500.00',
     date: 'Yesterday',
     type: 'expense',
@@ -44,7 +44,7 @@ const MOCK_ORDERS: Transaction[] = [
   {
     id: 4,
     title: 'Order #8820',
-    subtitle: 'Keg Deposit Refund',
+    subtitle: 'Service Refund',
     amount: '+ RM 200.00',
     date: 'Yesterday',
     type: 'income',
@@ -73,10 +73,10 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({ enableSearch = 
         <div className="mb-6 px-1">
           <div className="bg-white dark:bg-slate-800 rounded-2xl p-3 flex items-center gap-3 shadow-[0_20px_60px_rgba(0,0,0,0.05)] border border-slate-100 dark:border-slate-700 transition-all focus-within:ring-2 focus-within:ring-indigo-500/20">
             <span className="material-symbols-outlined text-slate-400 text-[20px]">search</span>
-            <input 
-              type="text" 
-              placeholder="Search orders by ID or Item..." 
-              className="bg-transparent border-none outline-none text-sm w-full text-slate-700 dark:text-slate-200 placeholder-slate-400 focus:ring-0 p-0 font-medium" 
+            <input
+              type="text"
+              placeholder="Search orders by ID or Item..."
+              className="bg-transparent border-none outline-none text-sm w-full text-slate-700 dark:text-slate-200 placeholder-slate-400 focus:ring-0 p-0 font-medium"
             />
           </div>
         </div>
@@ -103,7 +103,7 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({ enableSearch = 
               <p className={`text-base font-bold ${tx.type === 'income' ? 'text-slate-800 dark:text-white' : 'text-slate-800 dark:text-white'}`}>
                 {tx.amount}
               </p>
-              
+
               {/* Premium Capsule Status Badge */}
               {tx.status === 'Pending' && (
                 <span className="bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide border border-amber-100 dark:border-amber-800">
