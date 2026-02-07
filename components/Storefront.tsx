@@ -7,9 +7,10 @@ import ProductCard from './ProductCard';
 
 interface StorefrontProps {
     products: any[];
+    onProductClick?: (product: any) => void;
 }
 
-const Storefront: React.FC<StorefrontProps> = ({ products }) => {
+const Storefront: React.FC<StorefrontProps> = ({ products, onProductClick }) => {
     // Fetch dynamic store settings, specifically for theme colors
     const { data: settings } = useFirestoreDocument('settings', 'general');
 
@@ -53,7 +54,11 @@ const Storefront: React.FC<StorefrontProps> = ({ products }) => {
             {/* Product Grid */}
             <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-5 px-4 mb-20">
                 {displayItems.map((product) => (
-                    <ProductCard key={product.id} product={product} />
+                    <ProductCard
+                        key={product.id}
+                        product={product}
+                        onClick={() => onProductClick && onProductClick(product)}
+                    />
                 ))}
             </div>
         </div>

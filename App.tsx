@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { storeConfig } from './src/config/store';
 import Storefront from './components/Storefront';
+import ProductDetail from './src/components/ProductDetail';
 import ConnectionStatus from './components/ConnectionStatus';
 import { ArrowLeft } from 'lucide-react';
 
@@ -21,7 +22,13 @@ const INITIAL_ITEMS = [
 
 function App() {
   const [items, setItems] = useState(INITIAL_ITEMS);
-  const [viewMode, setViewMode] = useState<'admin' | 'shop'>('admin');
+  const [viewMode, setViewMode] = useState<'admin' | 'shop' | 'product'>('admin');
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+
+  const handleProductClick = (product: any) => {
+    setSelectedProduct(product);
+    setViewMode('product');
+  };
 
   // New Admin Navigation State
   const [adminPage, setAdminPage] = useState('dashboard');
@@ -32,7 +39,7 @@ function App() {
       <div className="min-h-screen bg-slate-50 relative font-sans" style={{ '--primary': storeConfig.primaryColor, '--secondary': storeConfig.secondaryColor } as React.CSSProperties}>
         <ConnectionStatus />
         {/* Sync: Pass 'items' as 'products' to match Storefront's expected prop */}
-        <Storefront products={items} />
+        <Storefront products={items} onProductClick={handleProductClick} />
 
         <button
           onClick={() => setViewMode('admin')}
@@ -41,6 +48,16 @@ function App() {
           <ArrowLeft size={20} /> Back to Admin
         </button>
       </div>
+    );
+  }
+
+  // --- VIEW 3: PRODUCT DETAILS (SINGLE) ---
+  if (viewMode === 'product' && selectedProduct) {
+    return (
+      <ProductDetail
+        product={selectedProduct}
+        onBack={() => setViewMode('shop')}
+      />
     );
   }
 

@@ -11,7 +11,7 @@ interface ProductProps {
     sold?: number;
 }
 
-export default function ProductCard({ product }: { product: ProductProps }) {
+export default function ProductCard({ product, onClick }: { product: ProductProps, onClick?: () => void }) {
     // Normalize data (handle both 'title' and 'name' as seen in App.tsx vs request)
     const title = product.title || product.name || 'Untitled';
 
@@ -33,7 +33,7 @@ export default function ProductCard({ product }: { product: ProductProps }) {
     }).format(numericPrice);
 
     return (
-        <a href={`/product/${product.id}`} className="group block h-full">
+        <div onClick={onClick} className="group block h-full cursor-pointer">
             <div className="bg-white rounded-2xl overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] border border-slate-100 transition-all duration-300 relative h-full flex flex-col">
 
                 {/* GAMBAR 1:1 (The "Love" Window) */}
@@ -78,6 +78,6 @@ export default function ProductCard({ product }: { product: ProductProps }) {
                     </div>
                 </div>
             </div>
-        </a>
+        </div>
     );
 }
