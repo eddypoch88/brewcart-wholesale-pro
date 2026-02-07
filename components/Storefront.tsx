@@ -3,6 +3,7 @@ import { ShoppingCart } from 'lucide-react';
 import { useFirestoreDocument } from '../src/hooks/useFirestore';
 import { storeConfig } from '../src/config/store';
 import ConnectionStatus from './ConnectionStatus';
+import ProductCard from './ProductCard';
 
 interface StorefrontProps {
     products: any[];
@@ -50,52 +51,9 @@ const Storefront: React.FC<StorefrontProps> = ({ products }) => {
             </div>
 
             {/* Product Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 gap-y-5 px-4">
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-5 px-4 mb-20">
                 {displayItems.map((product) => (
-                    <div
-                        key={product.id}
-                        className="bg-white dark:bg-surface-dark p-4 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 hover:shadow-md transition-all duration-300 relative overflow-hidden group h-full flex flex-col min-h-[210px]"
-                    >
-                        {/* Image Area - Compact & Rounded */}
-                        <div className="h-24 rounded-2xl bg-slate-50 dark:bg-slate-900 mb-3 overflow-hidden flex items-center justify-center relative">
-                            {product.image ? (
-                                <img
-                                    src={product.image}
-                                    alt={product.name}
-                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                />
-                            ) : (
-                                <div className="text-slate-300 text-[10px] uppercase font-bold tracking-widest">No Image</div>
-                            )}
-                        </div>
-
-                        {/* Floating Stock Badge */}
-                        <div className={`absolute top-3 right-3 text-[10px] font-bold uppercase tracking-wide px-2 py-1 rounded-full z-10 shadow-sm ${(typeof product.stock === 'number' ? product.stock : parseInt(product.stock)) < 100
-                            ? 'bg-red-100 text-red-600'
-                            : 'bg-emerald-50 text-emerald-600'
-                            }`}>
-                            {(typeof product.stock === 'number' ? product.stock : parseInt(product.stock)) < 100 ? 'Low Stock' : 'In Stock'}
-                        </div>
-
-                        {/* Info Area */}
-                        <div className="flex-1 flex flex-col">
-                            <h3 className="font-bold text-slate-900 dark:text-white leading-tight text-sm tracking-tight line-clamp-2 mb-1">
-                                {product.name}
-                            </h3>
-                            <p className="text-slate-500 dark:text-slate-400 text-xs mb-3 line-clamp-1">{product.description}</p>
-
-                            <div className="mt-auto flex items-center justify-between gap-2">
-                                <p className="text-primary dark:text-indigo-400 font-bold text-lg">
-                                    {product.price}
-                                </p>
-                            </div>
-
-                            {/* Add to Cart Button */}
-                            <button className="w-full mt-3 bg-primary hover:bg-secondary text-white font-semibold py-2.5 rounded-xl shadow-lg shadow-indigo-200/50 dark:shadow-none text-sm active:scale-95 transition-all">
-                                Add to Cart
-                            </button>
-                        </div>
-                    </div>
+                    <ProductCard key={product.id} product={product} />
                 ))}
             </div>
         </div>
