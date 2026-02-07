@@ -90,8 +90,8 @@ export default function ProductBottomBar({ productName, price, phone }: ProductB
             {/* --- LAYER 2: MULTI-STEP DRAWER --- */}
             {isDrawerOpen && (
                 <>
-                    <div className="fixed inset-0 bg-black/60 z-50 backdrop-blur-sm transition-opacity" onClick={closeDrawer} />
-                    <div className="fixed bottom-0 left-0 right-0 z-[60] bg-white rounded-t-3xl p-5 pb-8 animate-in slide-in-from-bottom duration-300 max-h-[85vh] overflow-y-auto">
+                    <div className="fixed inset-0 bg-black/60 z-[90] backdrop-blur-sm transition-opacity" onClick={closeDrawer} />
+                    <div className="fixed bottom-0 left-0 right-0 z-[100] bg-white rounded-t-3xl p-5 pb-8 animate-in slide-in-from-bottom duration-300 max-h-[85vh] overflow-y-auto">
                         <div className="max-w-md mx-auto space-y-6">
 
                             {/* Header Drawer & Close Button */}
@@ -132,9 +132,9 @@ export default function ProductBottomBar({ productName, price, phone }: ProductB
                                 <div className="space-y-4 animate-in fade-in">
                                     <div><h3 className="font-bold text-slate-800 text-lg">Maklumat Penghantaran</h3><p className="text-sm text-slate-500">Ke mana kami perlu hantar?</p></div>
                                     <div className="space-y-3">
-                                        <div className="relative"><User className="absolute left-3 top-3.5 w-5 h-5 text-slate-400" /><input type="text" name="name" placeholder="Nama Penuh" value={formData.name} onChange={handleInputChange} className="w-full pl-10 p-3 bg-slate-50 rounded-xl border border-slate-200 focus:border-rose-500 focus:ring-0 outline-none" /></div>
-                                        <div className="relative"><Mail className="absolute left-3 top-3.5 w-5 h-5 text-slate-400" /><input type="email" name="email" placeholder="Alamat Email (Optional)" value={formData.email} onChange={handleInputChange} className="w-full pl-10 p-3 bg-slate-50 rounded-xl border border-slate-200 focus:border-rose-500 focus:ring-0 outline-none" /></div>
-                                        <div className="relative"><MapPin className="absolute left-3 top-3 w-5 h-5 text-slate-400" /><textarea name="address" placeholder="Alamat Lengkap" value={formData.address} onChange={handleInputChange} rows={3} className="w-full pl-10 p-3 bg-slate-50 rounded-xl border border-slate-200 focus:border-rose-500 focus:ring-0 outline-none resize-none" /></div>
+                                        <div className="relative"><User className="absolute left-3 top-3.5 w-5 h-5 text-slate-400" /><input type="text" name="name" placeholder="Nama Penuh" value={formData.name} onChange={handleInputChange} className="w-full pl-10 p-3 text-base bg-slate-50 rounded-xl border border-slate-200 focus:border-rose-500 focus:ring-0 outline-none" /></div>
+                                        <div className="relative"><Mail className="absolute left-3 top-3.5 w-5 h-5 text-slate-400" /><input type="email" name="email" placeholder="Alamat Email (Optional)" value={formData.email} onChange={handleInputChange} className="w-full pl-10 p-3 text-base bg-slate-50 rounded-xl border border-slate-200 focus:border-rose-500 focus:ring-0 outline-none" /></div>
+                                        <div className="relative"><MapPin className="absolute left-3 top-3 w-5 h-5 text-slate-400" /><textarea name="address" placeholder="Alamat Lengkap" value={formData.address} onChange={handleInputChange} rows={3} className="w-full pl-10 p-3 text-base bg-slate-50 rounded-xl border border-slate-200 focus:border-rose-500 focus:ring-0 outline-none resize-none" /></div>
                                     </div>
                                     <div className="flex gap-3">
                                         <button onClick={() => setCurrentStep(1)} className="flex-1 py-3 bg-slate-100 text-slate-600 font-bold rounded-xl">Back</button>

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Save, Store, CreditCard, Bell, ShieldCheck } from 'lucide-react';
+import { Save, Store, CreditCard } from 'lucide-react';
 
 export default function StoreSettingsPage() {
     // State untuk semua input (Disatukan supaya senang urus)

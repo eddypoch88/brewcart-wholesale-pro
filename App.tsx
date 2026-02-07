@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { storeConfig } from './src/config/store';
 import Storefront from './components/Storefront';
-import ProductDetail from './src/components/ProductDetail';
+import ProductPage from './src/app/product/[id]/page';
 import ConnectionStatus from './components/ConnectionStatus';
 import { ArrowLeft } from 'lucide-react';
 
@@ -54,8 +54,7 @@ function App() {
   // --- VIEW 3: PRODUCT DETAILS (SINGLE) ---
   if (viewMode === 'product' && selectedProduct) {
     return (
-      <ProductDetail
-        product={selectedProduct}
+      <ProductPage
         onBack={() => setViewMode('shop')}
       />
     );
