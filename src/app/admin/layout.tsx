@@ -94,7 +94,7 @@ export default function AdminLayout({ children, activePage, onNavigate }: AdminL
 
                 {/* Scrollable Content Area */}
                 <div className="flex-1 overflow-auto p-4 md:p-8">
-                    <div className="max-w-7xl mx-auto">
+                    <div className="max-w-6xl mx-auto">
                         {children}
                     </div>
                 </div>
