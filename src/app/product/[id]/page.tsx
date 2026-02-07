@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Star, ShieldCheck, Truck, RefreshCw, Award, ChevronRight, Check, MapPin, Info } from 'lucide-react';
 import ProductBottomBar from '../../../components/ProductBottomBar'; // Adjusted relative path for safety
+import MediaCarousel from '../../../components/MediaCarousel'; // TikTok Style Carousel
 
 export default function ProductPage() {
     // --- MOCK DATA (Untuk Demo Client - Zero Bug Guarantee) ---
@@ -29,6 +30,14 @@ export default function ProductPage() {
         ]
     };
 
+    // --- MOCK MEDIA for TikTok Style Carousel ---
+    const mediaList = [
+        { type: 'video' as const, src: 'https://cdn.pixabay.com/video/2024/02/09/199956-911694865_large.mp4', poster: 'https://placehold.co/600x600/1e293b/FFF?text=Video+Preview' }, // FREE STOCK VIDEO (Shoes/Running)
+        { type: 'image' as const, src: 'https://placehold.co/600x600/1e293b/FFF?text=Kasut+Pro+2026' },
+        { type: 'image' as const, src: 'https://placehold.co/600x600/1e293b/FFF?text=Side+View' },
+        { type: 'image' as const, src: 'https://placehold.co/600x600/1e293b/FFF?text=Bottom+View' },
+    ];
+
     const [selectedColor, setSelectedColor] = useState('Hitam');
     const [selectedSize, setSelectedSize] = useState('42');
 
@@ -37,15 +46,8 @@ export default function ProductPage() {
             {/* pb-32 PENTING supaya content tak tertutup dek Bottom Bar */}
 
             {/* --- 1. HERO IMAGE (Carousel Style) --- */}
-            <div className="relative bg-white aspect-square w-full border-b border-slate-200">
-                <img
-                    src="https://placehold.co/600x600/1e293b/FFF?text=Kasut+Pro+2026"
-                    alt="Product Image"
-                    className="w-full h-full object-cover"
-                />
-                <div className="absolute bottom-4 right-4 bg-black/70 text-white px-3 py-1 rounded-full text-xs font-bold">
-                    1/5 Photos
-                </div>
+            <div className="relative bg-white aspect-[4/5] w-full border-b border-slate-200">
+                <MediaCarousel media={mediaList} />
             </div>
 
             {/* --- 2. PRICE & TITLE SECTION --- */}

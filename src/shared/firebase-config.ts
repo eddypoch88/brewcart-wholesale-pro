@@ -12,4 +12,5 @@ const firebaseConfig = {
 
 // Prevent Firebase double-initialization
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+console.log("Firebase Init:", app ? "Success" : "Failed");
 export const db = getFirestore(app);

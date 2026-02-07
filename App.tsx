@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { storeConfig } from './src/config/store';
 import Storefront from './components/Storefront';
 import ProductPage from './src/app/product/[id]/page';
@@ -28,7 +28,24 @@ function App() {
   const handleProductClick = (product: any) => {
     setSelectedProduct(product);
     setViewMode('product');
+    window.history.pushState({ view: 'product', product }, '', '#product');
   };
+
+  // --- HISTORY MANAGEMENT ---
+  useEffect(() => {
+    // Initial State Replace
+    window.history.replaceState({ view: 'admin', product: null }, '', '#admin');
+
+    const handlePopState = (event: PopStateEvent) => {
+      if (event.state) {
+        setViewMode(event.state.view || 'admin');
+        setSelectedProduct(event.state.product || null);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   // New Admin Navigation State
   const [adminPage, setAdminPage] = useState('dashboard');
@@ -42,7 +59,10 @@ function App() {
         <Storefront products={items} onProductClick={handleProductClick} />
 
         <button
-          onClick={() => setViewMode('admin')}
+          onClick={() => {
+            setViewMode('admin');
+            window.history.pushState({ view: 'admin', product: null }, '', '#admin');
+          }}
           className="fixed bottom-6 right-6 bg-slate-900 text-white px-6 py-3 rounded-full shadow-2xl font-bold flex items-center gap-2 z-50 hover:scale-110 transition-transform border-2 border-white/20"
         >
           <ArrowLeft size={20} /> Back to Admin
@@ -55,7 +75,10 @@ function App() {
   if (viewMode === 'product' && selectedProduct) {
     return (
       <ProductPage
-        onBack={() => setViewMode('shop')}
+        onBack={() => {
+          setViewMode('shop');
+          window.history.pushState({ view: 'shop', product: null }, '', '#shop');
+        }}
       />
     );
   }
@@ -71,7 +94,10 @@ function App() {
       {/* Preview Button (Temporary location for manual switching) */}
       <div className="fixed bottom-6 right-6 z-50">
         <button
-          onClick={() => setViewMode('shop')}
+          onClick={() => {
+            setViewMode('shop');
+            window.history.pushState({ view: 'shop', product: null }, '', '#shop');
+          }}
           className="bg-indigo-600 text-white px-4 py-2 rounded-full shadow-xl font-bold text-sm hover:bg-indigo-700 transition"
         >
           Preview Store
