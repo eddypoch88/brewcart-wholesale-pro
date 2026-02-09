@@ -1,8 +1,19 @@
 // INI FAIL: src/types/index.ts
 
+// Definisi Store (Multi-tenant)
+export interface Store {
+    id: string;
+    store_name: string;
+    domain: string;
+    logo_url?: string;
+    whatsapp_number?: string;
+    created_at: string;
+}
+
 // Definisi Produk (Ikut standard SaaS)
 export interface Product {
     id: string;
+    store_id: string; // Foreign Key to Store
     name: string;
     slug?: string;
     description?: string;
@@ -20,6 +31,7 @@ export interface Product {
 // Definisi Setting Kedai
 export interface StoreConfig {
     id: number;
+    store_id: string; // Foreign Key to Store
     store_name: string;
     whatsapp_number?: string;
     currency: string;

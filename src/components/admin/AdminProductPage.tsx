@@ -1,26 +1,51 @@
-import React, { useState } from 'react';
-import { Trash2, Package, Plus } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Trash2, Package, Plus, Loader2 } from 'lucide-react';
 import ProductForm from '../ProductForm';
 import ProductTableRow from './ProductTableRow';
 import { Product } from '../../types';
 import toast from 'react-hot-toast';
+import { useStore } from '../../context/StoreContext';
+import { ProductService } from '../../services/product.service';
 
-interface AdminProductPageProps {
-    products: Product[];
-    isEditing: boolean;
-    setIsEditing: (editing: boolean) => void;
-    loadProducts: () => void;
-    handleDeleteProduct: (id: string) => void;
-}
-
-export default function AdminProductPage({
-    products,
-    isEditing,
-    setIsEditing,
-    loadProducts,
-    handleDeleteProduct
-}: AdminProductPageProps) {
+export default function AdminProductPage() {
+    const { store } = useStore();
+    const [products, setProducts] = useState<Product[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [isEditing, setIsEditing] = useState(false);
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+    useEffect(() => {
+        if (store) loadProducts();
+    }, [store]);
+
+    const loadProducts = async () => {
+        if (!store) return;
+        setLoading(true);
+        try {
+            const { data } = await ProductService.getAll(store.id);
+            if (data) setProducts(data);
+        } catch (error) {
+            console.error("Failed to load products", error);
+            toast.error("Failed to load products");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDeleteProduct = async (id: string) => {
+        if (!store) return;
+        if (!confirm('Are you sure you want to delete this product?')) return;
+
+        await toast.promise(
+            ProductService.delete(id, store.id),
+            {
+                loading: 'Deleting product...',
+                success: 'Product deleted!',
+                error: 'Failed to delete.',
+            }
+        );
+        loadProducts();
+    };
 
     // Bulk Select Logic
     const handleSelect = (id: string, isSelected: boolean) => {
@@ -33,20 +58,28 @@ export default function AdminProductPage({
         setSelectedIds(e.target.checked ? products.map(p => p.id) : []);
     };
 
-    // Bulk Delete Logic (Mock implementation wrapping single delete for now, or using props if available)
-    // Since handleDeleteProduct only takes one ID, we will iterate. 
-    // Ideally service should support bulk, but sticking to props provided.
     const handleBulkDelete = async () => {
         if (!confirm(`Delete ${selectedIds.length} products?`)) return;
 
-        // Optimistic UI update or wait for all? 
-        // Let's loop and delete using the prop provided
+        if (!store) return;
+
+        // Iterate delete for now
         for (const id of selectedIds) {
-            await handleDeleteProduct(id);
+            await ProductService.delete(id, store.id);
         }
         setSelectedIds([]);
         toast.success('Bulk delete complete');
+        loadProducts(); // Refresh list
     };
+
+    if (loading && !isEditing) { // Show loader only first time or full refresh
+        return (
+            <div className="flex flex-col items-center justify-center h-64 text-slate-400 animate-pulse">
+                <Loader2 className="h-8 w-8 animate-spin mb-2" />
+                <p>Loading products...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6 animate-fade-in relative pb-20">
@@ -89,7 +122,7 @@ export default function AdminProductPage({
                         <table className="w-full text-left border-collapse">
                             <thead className="bg-slate-50 border-b border-slate-100">
                                 <tr>
-                                    <th className="px-6 py-4 w-12 text-center">
+                                    <th className="px-6 py-4 w-12 text-center md:table-cell hidden">
                                         <input
                                             type="checkbox"
                                             className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
@@ -97,10 +130,11 @@ export default function AdminProductPage({
                                             onChange={handleSelectAll}
                                         />
                                     </th>
-                                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider w-20">Image</th>
-                                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Product Info</th>
-                                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider w-32">Status / Stock</th>
-                                    <th className="px-6 py-4 w-12"></th>
+                                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider w-20 md:table-cell hidden">Image</th>
+                                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider md:table-cell hidden">Product Info</th>
+                                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider w-32 md:table-cell hidden">Status / Stock</th>
+                                    <th className="px-6 py-4 w-12 md:table-cell hidden"></th>
+                                    {/* Mobile Header Placeholder if needed, but usually hidden on mobile with card layout */}
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
@@ -122,14 +156,14 @@ export default function AdminProductPage({
 
             {/* FLOATING BULK DELETE BAR */}
             {selectedIds.length > 0 && !isEditing && (
-                <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-40 animate-in slide-in-from-bottom-5 fade-in duration-300">
-                    <div className="bg-slate-900 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-6 ring-1 ring-white/10">
+                <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-40 animate-in slide-in-from-bottom-5 fade-in duration-300 w-[90%] md:w-auto max-w-md">
+                    <div className="bg-slate-900 text-white px-6 py-3 rounded-full shadow-2xl flex items-center justify-between md:justify-start gap-6 ring-1 ring-white/10">
                         <div className="flex items-center gap-3">
                             <span className="bg-white/20 px-2 py-0.5 rounded-full text-xs font-bold">{selectedIds.length}</span>
                             <span className="text-sm font-medium text-slate-300">Selected</span>
                         </div>
-                        <div className="h-4 w-px bg-white/20" />
-                        <div className="flex items-center gap-3">
+                        <div className="h-4 w-px bg-white/20 hidden md:block" />
+                        <div className="flex items-center gap-4">
                             <button onClick={() => setSelectedIds([])} className="text-sm text-slate-400 hover:text-white transition-colors">Cancel</button>
                             <button onClick={handleBulkDelete} className="flex items-center gap-2 text-red-400 hover:text-red-300 font-medium transition-colors">
                                 <Trash2 size={16} /> Delete

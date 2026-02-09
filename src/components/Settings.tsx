@@ -1,28 +1,32 @@
 import React, { useEffect, useState } from 'react';
 import { Save, Building2, Phone, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { SettingsService, SettingsError } from '../services/settings.service'; // Fix import path
-
-// Fix: Ensure we are importing from the correct location based on file structure
-// The service is in ../services/settings.service.ts relative to components/Settings.tsx
+import { SettingsService, SettingsError } from '../services/settings.service';
+import { useStore } from '../context/StoreContext';
 
 export default function Settings() {
+    const { store } = useStore();
     const [storeName, setStoreName] = useState('');
     const [whatsapp, setWhatsapp] = useState('');
     const [initialLoading, setInitialLoading] = useState(true);
     const [saveLoading, setSaveLoading] = useState(false);
 
     useEffect(() => {
-        loadSettings();
-    }, []);
+        if (store) loadSettings();
+    }, [store]);
 
     const loadSettings = async () => {
+        if (!store) return;
         setInitialLoading(true);
         try {
-            const data = await SettingsService.get();
+            const data = await SettingsService.get(store.id);
             if (data) {
                 setStoreName(data.store_name);
                 setWhatsapp(data.whatsapp_number);
+            } else {
+                // Pre-fill from Store object if config missing
+                setStoreName(store.store_name);
+                setWhatsapp(store.whatsapp_number || '');
             }
         } catch (err) {
             if (err instanceof SettingsError) {
@@ -36,12 +40,13 @@ export default function Settings() {
     };
 
     const handleSave = async () => {
+        if (!store) return;
         setSaveLoading(true);
         try {
             // Wrap the service call in a promise that matches what react-hot-toast expects (though service returns promise,
-            // wrapping ensures we catch the error correctly for the toast)
+            // wrapping allows better error message control)
             await toast.promise(
-                SettingsService.update(storeName, whatsapp),
+                SettingsService.update(store.id, storeName, whatsapp),
                 {
                     loading: 'Menyimpan settings...',
                     success: '✅ Settings berjaya disimpan!',

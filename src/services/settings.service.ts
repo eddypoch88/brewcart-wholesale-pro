@@ -16,15 +16,12 @@ export class SettingsError extends Error {
 }
 
 export class SettingsService {
-    // Hardcoded ID = 1 sebab single store mode. 
-    // Nanti senang tukar jadi user_id bila perlu.
-    private static readonly STORE_ID = 1;
 
-    static async get(): Promise<StoreSettings | null> {
+    static async get(storeId: string): Promise<StoreSettings | null> {
         const { data, error } = await supabase
-            .from('store_config') // CORRECTED: Table is 'store_config'
+            .from('store_config')
             .select('*')
-            .eq('id', this.STORE_ID)
+            .eq('store_id', storeId) // 🔥 Filter by store_id
             .single();
 
         if (error) {
@@ -35,7 +32,7 @@ export class SettingsService {
         return data;
     }
 
-    static async update(storeName: string, whatsapp: string) {
+    static async update(storeId: string, storeName: string, whatsapp: string) {
         // 1. VALIDATION
         if (!storeName || !storeName.trim()) {
             throw new SettingsError('Nama kedai wajib diisi bosku!');
@@ -51,14 +48,33 @@ export class SettingsService {
             throw new SettingsError('Nombor WhatsApp terlalu pendek.');
         }
 
-        // 2. DATABASE UPDATE
-        const { error } = await supabase
-            .from('store_config') // CORRECTED: Table is 'store_config'
-            .update({
-                store_name: storeName.trim(),
-                whatsapp_number: whatsapp.trim()
-            })
-            .eq('id', this.STORE_ID);
+        // 2. CHECK IF EXISTS FIRST
+        const existing = await this.get(storeId);
+
+        let error;
+
+        if (existing) {
+            // UPDATE
+            const { error: updateError } = await supabase
+                .from('store_config')
+                .update({
+                    store_name: storeName.trim(),
+                    whatsapp_number: whatsapp.trim()
+                })
+                .eq('store_id', storeId);
+            error = updateError;
+        } else {
+            // INSERT NEW CONFIG
+            const { error: insertError } = await supabase
+                .from('store_config')
+                .insert([{
+                    store_id: storeId,
+                    store_name: storeName.trim(),
+                    whatsapp_number: whatsapp.trim(),
+                    currency: 'MYR' // Default
+                }]);
+            error = insertError;
+        }
 
         if (error) {
             throw new SettingsError('Database error masa simpan.', error);

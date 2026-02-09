@@ -1,22 +1,26 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Calendar, Phone, User, ShoppingBag, ChevronDown, ChevronUp, Clock } from 'lucide-react';
+import { useStore } from '../context/StoreContext';
 
 export default function OrderList() {
+    const { store } = useStore();
     const [orders, setOrders] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
 
     // 1. TARIK DATA ORDER DARI SUPABASE
     useEffect(() => {
-        fetchOrders();
-    }, []);
+        if (store) fetchOrders();
+    }, [store]);
 
     const fetchOrders = async () => {
+        if (!store) return;
         setLoading(true);
         const { data, error } = await supabase
             .from('orders')
             .select('*')
+            .eq('store_id', store.id) // 🔥 Filter by store
             .order('created_at', { ascending: false }); // Paling baru di atas
 
         if (error) console.error('Error fetching orders:', error);
