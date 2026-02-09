@@ -1,18 +1,41 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Save, Store, CreditCard, Globe, ExternalLink, Info, ShieldCheck } from 'lucide-react';
+import { useSupabaseDocument } from '@/src/hooks/useSupabase';
+import { supabase } from '@/src/lib/supabase';
+import { StoreConfig } from '@/src/shared/shared-types';
 
 export default function StoreSettingsPage() {
+    // Fetch initial data
+    const { data: storeConfig, loading } = useSupabaseDocument<StoreConfig>('store_config', 1);
+
     // State untuk semua input (Disatukan supaya senang urus)
     const [formData, setFormData] = useState({
-        storeName: 'Orb Empire Store',
-        storeDescription: 'Kedai Serbaneka Paling Mantap di Sabah',
-        whatsappNumber: '60123456789',
+        storeName: '',
+        storeDescription: '',
+        whatsappNumber: '',
         currency: 'MYR',
-        address: 'Kota Kinabalu, Sabah',
-        email: 'admin@orb-empire.com'
+        address: '',
+        email: ''
     });
+
+    // Populate form when data loads
+    useEffect(() => {
+        if (storeConfig) {
+            setFormData({
+                storeName: storeConfig.store_name || '',
+                storeDescription: '', // Description not in StoreConfig type yet, can add to schema later or use metadata
+                whatsappNumber: storeConfig.whatsapp_number || '',
+                currency: 'MYR', // Default or from metadata if added
+                address: '',
+                email: ''
+            });
+        } else if (!loading) {
+            // Fallback default if no config found (shouldn't happen with init SQL)
+            setFormData(prev => ({ ...prev, storeName: 'New Store' }));
+        }
+    }, [storeConfig, loading]);
 
     const [isSaving, setIsSaving] = useState(false);
 
@@ -25,13 +48,26 @@ export default function StoreSettingsPage() {
         }));
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         setIsSaving(true);
-        // Simulasi Save ke Database
-        setTimeout(() => {
-            setIsSaving(false);
+        try {
+            const { error } = await supabase
+                .from('store_config')
+                .update({
+                    store_name: formData.storeName,
+                    whatsapp_number: formData.whatsappNumber,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', 1);
+
+            if (error) throw error;
             alert('Setting Berjaya Disimpan! ✅');
-        }, 1000);
+        } catch (error: any) {
+            console.error('Save error:', error);
+            alert('Gagal Simpan: ' + error.message);
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     return (

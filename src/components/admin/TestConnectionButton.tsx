@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { db } from "../../shared/firebase-config";
-import { collection, addDoc } from 'firebase/firestore';
+import { supabase } from '@/src/lib/supabase';
 import { CheckCircle, AlertCircle, Loader2, CloudLightning } from 'lucide-react';
 
 export default function TestConnectionButton() {
@@ -9,15 +8,21 @@ export default function TestConnectionButton() {
     const handleTestConnection = async () => {
         setLoading(true);
         try {
-            await addDoc(collection(db, 'test_connection'), {
-                message: 'Lekat 100%!',
-                sender: 'Postman',
-                timestamp: new Date()
-            });
+            const { error } = await supabase
+                .from('connection_tests')
+                .insert([
+                    {
+                        message: 'Lekat 100%!',
+                        sender: 'Postman',
+                        timestamp: new Date().toISOString()
+                    }
+                ]);
+
+            if (error) throw error;
             alert('Data Sent to Cloud!');
-        } catch (e) {
+        } catch (e: any) {
             console.error('Error adding document: ', e);
-            alert('Error sending data to cloud');
+            alert('Error sending data to cloud: ' + e.message);
         } finally {
             setLoading(false);
         }

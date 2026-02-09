@@ -1,14 +1,14 @@
 import React from 'react';
-import { useFirestoreCollection } from '../../hooks/useFirestore';
+import { useSupabaseCollection } from '@/src/hooks/useSupabase';
 import { Package, ShoppingBag, DollarSign, TrendingUp } from 'lucide-react';
 import TestConnectionButton from '../../components/admin/TestConnectionButton';
 
 export default function DashboardPage() {
-    const { data: orders, loading: ordersLoading } = useFirestoreCollection('orders');
-    const { data: products, loading: productsLoading } = useFirestoreCollection('products');
+    const { data: orders, loading: ordersLoading } = useSupabaseCollection('orders');
+    const { data: products, loading: productsLoading } = useSupabaseCollection('products');
 
-    // Calculate Revenue (Mock calculation since order structure might vary)
-    const totalRevenue = orders.reduce((sum, order) => sum + (parseFloat(order.total) || 0), 0);
+    // Calculate Revenue
+    const totalRevenue = orders.reduce((sum, order) => sum + (order.total_amount || 0), 0);
 
     const StatCard = ({ title, value, icon: Icon, color, loading }: any) => (
         <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-start justify-between">

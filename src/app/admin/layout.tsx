@@ -58,13 +58,17 @@ export default function AdminLayout({ children, activePage, onNavigate }: AdminL
             )}
 
             {/* Sidebar */}
+            {/* Sidebar */}
             <Sidebar
-                activePage={activePage}
-                onNavigate={(page) => {
+                activeTab={activePage}
+                setActiveTab={(page) => {
                     onNavigate(page);
                     setIsMobileMenuOpen(false);
                 }}
-                className={isMobileMenuOpen ? "block z-50 shadow-2xl" : "hidden md:block"}
+                onLogout={() => {
+                    handleLogout();
+                    onNavigate('login');
+                }}
             />
 
             {/* Main Content */}

@@ -1,15 +1,16 @@
 import React from 'react';
-import { useFirestoreCollection } from '../../../hooks/useFirestore';
+import { useSupabaseCollection } from '../../../hooks/useSupabase';
 import { ChevronRight, Package, Clock, User } from 'lucide-react';
+import { Order } from '@/src/shared/shared-types';
 
 export default function OrdersPage() {
-    const { data: orders, loading } = useFirestoreCollection('orders');
+    const { data: orders, loading } = useSupabaseCollection<Order>('orders');
 
     // Mobile Order Card
-    const OrderCard = ({ order }: any) => (
+    const OrderCard: React.FC<{ order: Order }> = ({ order }) => (
         <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm mb-4">
             <div className="flex justify-between items-center mb-3">
-                <span className="text-sm font-bold text-slate-900">#{order.id.slice(0, 8)}</span>
+                <span className="text-sm font-bold text-slate-900">#{order.order_number}</span>
                 <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide
             ${order.status === 'Completed' ? 'bg-green-100 text-green-700' :
                         order.status === 'Processing' ? 'bg-blue-100 text-blue-700' :
@@ -20,19 +21,19 @@ export default function OrdersPage() {
             <div className="space-y-2 mb-4">
                 <div className="flex items-center text-xs text-slate-500 gap-2">
                     <Clock size={14} />
-                    {order.createdAt?.seconds ? new Date(order.createdAt.seconds * 1000).toLocaleDateString() : 'Just now'}
+                    {order.created_at ? new Date(order.created_at).toLocaleDateString() : 'Just now'}
                 </div>
                 <div className="flex items-center text-xs text-slate-500 gap-2">
                     <User size={14} />
-                    {order.customerName || 'Guest Customer'}
+                    {order.customer_name || 'Guest Customer'}
                 </div>
                 <div className="flex items-center text-xs text-slate-500 gap-2">
                     <Package size={14} />
-                    {order.items?.length || 0} Items
+                    {(Array.isArray(order.items) ? order.items.length : 0)} Items
                 </div>
             </div>
             <div className="flex justify-between items-center pt-3 border-t border-slate-100">
-                <span className="font-bold text-slate-900">{order.total || 'RM 0.00'}</span>
+                <span className="font-bold text-slate-900">RM {order.total_amount?.toFixed(2) || '0.00'}</span>
                 <button className="text-blue-600 text-sm font-semibold flex items-center hover:underline">
                     Details <ChevronRight size={16} />
                 </button>
@@ -76,11 +77,11 @@ export default function OrdersPage() {
                             <tbody className="divide-y divide-slate-100">
                                 {orders.map((order) => (
                                     <tr key={order.id} className="hover:bg-slate-50 transition-colors">
-                                        <td className="px-6 py-4 font-mono text-sm text-slate-600">#{order.id.slice(0, 8)}</td>
+                                        <td className="px-6 py-4 font-mono text-sm text-slate-600">#{order.order_number}</td>
                                         <td className="px-6 py-4 text-sm text-slate-600">
-                                            {order.createdAt?.seconds ? new Date(order.createdAt.seconds * 1000).toLocaleDateString() : 'Just now'}
+                                            {order.created_at ? new Date(order.created_at).toLocaleDateString() : 'Just now'}
                                         </td>
-                                        <td className="px-6 py-4 text-sm font-medium text-slate-900">{order.customerName || 'Guest'}</td>
+                                        <td className="px-6 py-4 text-sm font-medium text-slate-900">{order.customer_name || 'Guest'}</td>
                                         <td className="px-6 py-4">
                                             <span className={`px-2 py-1 rounded-full text-xs font-bold uppercase tracking-wide
                                         ${order.status === 'Completed' ? 'bg-green-50 text-green-700 border border-green-100' :
@@ -89,7 +90,7 @@ export default function OrdersPage() {
                                                 {order.status || 'Pending'}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 text-sm font-bold text-slate-900">{order.total || 'RM 0.00'}</td>
+                                        <td className="px-6 py-4 text-sm font-bold text-slate-900">RM {order.total_amount?.toFixed(2) || '0.00'}</td>
                                         <td className="px-6 py-4 text-right">
                                             <button className="text-slate-400 hover:text-blue-600 transition-colors">
                                                 <ChevronRight size={20} />

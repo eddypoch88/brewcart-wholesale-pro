@@ -1,274 +1,128 @@
-import { useState, ChangeEvent } from 'react';
-import { UploadCloud, Globe, X, Info, ShieldCheck, ArrowLeft } from 'lucide-react';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '@/src/shared/firebase-config'; // <--- PASTIKAN PATH NI BETUL
-import PrimaryButton from '@/src/components/system/PrimaryButton';
+import React, { useState } from 'react';
+import { supabase } from '@/src/lib/supabase';
 
-export default function AddProductPage() {
+export default function ProductUploadForm() {
     const [loading, setLoading] = useState(false);
+    const [formData, setFormData] = useState({ name: '', price: '', description: '' });
+    const [imageBase64, setImageBase64] = useState<string | null>(null); // Kita simpan gambar sebagai text
 
-    // State untuk Form Data
-    const [name, setName] = useState('');
-    const [price, setPrice] = useState('');
-    const [originalPrice, setOriginalPrice] = useState('');
-    const [stock, setStock] = useState('');
-    const [category, setCategory] = useState('General'); // Default category
-    const [highlights, setHighlights] = useState('');
-    const [description, setDescription] = useState('');
-
-    // State untuk Images
-    const [imageFiles, setImageFiles] = useState<File[]>([]);
-    const [previews, setPreviews] = useState<string[]>([]);
-
-    // 1. Handle Image Selection
-    const handleImageSelect = (e: ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files) {
-            const filesArray = Array.from(e.target.files);
-
-            // Simpan File object untuk upload nanti
-            setImageFiles((prev) => [...prev, ...filesArray]);
-
-            // Buat URL preview untuk tunjuk d skrin
-            const newPreviews = filesArray.map(file => URL.createObjectURL(file));
-            setPreviews((prev) => [...prev, ...newPreviews]);
+    // 1. FUNGSI TUKAR GAMBAR JADI TEXT (Magic dia sini!)
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            // Validasi: Jangan upload gambar besar gila (max 500KB cukup utk test)
+            if (file.size > 500000) {
+                alert("⚠️ Gambar besar sangat bos! Cari yang bawah 500KB.");
+                return;
+            }
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImageBase64(reader.result as string); // Dapat string panjang
+            };
+            reader.readAsDataURL(file);
         }
     };
 
-    // Buang image kalau tersalah pilih
-    const removeImage = (index: number) => {
-        setImageFiles(prev => prev.filter((_, i) => i !== index));
-        setPreviews(prev => prev.filter((_, i) => i !== index));
-    };
-
-    // 2. Fungsi Upload ke Firebase Storage
-    const uploadImagesToStorage = async () => {
-        const uploadPromises = imageFiles.map(async (file) => {
-            const storageRef = ref(storage, `products/${Date.now()}-${file.name}`);
-            const snapshot = await uploadBytes(storageRef, file);
-            return await getDownloadURL(snapshot.ref);
-        });
-        return Promise.all(uploadPromises);
-    };
-
-    // 3. Main Function: Save Product
-    const handlePublish = async (status: 'active' | 'draft') => {
-        // Validasi Asas
-        if (!name || !price || !stock) {
-            alert("Bosku! Isi dulu Nama, Harga & Stock. Jangan kosong.");
-            return;
-        }
+    // 2. FUNGSI UPLOAD (Tak payah Storage bucket)
+    const handleUpload = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!formData.name || !formData.price) { alert("Isi nama & harga dlu!"); return; }
 
         setLoading(true);
 
         try {
-            // A. Upload Gambar dulu (kalau ada)
-            let imageUrls: string[] = [];
-            if (imageFiles.length > 0) {
-                imageUrls = await uploadImagesToStorage();
-            }
+            // Terus simpan ke Supabase
+            const imageUrl = imageBase64 || "https://via.placeholder.com/150";
 
-            // B. Generate Slug (URL)
-            const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+            const { error } = await supabase
+                .from('products')
+                .insert([
+                    {
+                        name: formData.name,
+                        price: Number(formData.price),
+                        images: [imageUrl], // Compatible array format
+                        description: formData.description,
+                        is_active: true
+                    }
+                ]);
 
-            // C. Simpan Data ke Firestore
-            await addDoc(collection(db, 'products'), {
-                name,
-                slug,
-                price: parseFloat(price),
-                originalPrice: originalPrice ? parseFloat(originalPrice) : null,
-                stock: parseInt(stock),
-                category,
-                highlights,
-                description,
-                images: imageUrls,
-                status, // 'active' atau 'draft'
-                createdAt: serverTimestamp(),
-                updatedAt: serverTimestamp(),
-            });
+            if (error) throw error;
 
-            alert(status === 'active' ? "Produk Berjaya Publish! 🚀" : "Disimpan dalam Draft! 📁");
+            alert("✅ SIAP! Upload masuk terus!");
+            setFormData({ name: '', price: '', description: '' });
+            setImageBase64(null);
+            // window.location.reload(); // Kalau mahu refresh page
 
-            // Redirect balik ke senarai produk
-            window.location.href = '/admin/products';
-
-        } catch (error) {
-            console.error("Error saving product:", error);
-            alert("Alamak! Ada error masa simpan. Check console.");
+        } catch (error: any) {
+            console.error(error);
+            alert("❌ Gagal: " + error.message);
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="max-w-5xl mx-auto p-4 sm:p-6 pb-24">
+        <div className="p-5 bg-white border rounded shadow max-w-md mx-auto mt-10">
+            <h2 className="text-lg font-bold mb-4 text-center">Upload Produk (Cara Pantas: Base64)</h2>
+            <form onSubmit={handleUpload} className="space-y-4">
 
-            {/* HEADER RESPONSIF */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+                {/* Nama */}
                 <div>
-                    <button onClick={() => window.history.back()} className="text-gray-500 flex items-center gap-1 text-sm mb-2 hover:text-black">
-                        <ArrowLeft size={16} /> Back
-                    </button>
-                    <h1 className="text-2xl font-bold text-gray-900">Add New Product</h1>
+                    <label className="block text-sm mb-1 font-medium">Nama Produk</label>
+                    <input
+                        type="text"
+                        placeholder="Kopi O Kaw"
+                        className="w-full border p-2 rounded"
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    />
                 </div>
 
-                <div className="flex gap-3 w-full sm:w-auto">
-                    {/* Button Draft */}
-                    <button
-                        onClick={() => handlePublish('draft')}
-                        disabled={loading}
-                        className="flex-1 sm:flex-none px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                        Save Draft
-                    </button>
-
-                    {/* SYSTEM COMPONENT: PrimaryButton */}
-                    <PrimaryButton
-                        onClick={() => handlePublish('active')}
-                        loading={loading}
-                        icon={<Globe size={16} />}
-                        className="flex-1 sm:flex-none"
-                    >
-                        Publish Live
-                    </PrimaryButton>
+                {/* Harga */}
+                <div>
+                    <label className="block text-sm mb-1 font-medium">Harga (RM)</label>
+                    <input
+                        type="number"
+                        placeholder="5.00"
+                        className="w-full border p-2 rounded"
+                        value={formData.price}
+                        onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                    />
                 </div>
-            </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Description (Extra, if used) */}
+                <div>
+                    <label className="block text-sm mb-1 font-medium">Description (Optional)</label>
+                    <textarea
+                        placeholder="Product details..."
+                        className="w-full border p-2 rounded"
+                        rows={3}
+                        value={formData.description}
+                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    />
+                </div>
 
-                {/* KIRI: MEDIA UPLOAD (Real Function) */}
-                <div className="lg:col-span-1 space-y-6">
-                    <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                        <h3 className="text-sm font-semibold text-gray-900 mb-4">Product Images</h3>
+                {/* Gambar */}
+                <div>
+                    <label className="block text-sm mb-1 font-medium">Gambar Produk (Max 500KB)</label>
+                    <input type="file" onChange={handleImageChange} className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+                </div>
 
-                        {/* Upload Zone */}
-                        <label className="border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center justify-center text-center hover:border-blue-500 hover:bg-blue-50 transition-all cursor-pointer group">
-                            <div className="bg-blue-100 p-3 rounded-full mb-3 group-hover:bg-blue-200 transition-colors">
-                                <UploadCloud className="w-6 h-6 text-blue-600" />
-                            </div>
-                            <p className="text-sm font-medium text-gray-900">Click to upload</p>
-                            <p className="text-xs text-gray-500 mt-1">Select multiple files</p>
-                            <input type="file" multiple accept="image/*" className="hidden" onChange={handleImageSelect} />
-                        </label>
-
-                        {/* Preview Grid */}
-                        {previews.length > 0 && (
-                            <div className="grid grid-cols-3 gap-2 mt-4">
-                                {previews.map((src, idx) => (
-                                    <div key={idx} className="relative aspect-square rounded-md overflow-hidden border border-gray-200 group">
-                                        <img src={src} alt="Preview" className="w-full h-full object-cover" />
-                                        <button
-                                            onClick={() => removeImage(idx)}
-                                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
-                                        >
-                                            <X size={12} />
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
+                {/* Preview */}
+                {imageBase64 && (
+                    <div className="mt-2 text-center">
+                        <p className="text-xs text-gray-500 mb-1">Preview:</p>
+                        <img src={imageBase64} alt="Preview" className="h-32 w-32 object-cover rounded border mx-auto" />
                     </div>
-                </div>
+                )}
 
-                {/* KANAN: FORM DATA */}
-                <div className="lg:col-span-2 space-y-6">
-                    <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm space-y-6">
-
-                        {/* 1. Name & URL */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
-                            <input
-                                type="text"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
-                                placeholder="e.g. Premium Wireless Earbuds"
-                            />
-                            <p className="text-xs text-gray-400 mt-1 font-mono truncate">
-                                URL: /product/{name.toLowerCase().replace(/[^a-z0-9]+/g, '-') || '...'}
-                            </p>
-                        </div>
-
-                        {/* 2. Highlights */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Highlights (Short Specs)</label>
-                            <input
-                                type="text"
-                                value={highlights}
-                                onChange={(e) => setHighlights(e.target.value)}
-                                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
-                                placeholder="e.g. Waterproof, 2-Year Warranty, Fast Charging"
-                            />
-                        </div>
-
-                        {/* 3. Pricing */}
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Price (RM)</label>
-                                <input
-                                    type="number"
-                                    value={price}
-                                    onChange={(e) => setPrice(e.target.value)}
-                                    className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
-                                    placeholder="0.00"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Original Price (Optional)</label>
-                                <input
-                                    type="number"
-                                    value={originalPrice}
-                                    onChange={(e) => setOriginalPrice(e.target.value)}
-                                    className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-gray-400 focus:border-transparent outline-none transition-all text-gray-500"
-                                    placeholder="0.00"
-                                />
-                            </div>
-                        </div>
-
-                        {/* 4. Stock & Category */}
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Stock Quantity</label>
-                                <input
-                                    type="number"
-                                    value={stock}
-                                    onChange={(e) => setStock(e.target.value)}
-                                    className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
-                                    placeholder="0"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                                <select
-                                    value={category}
-                                    onChange={(e) => setCategory(e.target.value)}
-                                    className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all bg-white"
-                                >
-                                    <option>General</option>
-                                    <option>Electronics</option>
-                                    <option>Fashion</option>
-                                    <option>Food & Beverage</option>
-                                    <option>Beauty</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        {/* 5. Description */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                            <textarea
-                                rows={5}
-                                value={description}
-                                onChange={(e) => setDescription(e.target.value)}
-                                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
-                                placeholder="Describe your product nicely..."
-                            />
-                        </div>
-
-                    </div>
-                </div>
-
-            </div>
+                <button
+                    disabled={loading}
+                    className={`w-full text-white p-2 rounded font-bold ${loading ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'}`}
+                >
+                    {loading ? "Processing..." : "Simpan Produk 🚀"}
+                </button>
+            </form>
         </div>
     );
 }

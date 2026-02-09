@@ -1,110 +1,240 @@
-import React, { useState, useEffect } from 'react';
-import { storeConfig } from './src/config/store';
-import Storefront from './components/Storefront';
-import ProductPage from './src/app/product/[id]/page';
-import ConnectionStatus from './components/ConnectionStatus';
-import { ArrowLeft } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { ShoppingBag, X } from 'lucide-react';
+import { ProductService } from './src/services/product.service';
+import { supabase } from './src/lib/supabase';
+import { Product } from './src/types';
+import toast, { Toaster } from 'react-hot-toast'; // <--- 1. IMPORT BARU
 
-// New Admin Components
-import AdminLayout from './src/app/admin/layout';
-import DashboardPage from './src/app/admin/page';
-import OrdersPage from './src/app/admin/orders/page';
-import AddProductPage from './src/app/admin/products/new/page';
-import SettingsPage from './src/app/admin/settings/page';
+// COMPONENTS
+import ProductForm from './src/components/ProductForm';
+import ProductCard from './src/components/ProductCard';
+import Dashboard from './src/components/Dashboard';
+import Sidebar from './src/components/Sidebar';
+import OrderList from './src/components/OrderList';
+import Settings from './src/components/Settings';
 
-const INITIAL_ITEMS = [
-  { id: 1, name: 'Premium Product A', price: 'RM 145.00', stock: 500, status: 'In Stock', image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=500&h=500', description: 'High quality premium item, box of 24.' },
-  { id: 2, name: 'Standard Product B', price: 'RM 180.00', stock: 1200, status: 'In Stock', image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=500&h=500', description: 'Essential daily item, durable.' },
-  { id: 3, name: 'Luxury Item C', price: 'RM 155.00', stock: 800, status: 'In Stock', image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=500&h=500', description: 'Limited edition luxury good.' },
-  { id: 4, name: 'Basic Item D', price: 'RM 135.00', stock: 600, status: 'In Stock', image: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&q=80&w=500&h=500', description: 'Basic necessity, bulk pack.' },
-  { id: 5, name: 'Imported Goods E', price: 'RM 190.00', stock: 45, status: 'Low Stock', image: 'https://images.unsplash.com/photo-1572635196237-14b3f281e960?auto=format&fit=crop&q=80&w=500&h=500', description: 'Imported specialty item.' },
-];
+export default function App() {
+  // STATES
+  const [viewMode, setViewMode] = useState<'shop' | 'admin'>('shop');
+  const [adminTab, setAdminTab] = useState('dashboard');
+  const [isEditing, setIsEditing] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [storeName, setStoreName] = useState('BrewCart');
 
-function App() {
-  const [items, setItems] = useState(INITIAL_ITEMS);
-  const [viewMode, setViewMode] = useState<'admin' | 'shop' | 'product'>('admin');
-  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  // CART & CHECKOUT STATES
+  const [cart, setCart] = useState<{ product: Product, qty: number }[]>([]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [customerInfo, setCustomerInfo] = useState({ name: '', phone: '' });
 
-  const handleProductClick = (product: any) => {
-    setSelectedProduct(product);
-    setViewMode('product');
-    window.history.pushState({ view: 'product', product }, '', '#product');
+  // LOAD DATA
+  const loadProducts = async () => {
+    setLoading(true);
+    const { data } = await ProductService.getAll();
+    if (data) setProducts(data);
+    setLoading(false);
   };
 
-  // --- HISTORY MANAGEMENT ---
   useEffect(() => {
-    // Initial State Replace
-    window.history.replaceState({ view: 'admin', product: null }, '', '#admin');
-
-    const handlePopState = (event: PopStateEvent) => {
-      if (event.state) {
-        setViewMode(event.state.view || 'admin');
-        setSelectedProduct(event.state.product || null);
-      }
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    loadProducts();
+    supabase.from('store_config').select('store_name').single()
+      .then(({ data }) => {
+        if (data && data.store_name) setStoreName(data.store_name);
+      });
   }, []);
 
-  // New Admin Navigation State
-  const [adminPage, setAdminPage] = useState('dashboard');
-
-  // --- VIEW 1: CUSTOMER STOREFRONT (SHOP) ---
-  if (viewMode === 'shop') {
-    return (
-      <div className="min-h-screen bg-slate-50 relative font-sans" style={{ '--primary': storeConfig.primaryColor, '--secondary': storeConfig.secondaryColor } as React.CSSProperties}>
-        <ConnectionStatus />
-        {/* Sync: Pass 'items' as 'products' to match Storefront's expected prop */}
-        <Storefront products={items} onProductClick={handleProductClick} />
-
-        <button
-          onClick={() => {
-            setViewMode('admin');
-            window.history.pushState({ view: 'admin', product: null }, '', '#admin');
-          }}
-          className="fixed bottom-6 right-6 bg-slate-900 text-white px-6 py-3 rounded-full shadow-2xl font-bold flex items-center gap-2 z-50 hover:scale-110 transition-transform border-2 border-white/20"
-        >
-          <ArrowLeft size={20} /> Back to Admin
-        </button>
-      </div>
+  // DELETE LOGIC
+  const handleDeleteProduct = async (id: string) => {
+    // 2. GUNA TOAST UNTUK PROMISE (Loading... Success... Error)
+    await toast.promise(
+      ProductService.delete(id),
+      {
+        loading: 'Membuang produk...',
+        success: 'Produk berjaya dipadam! 🗑️',
+        error: 'Gagal memadam.',
+      }
     );
-  }
+    loadProducts();
+  };
 
-  // --- VIEW 3: PRODUCT DETAILS (SINGLE) ---
-  if (viewMode === 'product' && selectedProduct) {
-    return (
-      <ProductPage
-        onBack={() => {
-          setViewMode('shop');
-          window.history.pushState({ view: 'shop', product: null }, '', '#shop');
-        }}
-      />
-    );
-  }
+  // CART LOGIC
+  const handleAddToCart = (product: Product) => {
+    setCart(prev => {
+      const existing = prev.find(item => item.product.id === product.id);
+      if (existing) {
+        toast.success(`Tambah lagi satu ${product.name}! ☕`); // <--- TOAST
+        return prev.map(item => item.product.id === product.id ? { ...item, qty: item.qty + 1 } : item);
+      }
+      toast.success(`${product.name} masuk troli! 🛒`); // <--- TOAST
+      return [...prev, { product, qty: 1 }];
+    });
+    setIsCartOpen(true);
+  };
 
-  // --- VIEW 2: ADMIN DASHBOARD (MANAGEMENT) - NEW LAYOUT ---
+  const removeFromCart = (productId: string) => {
+    setCart(prev => prev.filter(item => item.product.id !== productId));
+    toast('Produk dikeluarkan', { icon: '👋' }); // <--- TOAST
+  };
+
+  // CHECKOUT LOGIC
+  const handleCheckout = async () => {
+    if (cart.length === 0) return toast.error("Troli kosong bos!");
+
+    if (!customerInfo.name || !customerInfo.phone) {
+      return toast.error("Sila isi Nama & No. Telefon! 🙏"); // <--- TOAST ERROR
+    }
+
+    setIsCheckingOut(true);
+    const totalAmount = cart.reduce((sum, item) => sum + (item.product.price * item.qty), 0);
+
+    try {
+      const { error } = await supabase.from('orders').insert([
+        {
+          total_amount: totalAmount,
+          status: 'pending',
+          items: cart,
+          customer_name: customerInfo.name,
+          customer_phone: customerInfo.phone
+        }
+      ]);
+
+      if (error) throw error;
+
+      toast.success(`Terima kasih ${customerInfo.name}! Order Berjaya! 🎉`, { duration: 5000 }); // <--- TOAST SUCCESS
+
+      setCart([]);
+      setCustomerInfo({ name: '', phone: '' });
+      setIsCartOpen(false);
+
+      if (viewMode === 'admin') window.location.reload();
+
+    } catch (err: any) {
+      toast.error(`Gagal Checkout: ${err.message}`);
+    } finally {
+      setIsCheckingOut(false);
+    }
+  };
+
+  // --- RENDER UTAMA ---
   return (
-    <AdminLayout activePage={adminPage} onNavigate={setAdminPage}>
-      {adminPage === 'dashboard' && <DashboardPage />}
-      {adminPage === 'orders' && <OrdersPage />}
-      {adminPage === 'products/new' && <AddProductPage />}
-      {adminPage === 'settings' && <SettingsPage />}
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-800">
 
-      {/* Preview Button (Temporary location for manual switching) */}
-      <div className="fixed bottom-6 right-6 z-50">
-        <button
-          onClick={() => {
-            setViewMode('shop');
-            window.history.pushState({ view: 'shop', product: null }, '', '#shop');
-          }}
-          className="bg-indigo-600 text-white px-4 py-2 rounded-full shadow-xl font-bold text-sm hover:bg-indigo-700 transition"
-        >
-          Preview Store
-        </button>
-      </div>
-    </AdminLayout>
+      {/* 3. PASANG TOASTER DI SINI (Supaya dia boleh muncul di mana-mana) */}
+      <Toaster position="top-center" reverseOrder={false} />
+
+      {/* MODAL TROLI */}
+      {isCartOpen && (
+        <div className="fixed inset-0 z-[60] flex justify-end">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsCartOpen(false)}></div>
+          <div className="relative w-full max-w-md bg-white h-full shadow-2xl p-6 flex flex-col animate-slide-in">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold flex items-center gap-2"><ShoppingBag /> Troli Anda</h2>
+              <button onClick={() => setIsCartOpen(false)}><X className="text-slate-500" /></button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto space-y-4 mb-4">
+              {cart.length === 0 ? <p className="text-center text-slate-400 mt-10">Troli kosong.</p> : cart.map((item, idx) => (
+                <div key={idx} className="flex gap-4 border-b border-slate-100 pb-4">
+                  <div className="w-16 h-16 bg-slate-100 rounded-md overflow-hidden">
+                    {item.product.images?.[0] && <img src={item.product.images[0]} className="w-full h-full object-cover" />}
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-bold text-sm">{item.product.name}</p>
+                    <p className="text-xs text-slate-500">Qty: {item.qty} x RM {item.product.price}</p>
+                  </div>
+                  <button onClick={() => removeFromCart(item.product.id)} className="text-red-500 text-xs font-bold">Buang</button>
+                </div>
+              ))}
+            </div>
+
+            {cart.length > 0 && (
+              <div className="border-t pt-4 space-y-3 bg-slate-50 p-4 rounded-xl mb-4">
+                <h3 className="font-bold text-sm text-slate-700">Maklumat Penghantaran:</h3>
+                <input
+                  type="text"
+                  placeholder="Nama Penuh (Cth: Eddy Poch)"
+                  className="w-full border p-2 rounded-lg text-sm"
+                  value={customerInfo.name}
+                  onChange={e => setCustomerInfo({ ...customerInfo, name: e.target.value })}
+                />
+                <input
+                  type="tel"
+                  placeholder="No. Telefon (Cth: 012-3456789)"
+                  className="w-full border p-2 rounded-lg text-sm"
+                  value={customerInfo.phone}
+                  onChange={e => setCustomerInfo({ ...customerInfo, phone: e.target.value })}
+                />
+              </div>
+            )}
+
+            {cart.length > 0 && (
+              <button onClick={handleCheckout} disabled={isCheckingOut} className="w-full bg-black text-white py-3 rounded-xl font-bold mt-2 hover:bg-slate-800 disabled:opacity-50 transition">
+                {isCheckingOut ? 'Processing...' : `Bayar RM ${cart.reduce((a, c) => a + (c.product.price * c.qty), 0).toFixed(2)}`}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* --- LOGIC VIEW: ADMIN vs SHOP --- */}
+      {viewMode === 'admin' ? (
+        <div className="flex min-h-screen bg-slate-100">
+          <Sidebar activeTab={adminTab} setActiveTab={setAdminTab} onLogout={() => setViewMode('shop')} storeName={storeName} />
+          <div className="flex-1 ml-64 p-8 overflow-y-auto h-screen">
+            {adminTab === 'dashboard' && <div className="animate-fade-in"><Dashboard /></div>}
+
+            {adminTab === 'products' && (
+              <div className="space-y-6 animate-fade-in">
+                <div className="flex justify-between items-center">
+                  <h1 className="text-2xl font-bold">Product Management</h1>
+                  <button onClick={() => setIsEditing(true)} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 shadow-md transition">+ Add Product</button>
+                </div>
+                {isEditing ? (
+                  <div className="bg-white p-6 rounded-xl shadow-sm">
+                    <ProductForm onSuccess={() => { setIsEditing(false); loadProducts(); }} onCancel={() => setIsEditing(false)} />
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {products.map(p => (
+                      <ProductCard key={p.id} product={p} isAdmin={true} onAddToCart={() => { }} onEdit={() => setIsEditing(true)} onDelete={handleDeleteProduct} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {adminTab === 'orders' && <div className="animate-fade-in"><OrderList /></div>}
+            {adminTab === 'settings' && <div className="animate-fade-in"><Settings /></div>}
+          </div>
+        </div>
+      ) : (
+        <div className="pb-20">
+          <nav className="bg-white sticky top-0 z-30 px-6 py-4 shadow-sm flex justify-between items-center">
+            <div className="font-bold text-xl flex items-center gap-2">
+              <div className="bg-black text-white px-2 rounded">BC</div> {storeName}
+            </div>
+            <div className="flex gap-4">
+              <button onClick={() => setViewMode('admin')} className="text-sm font-bold text-slate-500 hover:text-black">Admin Login</button>
+              <button onClick={() => setIsCartOpen(true)} className="relative p-2 bg-slate-100 rounded-full hover:bg-slate-200">
+                <ShoppingBag className="w-5 h-5" />
+                {cart.length > 0 && <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">{cart.length}</span>}
+              </button>
+            </div>
+          </nav>
+
+          <div className="bg-black text-white text-center py-16 px-6 mb-10">
+            <h1 className="text-4xl font-extrabold mb-4">Quality Coffee, Delivered.</h1>
+            <p className="text-slate-400 max-w-xl mx-auto">Rasa kopi sebenar dari ladang Sabah.</p>
+          </div>
+
+          <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {products.filter(p => p.status === 'active').map(p => (
+              <ProductCard key={p.id} product={p} isAdmin={false} onAddToCart={handleAddToCart} />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
-
-export default App;

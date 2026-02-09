@@ -13,7 +13,7 @@ export default function Dashboard({ items }: DashboardProps) {
             <header className="flex justify-between items-center mb-6">
                 <div>
                     <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Inventory</h1>
-                    <p className="text-slate-500 text-sm">Manage your {storeConfig.storeName} inventory</p>
+                    <p className="text-slate-500 text-sm">Manage your {storeConfig.store_name} inventory</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <TestConnectionButton />

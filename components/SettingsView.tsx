@@ -36,7 +36,7 @@ const SettingsView: React.FC = () => {
                 {/* Company Bio */}
                 <div className="bg-primary/5 dark:bg-primary/20 p-4 rounded-xl mb-6 border border-primary/10 dark:border-primary/20">
                     <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
-                        <span className="font-bold text-primary dark:text-primary/70">{storeConfig.storeName} Admin</span> – Your Digital Supply Partner. We supply premium stock directly to your doorstep.
+                        <span className="font-bold text-primary dark:text-primary/70">{storeConfig.store_name} Admin</span> – Your Digital Supply Partner. We supply premium stock directly to your doorstep.
                     </p>
                 </div>
 

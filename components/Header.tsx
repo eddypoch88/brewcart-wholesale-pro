@@ -17,15 +17,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
         >
           <div className="relative transition-transform group-hover:scale-105">
             <div className="w-10 h-10 rounded-2xl border-2 border-white/30 overflow-hidden shadow-sm group-hover:border-white/60 transition-colors bg-white flex items-center justify-center text-primary font-bold">
-              {storeConfig.logoUrl ? (
-                <img
-                  alt={storeConfig.storeName}
-                  className="w-full h-full object-cover"
-                  src={storeConfig.logoUrl}
-                />
-              ) : (
-                <span className="text-xl">{storeConfig.storeName.charAt(0)}</span>
-              )}
+              <span className="text-xl">{storeConfig.store_name.charAt(0)}</span>
             </div>
             {/* Online/Active Dot */}
             <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-primary rounded-full shadow-sm"></div>
@@ -33,7 +25,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
           <div>
             <p className="text-white/70 text-xs font-semibold uppercase tracking-wide">Owner Dashboard</p>
             <p className="text-white text-sm font-semibold tracking-tight flex items-center gap-1">
-              {storeConfig.storeName} Owner
+              {storeConfig.store_name} Owner
               <span className="material-symbols-outlined text-[10px] opacity-60">chevron_right</span>
             </p>
           </div>
@@ -50,7 +42,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
           {/* Store Pill */}
           <button className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1 transition-colors border border-white/10 shadow-inner uppercase tracking-wide">
             <span className="material-symbols-outlined text-[16px]">store</span>
-            {storeConfig.storeName}
+            {storeConfig.store_name}
           </button>
         </div>
       </div>
@@ -58,7 +50,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
       <div className="text-center mt-4 mb-6">
         <p className="text-white/70 text-sm mb-1 font-medium tracking-wide">Total Revenue</p>
         <h1 className="text-5xl font-semibold text-white tracking-tight">
-          {storeConfig.currency} 45,600<span className="text-2xl text-white/60 font-medium">.00</span>
+          RM 45,600<span className="text-2xl text-white/60 font-medium">.00</span>
         </h1>
       </div>
     </div>

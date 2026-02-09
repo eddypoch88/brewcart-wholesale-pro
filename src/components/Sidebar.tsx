@@ -1,119 +1,67 @@
-"use client";
 import React from 'react';
-import {
-    LayoutDashboard,
-    ShoppingBag,
-    Package,
-    Settings2,
-    ExternalLink,
-    Zap
-} from 'lucide-react';
-import { cn } from "../lib/utils";
-
-// Helper to map links to page keys used in App.tsx
-// '/admin' -> 'dashboard'
-// '/admin/orders' -> 'orders'
-// '/admin/products' -> 'products/new' (Currently mapping to Add Product page as it's the only one existing)
-// '/admin/settings' -> 'settings'
-const getPageKey = (href: string) => {
-    if (href === '/admin') return 'dashboard';
-    if (href === '/admin/orders') return 'orders';
-    if (href === '/admin/products') return 'products/new';
-    if (href === '/admin/settings') return 'settings';
-    return '';
-};
-
-const menuItems = [
-    {
-        name: 'Overview',
-        href: '/admin',
-        icon: LayoutDashboard,
-        description: 'Platform statistics'
-    },
-    {
-        name: 'Store Orders',
-        href: '/admin/orders',
-        icon: ShoppingBag,
-        description: 'Manage sales'
-    },
-    {
-        name: 'Manage Products',
-        href: '/admin/products',
-        icon: Package,
-        description: 'Inventory control'
-    },
-    {
-        name: 'Store Configuration',
-        href: '/admin/settings',
-        icon: Settings2,
-        description: 'SaaS & Theme settings'
-    },
-];
+import { LayoutDashboard, Package, ShoppingBag, Settings, LogOut } from 'lucide-react';
 
 interface SidebarProps {
-    activePage: string;
-    onNavigate: (page: string) => void;
-    className?: string;
+    activeTab: string;
+    setActiveTab: (tab: string) => void;
+    onLogout: () => void;
+    storeName?: string; // 🔥 Tambah prop ni
 }
 
-export default function Sidebar({ activePage, onNavigate, className }: SidebarProps) {
+export default function Sidebar({ activeTab, setActiveTab, onLogout, storeName }: SidebarProps) {
+
+    const menuItems = [
+        { id: 'dashboard', label: 'Overview', icon: LayoutDashboard },
+        { id: 'products', label: 'Products', icon: Package },
+        { id: 'orders', label: 'Orders', icon: ShoppingBag },
+        { id: 'settings', label: 'Settings', icon: Settings },
+    ];
 
     return (
-        <aside className={cn("fixed left-0 top-0 h-screen w-64 bg-slate-900 text-slate-300 p-4 border-r border-slate-800 hidden md:block", className)}>
-            {/* Brand Identity - FASA 1 */}
-            <div className="flex items-center gap-3 px-2 mb-10">
-                <div className="bg-blue-600 p-2 rounded-xl">
-                    <Zap className="text-white w-5 h-5 fill-current" />
+        <div className="w-64 bg-slate-900 text-white min-h-screen flex flex-col fixed left-0 top-0 h-full shadow-xl">
+            {/* 1. LOGO AREA */}
+            <div className="p-6 flex items-center gap-3 border-b border-slate-800">
+                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold">
+                    {storeName ? storeName.substring(0, 2).toUpperCase() : 'BC'}
                 </div>
-                <div>
-                    <h1 className="text-white font-bold text-lg leading-none">Orb Empire</h1>
-                    <span className="text-[10px] text-blue-400 font-medium uppercase tracking-widest">SaaS Platform</span>
-                </div>
+                <span className="font-bold text-xl tracking-tight">{storeName || 'BrewCart Admin'}</span>
             </div>
 
-            <nav className="space-y-1">
+            {/* 2. MENU ITEMS */}
+            <div className="flex-1 py-6 px-3 space-y-1">
                 {menuItems.map((item) => {
-                    const pageKey = getPageKey(item.href);
-                    const isActive = activePage === pageKey;
+                    const Icon = item.icon;
+                    const isActive = activeTab === item.id;
 
                     return (
                         <button
-                            key={item.name}
-                            onClick={() => onNavigate(pageKey)}
-                            className={cn(
-                                "w-full text-left group flex flex-col px-3 py-3 rounded-2xl transition-all duration-200",
-                                isActive
-                                    ? "bg-blue-600/10 text-blue-400 border border-blue-600/20"
-                                    : "hover:bg-slate-800 hover:text-white border border-transparent"
-                            )}
+                            key={item.id}
+                            onClick={() => setActiveTab(item.id)}
+                            className={`
+                w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200
+                ${isActive
+                                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20 translate-x-1'
+                                    : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                                }
+              `}
                         >
-                            <div className="flex items-center gap-3">
-                                <item.icon className={cn("w-5 h-5", isActive ? "text-blue-400" : "text-slate-400 group-hover:text-white")} />
-                                <span className="font-semibold text-sm">{item.name}</span>
-                            </div>
-                            <span className="text-[10px] text-slate-500 mt-1 ml-8 group-hover:text-slate-400">
-                                {item.description}
-                            </span>
+                            <Icon size={20} />
+                            <span className="font-medium">{item.label}</span>
                         </button>
                     );
                 })}
-            </nav>
-
-            {/* Footer Sidebar - Shortcut to Live Storefront (FASA 5 teaser) */}
-            <div className="absolute bottom-8 left-4 right-4">
-                <a
-                    href="/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-between p-3 bg-slate-800/50 rounded-2xl border border-slate-700 hover:border-blue-500/50 transition-all group"
-                >
-                    <div className="flex flex-col">
-                        <span className="text-[10px] text-slate-500">Your Storefront</span>
-                        <span className="text-xs font-medium text-white group-hover:text-blue-400 transition-colors">View Live</span>
-                    </div>
-                    <ExternalLink className="w-4 h-4 text-slate-500 group-hover:text-blue-400" />
-                </a>
             </div>
-        </aside>
+
+            {/* 3. LOGOUT AREA */}
+            <div className="p-4 border-t border-slate-800">
+                <button
+                    onClick={onLogout}
+                    className="w-full flex items-center gap-2 px-4 py-2 text-red-400 hover:bg-slate-800 hover:text-red-300 rounded-lg transition-colors"
+                >
+                    <LogOut size={18} />
+                    <span>Exit Admin</span>
+                </button>
+            </div>
+        </div>
     );
 }

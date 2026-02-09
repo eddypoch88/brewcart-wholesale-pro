@@ -1,13 +1,15 @@
 import { StoreConfig } from '../shared/shared-types';
 
 export const storeConfig: StoreConfig = {
-    shopId: 'store-001',
-    storeName: 'My Store',
-    logoUrl: '', // Leave empty to test fallback initially, or user can set
-    primaryColor: '#4f46e5',
-    secondaryColor: '#6366f1',
-    heroTitle: 'Welcome to our Store',
-    heroSubtitle: 'The best products delivered to you.',
-    currency: '$',
-    contactNumber: '+1 234 567 890'
+    id: 1,
+    store_name: 'BrewCart Pro',
+    whatsapp_number: '+60123456789',
+    bank_name: null,
+    bank_account_no: null,
+    bank_holder_name: null,
+    qr_code_url: null,
+    fb_pixel_id: null,
+    google_ads_id: null,
+    theme_color: '#000000',
+    updated_at: new Date().toISOString()
 };

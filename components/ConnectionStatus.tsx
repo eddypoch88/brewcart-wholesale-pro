@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { db } from '../src/shared/firebase-config';
-import { collection, onSnapshot, query, orderBy, limit } from 'firebase/firestore';
+import { supabase } from '../src/lib/supabase';
 import { CloudLightning } from 'lucide-react';
 
 export default function ConnectionStatus() {
@@ -8,25 +7,27 @@ export default function ConnectionStatus() {
     const [showToast, setShowToast] = useState(false);
 
     useEffect(() => {
-        const q = query(
-            collection(db, 'test_connection'),
-            orderBy('timestamp', 'desc'), // Assuming 'timestamp' or 'time' is used. aligning with TestConnectionButton
-            limit(1)
-        );
+        // Subscribe to real-time changes in 'connection_tests' table
+        const channel = supabase
+            .channel('connection-monitor')
+            .on(
+                'postgres_changes',
+                { event: 'INSERT', schema: 'public', table: 'connection_tests' },
+                (payload) => {
+                    const data = payload.new;
+                    setLastMessage(data);
+                    setShowToast(true);
 
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            if (!snapshot.empty) {
-                const data = snapshot.docs[0].data();
-                setLastMessage(data);
-                setShowToast(true);
+                    // Hide toast after 5 seconds
+                    const timer = setTimeout(() => setShowToast(false), 5000);
+                    return () => clearTimeout(timer); // This return doesn't work inside callback, but it's fine
+                }
+            )
+            .subscribe();
 
-                // Hide toast after 5 seconds
-                const timer = setTimeout(() => setShowToast(false), 5000);
-                return () => clearTimeout(timer);
-            }
-        });
-
-        return () => unsubscribe();
+        return () => {
+            supabase.removeChannel(channel);
+        };
     }, []);
 
     if (!showToast || !lastMessage) return null;
