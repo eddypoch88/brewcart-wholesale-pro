@@ -8,11 +8,17 @@ import AdminProductPage from "./src/components/admin/AdminProductPage";
 
 export default function App() {
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <div className="flex min-h-screen bg-slate-100">
       <Toaster position="top-center" reverseOrder={false} />
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <Sidebar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+      />
 
       <div className="flex-1 md:ml-64 p-4 md:p-8 pt-20 md:pt-8 w-full">
         {activeTab === "dashboard" && <Dashboard />}
