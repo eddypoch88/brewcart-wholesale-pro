@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ShoppingBag, X } from 'lucide-react';
+import { ShoppingBag, X, Menu } from 'lucide-react';
 import { ProductService } from './src/services/product.service';
 import { supabase } from './src/lib/supabase';
 import { Product } from './src/types';
@@ -12,11 +12,13 @@ import Dashboard from './src/components/Dashboard';
 import Sidebar from './src/components/Sidebar';
 import OrderList from './src/components/OrderList';
 import Settings from './src/components/Settings';
+import AdminProductPage from './src/components/admin/AdminProductPage';
 
 export default function App() {
   // STATES
   const [viewMode, setViewMode] = useState<'shop' | 'admin'>('shop');
   const [adminTab, setAdminTab] = useState('dashboard');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -179,33 +181,50 @@ export default function App() {
 
       {/* --- LOGIC VIEW: ADMIN vs SHOP --- */}
       {viewMode === 'admin' ? (
-        <div className="flex min-h-screen bg-slate-100">
-          <Sidebar activeTab={adminTab} setActiveTab={setAdminTab} onLogout={() => setViewMode('shop')} storeName={storeName} />
-          <div className="flex-1 ml-64 p-8 overflow-y-auto h-screen">
-            {adminTab === 'dashboard' && <div className="animate-fade-in"><Dashboard /></div>}
+        <div className="flex min-h-screen bg-slate-100 relative">
 
-            {adminTab === 'products' && (
-              <div className="space-y-6 animate-fade-in">
-                <div className="flex justify-between items-center">
-                  <h1 className="text-2xl font-bold">Product Management</h1>
-                  <button onClick={() => setIsEditing(true)} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 shadow-md transition">+ Add Product</button>
-                </div>
-                {isEditing ? (
-                  <div className="bg-white p-6 rounded-xl shadow-sm">
-                    <ProductForm onSuccess={() => { setIsEditing(false); loadProducts(); }} onCancel={() => setIsEditing(false)} />
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {products.map(p => (
-                      <ProductCard key={p.id} product={p} isAdmin={true} onAddToCart={() => { }} onEdit={() => setIsEditing(true)} onDelete={handleDeleteProduct} />
-                    ))}
-                  </div>
-                )}
+          {/* OVERLAY */}
+          {isSidebarOpen && (
+            <div
+              className="fixed inset-0 bg-black/50 z-40 md:hidden animate-in fade-in"
+              onClick={() => setIsSidebarOpen(false)}
+            />
+          )}
+
+          {/* SIDEBAR */}
+          <div className={`fixed inset-y-0 w-64 bg-white z-50 transition-all duration-300 md:left-0 shadow-xl md:shadow-none ${isSidebarOpen ? 'left-0' : '-left-64'}`}>
+            <Sidebar activeTab={adminTab} setActiveTab={(tab) => { setAdminTab(tab); setIsSidebarOpen(false); }} onLogout={() => setViewMode('shop')} storeName={storeName} />
+          </div>
+
+          {/* MAIN CONTENT */}
+          <div className="flex-1 ml-0 md:ml-64 w-full h-screen flex flex-col">
+
+            {/* MOBILE HEADER */}
+            <div className="h-14 md:hidden flex items-center px-4 bg-white shadow-sm border-b shrink-0 sticky top-0 z-30 justify-between">
+              <div className="flex items-center gap-3">
+                <button onClick={() => setIsSidebarOpen(true)} className="p-2 hover:bg-slate-100 rounded-lg">
+                  <Menu size={24} className="text-slate-600" />
+                </button>
+                <span className="font-bold text-lg">{storeName}</span>
               </div>
-            )}
+            </div>
 
-            {adminTab === 'orders' && <div className="animate-fade-in"><OrderList /></div>}
-            {adminTab === 'settings' && <div className="animate-fade-in"><Settings /></div>}
+            <div className="flex-1 p-4 md:p-8 overflow-y-auto w-full">
+              {adminTab === 'dashboard' && <div className="animate-fade-in"><Dashboard /></div>}
+
+              {adminTab === 'products' && (
+                <AdminProductPage
+                  products={products}
+                  isEditing={isEditing}
+                  setIsEditing={setIsEditing}
+                  loadProducts={loadProducts}
+                  handleDeleteProduct={handleDeleteProduct}
+                />
+              )}
+
+              {adminTab === 'orders' && <div className="animate-fade-in"><OrderList /></div>}
+              {adminTab === 'settings' && <div className="animate-fade-in"><Settings /></div>}
+            </div>
           </div>
         </div>
       ) : (
