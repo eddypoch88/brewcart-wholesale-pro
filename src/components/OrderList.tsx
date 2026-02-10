@@ -1,39 +1,128 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
-import { Calendar, Phone, User, ShoppingBag, ChevronDown, ChevronUp, Clock } from 'lucide-react';
+import { Calendar, Phone, User, ShoppingBag, ChevronDown, ChevronUp, Clock, Search, Loader2 } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
+import { OrderService } from '../services/order.service';
+import { Order } from '../types';
+import toast from 'react-hot-toast';
+import { supabase } from '../lib/supabase';
+import OrderStatusDropdown from './ui/OrderStatusDropdown';
 
 export default function OrderList() {
     const { store } = useStore();
-    const [orders, setOrders] = useState<any[]>([]);
+    const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
     const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+    const [statusFilter, setStatusFilter] = useState<Order['status'] | 'all'>('all');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
 
-    // 1. TARIK DATA ORDER DARI SUPABASE
+    // 1. TARIK DATA ORDER DARI SUPABASE (USING SERVICE)
     useEffect(() => {
         if (store) fetchOrders();
-    }, [store]);
+    }, [store, statusFilter]);
 
     const fetchOrders = async () => {
         if (!store) return;
         setLoading(true);
-        const { data, error } = await supabase
-            .from('orders')
-            .select('*')
-            .eq('store_id', store.id) // 🔥 Filter by store
-            .order('created_at', { ascending: false }); // Paling baru di atas
+        try {
+            const { data, error } = statusFilter === 'all'
+                ? await OrderService.getAll(store.id)
+                : await OrderService.getByStatus(store.id, statusFilter);
 
-        if (error) console.error('Error fetching orders:', error);
-        else setOrders(data || []);
-        setLoading(false);
+            if (error) throw error;
+            setOrders(data || []);
+        } catch (error: any) {
+            console.error('Error fetching orders:', error);
+            toast.error('Failed to load orders');
+        } finally {
+            setLoading(false);
+        }
     };
 
-    // 2. TOGGLE (BUKA/TUTUP) DETAIL ORDER
+    // 2. SEARCH HANDLER
+    const handleSearch = async () => {
+        if (!store || !searchQuery.trim()) {
+            fetchOrders();
+            return;
+        }
+        setLoading(true);
+        try {
+            const { data, error } = await OrderService.search(store.id, searchQuery);
+            if (error) throw error;
+            setOrders(data || []);
+        } catch (error: any) {
+            toast.error('Search failed');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // 3. STATUS UPDATE HANDLER
+    const handleStatusChange = async (orderId: string, newStatus: Order['status']) => {
+        if (!store) return;
+        setUpdatingOrderId(orderId);
+
+        // Optimistic UI update
+        const previousOrders = [...orders];
+        setOrders(orders.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
+
+        try {
+            const { error } = await OrderService.updateStatus(orderId, store.id, newStatus);
+            if (error) throw error;
+            toast.success(`Order status updated to ${newStatus}`);
+        } catch (error: any) {
+            // Rollback on error
+            setOrders(previousOrders);
+            toast.error('Failed to update status');
+        } finally {
+            setUpdatingOrderId(null);
+        }
+    };
+
+    // 4. REAL-TIME ORDER UPDATES
+    useEffect(() => {
+        if (!store) return;
+
+        const subscription = supabase
+            .channel(`orders:${store.id}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'orders',
+                    filter: `store_id=eq.${store.id}`
+                },
+                (payload) => {
+                    toast.success('🎉 New order received!');
+                    setOrders(prev => [payload.new as Order, ...prev]);
+                }
+            )
+            .on(
+                'postgres_changes',
+                {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'orders',
+                    filter: `store_id=eq.${store.id}`
+                },
+                (payload) => {
+                    setOrders(prev => prev.map(o => o.id === payload.new.id ? payload.new as Order : o));
+                }
+            )
+            .subscribe();
+
+        return () => {
+            subscription.unsubscribe();
+        };
+    }, [store]);
+
+    // 4. TOGGLE (BUKA/TUTUP) DETAIL ORDER
     const toggleExpand = (id: string) => {
         setExpandedOrderId(expandedOrderId === id ? null : id);
     };
 
-    // 3. FORMAT TARIKH (BIAR CANTIK)
+    // 5. FORMAT TARIKH (BIAR CANTIK)
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('en-MY', {
             day: '2-digit', month: 'short', year: 'numeric',
@@ -41,18 +130,64 @@ export default function OrderList() {
         });
     };
 
+    // 6. FILTER ORDERS BY SEARCH QUERY (CLIENT-SIDE)
+    const filteredOrders = searchQuery.trim()
+        ? orders.filter(order =>
+            order.customer_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            order.customer_phone?.includes(searchQuery)
+        )
+        : orders;
+
     if (loading) return <div className="p-10 text-center animate-pulse text-slate-400">Loading Orders...</div>;
+
+    const statusTabs: Array<{ label: string; value: Order['status'] | 'all'; count?: number }> = [
+        { label: 'All', value: 'all' },
+        { label: 'Pending', value: 'pending' },
+        { label: 'Processing', value: 'processing' },
+        { label: 'Shipped', value: 'shipped' },
+        { label: 'Delivered', value: 'delivered' },
+    ];
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-slate-800">Order History</h2>
-                <span className="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full">
-                    {orders.length} Orders
-                </span>
+            {/* HEADER WITH SEARCH */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h2 className="text-2xl font-bold text-slate-800">Order History</h2>
+                    <span className="text-sm text-slate-500">{filteredOrders.length} orders</span>
+                </div>
+
+                {/* SEARCH BAR */}
+                <div className="relative w-full md:w-64">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                    <input
+                        type="text"
+                        placeholder="Search by name or phone..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                        className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                    />
+                </div>
             </div>
 
-            {orders.length === 0 ? (
+            {/* STATUS FILTER TABS */}
+            <div className="flex gap-2 overflow-x-auto pb-2 hide-scrollbar">
+                {statusTabs.map(tab => (
+                    <button
+                        key={tab.value}
+                        onClick={() => setStatusFilter(tab.value)}
+                        className={`px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap transition-colors ${statusFilter === tab.value
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
+                            }`}
+                    >
+                        {tab.label}
+                    </button>
+                ))}
+            </div>
+
+            {filteredOrders.length === 0 ? (
                 <div className="bg-white p-12 rounded-xl border border-dashed border-slate-300 text-center">
                     <ShoppingBag className="w-12 h-12 text-slate-300 mx-auto mb-4" />
                     <p className="text-slate-500">Belum ada order masuk bosku. Rilek lu.</p>
@@ -87,11 +222,13 @@ export default function OrderList() {
                                         <p className="font-bold text-lg text-emerald-600">RM {Number(order.total_amount).toFixed(2)}</p>
                                     </div>
 
-                                    {/* Status Badge */}
-                                    <span className={`px-3 py-1 rounded-full text-xs font-bold capitalize ${order.status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
-                                        }`}>
-                                        {order.status}
-                                    </span>
+                                    {/* Status Dropdown */}
+                                    <OrderStatusDropdown
+                                        currentStatus={order.status}
+                                        orderId={order.id}
+                                        onStatusChange={handleStatusChange}
+                                        isUpdating={updatingOrderId === order.id}
+                                    />
 
                                     {expandedOrderId === order.id ? <ChevronUp size={20} className="text-slate-400" /> : <ChevronDown size={20} className="text-slate-400" />}
                                 </div>

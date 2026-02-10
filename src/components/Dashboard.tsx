@@ -2,25 +2,31 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase'; // Kita guna direct connection utk order
 import { ProductService } from '../services/product.service'; // Guna otak yang kita dah buat
 import { Package, ShoppingBag, DollarSign, TrendingUp, Calendar } from 'lucide-react';
+import { useStore } from '../context/StoreContext';
+import Skeleton, { SkeletonCard } from '../components/ui/Skeleton';
 
 export default function Dashboard() {
+    const { store } = useStore();
     const [orders, setOrders] = useState<any[]>([]);
     const [products, setProducts] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     // LOAD DATA
     useEffect(() => {
+        if (!store) return;
+
         async function loadData() {
             setLoading(true);
 
-            // 1. Ambil Produk guna Service
-            const { data: prodData } = await ProductService.getAll();
+            // 1. Ambil Produk guna Service (FIXED: Pass store.id)
+            const { data: prodData } = await ProductService.getAll(store!.id);
             if (prodData) setProducts(prodData);
 
-            // 2. Ambil Order (Kita buat manual sini sebab Service Order belum ada)
+            // 2. Ambil Order (FIXED: Filter by store_id)
             const { data: orderData } = await supabase
                 .from('orders')
                 .select('*')
+                .eq('store_id', store!.id)
                 .order('created_at', { ascending: false });
 
             if (orderData) setOrders(orderData);
@@ -28,7 +34,7 @@ export default function Dashboard() {
             setLoading(false);
         }
         loadData();
-    }, []);
+    }, [store]);
 
     // SAFETY CHECK (Airbag)
     const safeOrders = orders || [];
@@ -42,7 +48,7 @@ export default function Dashboard() {
         <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-start justify-between">
             <div>
                 <p className="text-sm font-medium text-slate-500 mb-1">{title}</p>
-                <h3 className="text-2xl font-bold text-slate-900">{loading ? '...' : value}</h3>
+                <h3 className="text-2xl font-bold text-slate-900">{loading ? <Skeleton width="100px" height="32px" /> : value}</h3>
             </div>
             <div className={`p-3 rounded-lg ${color} text-white`}>
                 <Icon size={24} />
@@ -68,7 +74,17 @@ export default function Dashboard() {
                 </h3>
 
                 {loading ? (
-                    <div className="animate-pulse h-20 bg-slate-50 rounded"></div>
+                    <div className="space-y-3">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                            <div key={i} className="flex justify-between items-center py-3">
+                                <div className="space-y-2">
+                                    <Skeleton width="120px" height="16px" />
+                                    <Skeleton width="80px" height="12px" />
+                                </div>
+                                <Skeleton width="80px" height="20px" />
+                            </div>
+                        ))}
+                    </div>
                 ) : safeOrders.length === 0 ? (
                     <div className="text-center py-8 text-slate-400">Tiada order lagi.</div>
                 ) : (

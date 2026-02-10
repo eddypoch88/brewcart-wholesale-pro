@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Upload, X, Loader2, Save } from 'lucide-react';
 import { ProductService } from '../services/product.service';
 import { Product } from '../types';
+import { useStore } from '../context/StoreContext';
+import toast from 'react-hot-toast';
 
 interface ProductFormProps {
     onSuccess: () => void;
@@ -10,6 +12,7 @@ interface ProductFormProps {
 }
 
 export default function ProductForm({ onSuccess, onCancel, initialData }: ProductFormProps) {
+    const { store } = useStore();
     const [loading, setLoading] = useState(false);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -49,18 +52,23 @@ export default function ProductForm({ onSuccess, onCancel, initialData }: Produc
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!store) {
+            toast.error('Store not loaded. Please refresh the page.');
+            return;
+        }
+
         setLoading(true);
 
         try {
-            // New Service Logic: Save handling both Create/Update and Image Upload
-            const { error } = await ProductService.save(formData, selectedFile || undefined); // Pass undefined if null
+            // FIXED: Pass store.id to ProductService.save()
+            const { error } = await ProductService.save(formData, store.id, selectedFile || undefined);
 
             if (error) throw error;
 
-            alert("✅ Produk berjaya disimpan!");
+            toast.success("✅ Product saved successfully!");
             onSuccess();
         } catch (err: any) {
-            alert(`Error: ${err.message || err}`);
+            toast.error(`Error: ${err.message || err}`);
         } finally {
             setLoading(false);
         }
