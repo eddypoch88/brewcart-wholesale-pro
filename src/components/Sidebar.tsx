@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Menu, X, LayoutDashboard, Package, ShoppingBag, Settings } from "lucide-react";
+import { Menu, X, LayoutDashboard, Package, ShoppingBag, Settings, ExternalLink } from "lucide-react";
 import { useStore } from "../context/StoreContext";
 
 export default function Sidebar({
@@ -67,6 +67,21 @@ export default function Sidebar({
                     {navItem("orders", "Orders", ShoppingBag)}
                     {navItem("settings", "Settings", Settings)}
                 </div>
+
+                {/* VIEW STORE BUTTON */}
+                {store?.domain && (
+                    <div className="mt-auto px-4 py-4 border-t border-slate-800">
+                        <a
+                            href="https://heaven-brew-store.vercel.app"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-400 transition-all hover:text-white hover:bg-slate-800"
+                        >
+                            <ExternalLink className="h-4 w-4" />
+                            <span>View Store</span>
+                        </a>
+                    </div>
+                )}
 
                 <div className="p-4 border-t border-slate-800 text-xs text-slate-500 text-center">
                     &copy; {new Date().getFullYear()} BrewCart Engine

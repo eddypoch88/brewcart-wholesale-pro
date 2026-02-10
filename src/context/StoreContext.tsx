@@ -24,11 +24,15 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
                 const hostname = window.location.hostname;
                 let domainToCheck = hostname;
 
-                // Localhost Check (For Development)
-                if (hostname === 'localhost' || hostname === '127.0.0.1') {
-                    // Default to the first store found or a specific dev store
-                    // For now, let's try to find a store with domain 'localhost' or just pick the first one
-                    domainToCheck = 'localhost';
+                // --- ADMIN MODE OVERRIDE ---
+                // If we are on the Admin URL (or localhost), we force the context to load the specific store.
+                // This prevents "Store Not Found" when the Admin URL doesn't match the Store's public domain.
+                const ADMIN_DOMAINS = ['brewcart-wholesale-pro.vercel.app', 'localhost', '127.0.0.1'];
+                const TARGET_STORE_DOMAIN = 'heaven-brew-store.vercel.app';
+
+                if (ADMIN_DOMAINS.includes(hostname)) {
+                    console.log(`🔧 ADMIN MODE: Overriding domain '${hostname}' to '${TARGET_STORE_DOMAIN}'`);
+                    domainToCheck = TARGET_STORE_DOMAIN;
                 }
 
                 console.log('Detecting store for domain:', domainToCheck);
