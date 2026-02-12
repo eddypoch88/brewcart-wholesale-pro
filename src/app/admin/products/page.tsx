@@ -2,6 +2,7 @@ import React from 'react';
 import { useSupabaseCollection } from '@/src/hooks/useSupabase';
 import { Package, Plus, Edit, Trash2 } from 'lucide-react';
 import { supabase } from '@/src/lib/supabase';
+import { useStore } from '@/src/context/StoreContext';
 
 // Mock Link for Vite environment (replacing Next.js Link)
 const Link = ({ href, children, className }: { href: string, children: React.ReactNode, className?: string }) => (
@@ -11,7 +12,10 @@ const Link = ({ href, children, className }: { href: string, children: React.Rea
 );
 
 export default function ProductsPage() {
-    const { data: products, loading } = useSupabaseCollection('products');
+    const { store } = useStore(); // 🔥 Get current store
+    const { data: products, loading } = useSupabaseCollection('products', {
+        storeId: store?.id // 🔥 Filter products by store
+    });
 
     const handleDelete = async (id: string) => {
         if (confirm('Are you sure you want to delete this product?')) {

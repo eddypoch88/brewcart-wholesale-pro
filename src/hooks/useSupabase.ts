@@ -2,7 +2,14 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { PostgrestError } from '@supabase/supabase-js';
 
-export const useSupabaseCollection = <T = any>(tableName: string, options?: { orderBy?: string, ascending?: boolean }) => {
+export const useSupabaseCollection = <T = any>(
+    tableName: string,
+    options?: {
+        orderBy?: string,
+        ascending?: boolean,
+        storeId?: string // 🔥 NEW: Add store filtering
+    }
+) => {
     const [data, setData] = useState<T[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<PostgrestError | null>(null);
@@ -11,6 +18,11 @@ export const useSupabaseCollection = <T = any>(tableName: string, options?: { or
         const fetchData = async () => {
             setLoading(true);
             let query = supabase.from(tableName).select('*');
+
+            // 🔥 NEW: Filter by store_id if provided
+            if (options?.storeId) {
+                query = query.eq('store_id', options.storeId);
+            }
 
             if (options?.orderBy) {
                 query = query.order(options.orderBy, { ascending: options.ascending ?? false });
@@ -53,7 +65,7 @@ export const useSupabaseCollection = <T = any>(tableName: string, options?: { or
         return () => {
             supabase.removeChannel(channel);
         };
-    }, [tableName, options?.orderBy, options?.ascending]);
+    }, [tableName, options?.orderBy, options?.ascending, options?.storeId]); // 🔥 Added storeId to deps
 
     return { data, loading, error };
 };

@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { supabase } from '@/src/lib/supabase';
+import { useStore } from '@/src/context/StoreContext';
 
 export default function ProductUploadForm() {
+    const { store } = useStore(); // Get store context
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({ name: '', price: '', description: '' });
     const [imageBase64, setImageBase64] = useState<string | null>(null); // Kita simpan gambar sebagai text
@@ -34,6 +36,12 @@ export default function ProductUploadForm() {
             // Terus simpan ke Supabase
             const imageUrl = imageBase64 || "https://via.placeholder.com/150";
 
+            // 🔥 FIX: Make sure store_id is included!
+            if (!store?.id) {
+                alert("❌ Store not found! Cannot add product.");
+                return;
+            }
+
             const { error } = await supabase
                 .from('products')
                 .insert([
@@ -42,7 +50,8 @@ export default function ProductUploadForm() {
                         price: Number(formData.price),
                         images: [imageUrl], // Compatible array format
                         description: formData.description,
-                        is_active: true
+                        is_active: true,
+                        store_id: store.id // 🔥 CRITICAL FIX: Link product to store
                     }
                 ]);
 

@@ -2,10 +2,16 @@ import React from 'react';
 import { useSupabaseCollection } from '@/src/hooks/useSupabase';
 import { Package, ShoppingBag, DollarSign, TrendingUp } from 'lucide-react';
 import TestConnectionButton from '../../components/admin/TestConnectionButton';
+import { useStore } from '@/src/context/StoreContext';
 
 export default function DashboardPage() {
-    const { data: orders, loading: ordersLoading } = useSupabaseCollection('orders');
-    const { data: products, loading: productsLoading } = useSupabaseCollection('products');
+    const { store } = useStore(); // 🔥 Get current store
+    const { data: orders, loading: ordersLoading } = useSupabaseCollection('orders', {
+        storeId: store?.id // 🔥 Filter by store
+    });
+    const { data: products, loading: productsLoading } = useSupabaseCollection('products', {
+        storeId: store?.id // 🔥 Filter by store
+    });
 
     // Calculate Revenue
     const totalRevenue = orders.reduce((sum, order) => sum + (order.total_amount || 0), 0);
