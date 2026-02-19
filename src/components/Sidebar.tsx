@@ -1,4 +1,5 @@
 import { Menu, X, LayoutDashboard, Package, ShoppingBag, Settings, ExternalLink, TrendingUp } from "lucide-react";
+import { useCallback } from "react";
 import { useStore } from "../context/StoreContext";
 
 export default function Sidebar({
@@ -15,11 +16,18 @@ export default function Sidebar({
     const { settings } = useStore();
     const storeName = settings.store_name || "BrewCart Pro";
 
+    // Close sidebar on mobile after any menu click (deferred so animation isn't swallowed by re-render)
+    const closeSidebarOnMobile = useCallback(() => {
+        if (window.innerWidth < 768) {
+            setTimeout(() => setSidebarOpen(false), 150);
+        }
+    }, [setSidebarOpen]);
+
     const navItem = (key: string, label: string, Icon: any) => (
         <button
             onClick={() => {
                 setActiveTab(key);
-                setSidebarOpen(false);
+                closeSidebarOnMobile();
             }}
             className={`w-full text-left px-4 py-3 rounded-lg transition flex items-center gap-3
         ${activeTab === key ? "bg-blue-600 text-white" : "text-slate-400 hover:bg-slate-800 hover:text-white"}`}
@@ -51,9 +59,9 @@ export default function Sidebar({
                 />
             )}
 
-            {/* SIDEBAR */}
+            {/* SIDEBAR — z-[60] so it sits above the overlay (z-50) and clicks aren't intercepted */}
             <aside
-                className={`fixed top-0 left-0 h-screen w-64 bg-slate-900 text-white p-6 z-50 transition-transform duration-300 md:translate-x-0
+                className={`fixed top-0 left-0 h-screen w-64 bg-slate-900 text-white p-6 z-[60] transition-transform duration-300 md:translate-x-0
                     ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
             >
                 {/* Logo / Store Name */}
@@ -76,6 +84,7 @@ export default function Sidebar({
                     {navItem("settings", "Settings", Settings)}
                     <a
                         href="/"
+                        onClick={closeSidebarOnMobile}
                         className="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 rounded-lg transition-colors"
                     >
                         <ExternalLink size={20} />
