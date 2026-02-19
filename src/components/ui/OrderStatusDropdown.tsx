@@ -9,36 +9,31 @@ interface OrderStatusDropdownProps {
     isUpdating: boolean;
 }
 
-const statusConfig: Record<Order['status'], { label: string; bgColor: string; textColor: string; borderColor: string }> = {
+const statusConfig: Record<Order['status'], { label: string; bgColor: string; textColor: string }> = {
     pending: {
         label: 'Pending',
-        bgColor: 'bg-yellow-50',
+        bgColor: 'bg-yellow-100',
         textColor: 'text-yellow-700',
-        borderColor: 'border-yellow-200'
     },
     processing: {
         label: 'Processing',
-        bgColor: 'bg-blue-50',
+        bgColor: 'bg-blue-100',
         textColor: 'text-blue-700',
-        borderColor: 'border-blue-200'
     },
     shipped: {
         label: 'Shipped',
-        bgColor: 'bg-purple-50',
+        bgColor: 'bg-purple-100',
         textColor: 'text-purple-700',
-        borderColor: 'border-purple-200'
     },
     delivered: {
         label: 'Delivered',
-        bgColor: 'bg-green-50',
+        bgColor: 'bg-green-100',
         textColor: 'text-green-700',
-        borderColor: 'border-green-200'
     },
     cancelled: {
         label: 'Cancelled',
-        bgColor: 'bg-red-50',
+        bgColor: 'bg-red-100',
         textColor: 'text-red-700',
-        borderColor: 'border-red-200'
     }
 };
 
@@ -57,12 +52,12 @@ export default function OrderStatusDropdown({
                 onChange={(e) => onStatusChange(orderId, e.target.value as Order['status'])}
                 disabled={isUpdating}
                 className={`
-          px-3 py-1.5 pr-8 rounded-lg text-xs font-semibold capitalize
-          border-2 ${config.borderColor} ${config.bgColor} ${config.textColor}
+          px-3 py-1.5 pr-7 rounded-xl text-sm font-medium capitalize
+          ${config.bgColor} ${config.textColor}
           cursor-pointer hover:opacity-80 transition-opacity
           disabled:opacity-50 disabled:cursor-not-allowed
           focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500
-          appearance-none
+          appearance-none border-0
         `}
             >
                 <option value="pending">⏳ Pending</option>

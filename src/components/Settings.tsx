@@ -488,26 +488,26 @@ export default function Settings() {
                 <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isOperatingHoursExpanded ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0'}`}>
                     <div className="p-6 pt-0 space-y-3 border-t border-slate-100">
                         {(['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const).map((day) => (
-                            <div key={day} className="flex items-center gap-4 pb-3 border-b border-slate-100 last:border-0 last:pb-0">
-                                <div className="w-24 font-medium text-slate-700 capitalize">{day}</div>
-                                <div className="flex items-center gap-3 flex-1">
+                            <div key={day} className="flex items-center gap-2 pb-3 border-b border-slate-100 last:border-0 last:pb-0 overflow-hidden">
+                                <div className="w-16 md:w-24 flex-shrink-0 font-medium text-sm text-slate-700 capitalize truncate">{day.slice(0, 3)}</div>
+                                <div className="flex items-center gap-1.5 flex-1 min-w-0">
                                     <input
                                         type="time"
                                         value={settings.operating_hours[day].open}
                                         onChange={(e) => updateOperatingHours(day, 'open', e.target.value)}
                                         disabled={settings.operating_hours[day].closed}
-                                        className="border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none disabled:bg-slate-100"
+                                        className="flex-1 min-w-0 border border-slate-300 rounded-lg px-2 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none disabled:bg-slate-100"
                                     />
-                                    <span className="text-slate-500">to</span>
+                                    <span className="text-slate-400 text-xs flex-shrink-0">to</span>
                                     <input
                                         type="time"
                                         value={settings.operating_hours[day].close}
                                         onChange={(e) => updateOperatingHours(day, 'close', e.target.value)}
                                         disabled={settings.operating_hours[day].closed}
-                                        className="border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none disabled:bg-slate-100"
+                                        className="flex-1 min-w-0 border border-slate-300 rounded-lg px-2 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none disabled:bg-slate-100"
                                     />
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-1 flex-shrink-0">
                                     <input
                                         type="checkbox"
                                         id={`closed-${day}`}
@@ -515,8 +515,8 @@ export default function Settings() {
                                         onChange={(e) => updateOperatingHours(day, 'closed', e.target.checked)}
                                         className="w-4 h-4 rounded border-slate-300 text-red-600 focus:ring-red-500"
                                     />
-                                    <label htmlFor={`closed-${day}`} className="text-sm text-slate-600 cursor-pointer">
-                                        Closed
+                                    <label htmlFor={`closed-${day}`} className="text-xs text-slate-500 cursor-pointer">
+                                        Off
                                     </label>
                                 </div>
                             </div>
@@ -549,11 +549,11 @@ export default function Settings() {
             </div>
 
             {/* SAVE BUTTON */}
-            <div className="sticky bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 -mx-6 -mb-8 mt-6 z-10">
+            <div className="sticky bottom-0 bg-white border-t p-4 shadow-[0_-2px_10px_rgba(0,0,0,0.05)] -mx-6 -mb-8 mt-6 z-10">
                 <button
                     onClick={handleSave}
                     disabled={saveLoading}
-                    className="w-full bg-blue-600 text-white py-3 rounded-lg text-base font-semibold flex items-center justify-center gap-2 hover:bg-blue-700 disabled:opacity-50 transition-all"
+                    className="w-full bg-blue-600 text-white rounded-2xl py-3 font-semibold flex items-center justify-center gap-2 hover:bg-blue-700 disabled:opacity-50 transition-all"
                 >
                     {saveLoading ? (
                         <>

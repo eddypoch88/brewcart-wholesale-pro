@@ -393,50 +393,42 @@ export default function OrderList() {
                 ) : (
                     <div className="space-y-2">
                         {filteredOrders.map((order) => (
-                            <div key={order.id} className={`bg-white border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow ${selectedOrderIds.has(order.id) ? 'border-blue-500 ring-1 ring-blue-500' : 'border-slate-200'}`}>
+                            <div key={order.id} className={`bg-white rounded-2xl shadow-sm overflow-hidden ${selectedOrderIds.has(order.id) ? 'ring-2 ring-blue-500' : ''}`}>
 
-                                {/* HEADER */}
+                                {/* CARD HEADER */}
                                 <div
-                                    className="p-3 flex flex-col md:flex-row justify-between cursor-pointer hover:bg-slate-50/50 transition-colors"
+                                    className="p-4 cursor-pointer"
                                     onClick={() => toggleExpand(order.id)}
                                 >
-                                    <div className="flex gap-2.5 items-center w-full md:w-auto mb-2 md:mb-0">
-                                        <div
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                toggleSelectOrder(order.id);
-                                            }}
-                                            className="cursor-pointer flex-shrink-0"
-                                        >
-                                            {selectedOrderIds.has(order.id) ? (
-                                                <CheckSquare size={16} className="text-blue-600" />
-                                            ) : (
-                                                <Square size={16} className="text-slate-300" />
-                                            )}
+                                    <div className="flex items-start gap-3">
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedOrderIds.has(order.id)}
+                                            onChange={() => toggleSelectOrder(order.id)}
+                                            onClick={(e) => e.stopPropagation()}
+                                            className="mt-1 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                        />
+                                        <div className="flex-1 min-w-0">
+                                            <p className="font-semibold text-gray-900 text-base truncate">{order.customer_name}</p>
+                                            <p className="text-sm text-gray-500">{formatDate(order.created_at)}</p>
                                         </div>
-                                        <div className="min-w-0">
-                                            <h3 className="text-base font-semibold text-slate-900 leading-tight truncate">{order.customer_name}</h3>
-                                            <p className="text-xs text-slate-400 mt-0.5 flex items-center gap-1">
-                                                <Clock size={10} /> {formatDate(order.created_at)}
-                                            </p>
-                                        </div>
+                                        {expandedOrderIds.has(order.id) ? <ChevronUp size={16} className="text-gray-400 mt-1" /> : <ChevronDown size={16} className="text-gray-400 mt-1" />}
                                     </div>
 
-                                    <div className="flex items-center gap-2 w-full md:w-auto justify-between">
-                                        <div>
-                                            <p className="text-[10px] uppercase tracking-wide text-slate-400">Total</p>
-                                            <p className="text-xl font-bold text-emerald-600 leading-none">
-                                                RM {(Number(order.total) || 0).toFixed(2)}
-                                            </p>
-                                        </div>
-                                        <div className="flex items-center gap-1.5">
+                                    <div className="my-3 border-t border-gray-100"></div>
+
+                                    <div className="flex items-center justify-between">
+                                        <p className="text-2xl font-bold text-emerald-600 tracking-tight">
+                                            RM {(Number(order.total) || 0).toFixed(2)}
+                                        </p>
+                                        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     handlePrint(order);
                                                 }}
-                                                className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
-                                                title="Print Receipt"
+                                                className="p-1.5 text-gray-400 hover:text-blue-600 rounded-lg transition-colors"
+                                                title="Print"
                                             >
                                                 <Printer size={14} />
                                             </button>
@@ -446,7 +438,6 @@ export default function OrderList() {
                                                 onStatusChange={handleStatusChange}
                                                 isUpdating={updatingOrderId === order.id}
                                             />
-                                            {expandedOrderIds.has(order.id) ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
                                         </div>
                                     </div>
                                 </div>
