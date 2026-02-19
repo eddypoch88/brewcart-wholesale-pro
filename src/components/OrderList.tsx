@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Calendar, Phone, User, ShoppingBag, ChevronDown, ChevronUp, Clock, Search, Download, Printer, MapPin, CreditCard, FileText, Save, Trash2, CheckSquare, Square, Image, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { Calendar, Phone, User, ShoppingBag, ChevronDown, ChevronUp, Clock, Search, Download, Printer, MapPin, CreditCard, FileText, Save, Trash2, CheckSquare, Square, Image, CheckCircle, AlertCircle, Loader2, X } from 'lucide-react';
 import { getOrders, updateOrderStatus, updateOrderNotes, getSettings, deleteOrders, updatePaymentStatus } from '../lib/storage';
 import { Order } from '../types';
 import { DEFAULT_SETTINGS } from '../data/mockData';
@@ -336,50 +336,54 @@ export default function OrderList() {
                 </div>
 
                 {/* DATE RANGE FILTER & SELECT ALL */}
-                <div className="flex flex-col md:flex-row gap-3 justify-between items-start md:items-center bg-white p-3 rounded-lg border border-slate-200">
-                    <div className="flex items-center gap-3">
-                        <button
-                            onClick={() => handleSelectAll(filteredIds)}
-                            className="flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-slate-900 transition-colors"
-                        >
-                            {isAllSelected ? (
-                                <CheckSquare size={18} className="text-blue-600" />
-                            ) : (
-                                <Square size={18} className="text-slate-400" />
-                            )}
-                            Select All
-                        </button>
-                    </div>
+                {/* DATE RANGE FILTER & SELECT ALL */}
+                <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
 
-                    <div className="flex flex-wrap items-center gap-2">
-                        <Calendar size={16} className="text-slate-400" />
-                        <div className="flex items-center gap-1.5">
-                            <label className="text-sm text-slate-500">From:</label>
+                    {/* Select All */}
+                    <button
+                        onClick={() => handleSelectAll(filteredIds)}
+                        className="flex items-center gap-3 group"
+                    >
+                        <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${isAllSelected ? 'border-blue-600 bg-blue-600' : 'border-slate-300 bg-white group-hover:border-blue-400'}`}>
+                            {isAllSelected && <CheckSquare size={14} className="text-white" />}
+                        </div>
+                        <span className={`text-sm font-bold transition-colors ${isAllSelected ? 'text-blue-600' : 'text-slate-700 group-hover:text-slate-900'}`}>Select All</span>
+                    </button>
+
+                    {/* Date Inputs - Grouped Pill */}
+                    <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl p-1.5 gap-2 w-full md:w-auto overflow-x-auto">
+                        <div className="flex items-center gap-2 pl-2">
+                            <Calendar size={16} className="text-slate-400 shrink-0" />
+                            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider hidden sm:inline">From</span>
                             <input
                                 type="date"
                                 value={dateFrom}
                                 onChange={(e) => setDateFrom(e.target.value)}
-                                className="h-9 px-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-colors"
+                                className="bg-transparent border-none text-sm font-medium text-slate-700 focus:ring-0 p-0 w-32"
                             />
                         </div>
-                        <div className="flex items-center gap-1.5">
-                            <label className="text-sm text-slate-500">To:</label>
+
+                        <div className="w-px h-6 bg-slate-200 shrink-0" />
+
+                        <div className="flex items-center gap-2 px-2">
+                            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider hidden sm:inline">To</span>
                             <input
                                 type="date"
                                 value={dateTo}
                                 onChange={(e) => setDateTo(e.target.value)}
-                                className="h-9 px-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-colors"
+                                className="bg-transparent border-none text-sm font-medium text-slate-700 focus:ring-0 p-0 w-32"
                             />
                         </div>
+
                         {(dateFrom || dateTo) && (
                             <button
                                 onClick={() => {
                                     setDateFrom('');
                                     setDateTo('');
                                 }}
-                                className="h-9 px-3 text-sm text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+                                className="ml-auto p-1.5 hover:bg-slate-200 rounded-lg text-slate-400 hover:text-slate-600 transition-colors"
                             >
-                                Clear
+                                <X size={14} />
                             </button>
                         )}
                     </div>
