@@ -1,0 +1,175 @@
+import React, { useState, useEffect } from 'react';
+import { Upload, X, Loader2, Save } from 'lucide-react';
+import { ProductService } from '../services/product.service';
+import { Product } from '../types';
+import { useStore } from '../context/StoreContext';
+import toast from 'react-hot-toast';
+
+interface ProductFormProps {
+    onSuccess: () => void;
+    onCancel: () => void;
+    initialData?: Product; // Support Edit Mode later
+}
+
+export default function ProductForm({ onSuccess, onCancel, initialData }: ProductFormProps) {
+    const { store } = useStore();
+    const [loading, setLoading] = useState(false);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+    // State Data
+    const [formData, setFormData] = useState<Partial<Product>>({
+        name: '',
+        price: 0,
+        compare_at_price: 0,
+        sku: '',
+        stock: 1,
+        category: 'General',
+        description: '',
+        status: 'active',
+        images: []
+    });
+
+    // Load Initial Data if Edit Mode
+    useEffect(() => {
+        if (initialData) {
+            setFormData(initialData);
+            if (initialData.images && initialData.images.length > 0) {
+                setImagePreview(initialData.images[0]);
+            }
+        }
+    }, [initialData]);
+
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            setSelectedFile(file);
+            // Local Preview
+            const previewUrl = URL.createObjectURL(file);
+            setImagePreview(previewUrl);
+        }
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!store) {
+            toast.error('Store not loaded. Please refresh the page.');
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            // FIXED: Pass store.id to ProductService.save()
+            const { error } = await ProductService.save(formData, store.id, selectedFile || undefined);
+
+            if (error) throw error;
+
+            toast.success("✅ Product saved successfully!");
+            onSuccess();
+        } catch (err: any) {
+            toast.error(`Error: ${err.message || err}`);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl mx-auto bg-slate-50 p-6 rounded-xl">
+            {/* HEADER */}
+            <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-slate-800">{initialData ? 'Edit Product' : 'Add New Product'}</h2>
+                <div className="flex gap-3">
+                    <button type="button" onClick={onCancel} className="px-4 py-2 text-slate-600 hover:bg-slate-200 rounded-lg font-medium">
+                        Cancel
+                    </button>
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 font-bold shadow-md"
+                    >
+                        {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+                        {loading ? 'Saving...' : 'Save Product'}
+                    </button>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* LEFT COL */}
+                <div className="lg:col-span-2 space-y-6">
+                    <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                        <h3 className="font-semibold text-slate-700">General Information</h3>
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Product Name</label>
+                            <input required type="text" className="w-full p-2 border rounded-lg focus:ring-blue-500 outline-none"
+                                value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Description</label>
+                            <textarea className="w-full p-2 border rounded-lg h-32 outline-none"
+                                value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} />
+                        </div>
+                    </div>
+
+                    {/* MEDIA */}
+                    <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                        <h3 className="font-semibold text-slate-700">Media</h3>
+                        <div className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center hover:bg-slate-50 transition cursor-pointer relative">
+                            <input type="file" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept="image/*" onChange={handleFileSelect} disabled={loading} />
+                            <div className="flex flex-col items-center pointer-events-none">
+                                <Upload className="w-8 h-8 text-slate-400 mb-2" />
+                                <span className="text-blue-600 font-medium">Click to upload image</span>
+                            </div>
+                        </div>
+
+                        {imagePreview && (
+                            <div className="relative w-32 h-32 rounded-lg overflow-hidden border mt-4 group">
+                                <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                                <button type="button" onClick={() => { setImagePreview(null); setSelectedFile(null); setFormData(p => ({ ...p, images: [] })) }}
+                                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition">
+                                    <X className="w-3 h-3" />
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* RIGHT COL */}
+                <div className="space-y-6">
+                    <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                        <h3 className="font-semibold text-slate-700">Status</h3>
+                        <select className="w-full p-2 border rounded-lg bg-white"
+                            value={formData.status}
+                            onChange={e => setFormData({ ...formData, status: e.target.value as 'active' | 'draft' })}>
+                            <option value="active">Active</option>
+                            <option value="draft">Draft</option>
+                        </select>
+                    </div>
+
+                    <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                        <h3 className="font-semibold text-slate-700">Pricing</h3>
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Price (RM)</label>
+                            <input required type="number" step="0.01" className="w-full p-2 border rounded-lg"
+                                value={formData.price} onChange={e => setFormData({ ...formData, price: parseFloat(e.target.value) })} />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Compare Price</label>
+                            <input type="number" step="0.01" className="w-full p-2 border rounded-lg"
+                                value={formData.compare_at_price || ''} onChange={e => setFormData({ ...formData, compare_at_price: parseFloat(e.target.value) })} />
+                        </div>
+                    </div>
+
+                    <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                        <h3 className="font-semibold text-slate-700">Inventory</h3>
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Quantity</label>
+                            <input type="number" className="w-full p-2 border rounded-lg"
+                                value={formData.stock} onChange={e => setFormData({ ...formData, stock: parseInt(e.target.value) })} />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    );
+}

@@ -1,0 +1,27 @@
+﻿src/components/admin/AdminProductPage.tsx(40,33): error TS2503: Cannot find namespace 'React'.
+src/components/admin/AdminProductPage.tsx(109,41): error TS2322: Type '{ key: any; product: any; isSelected: any; onSelect: (id: string, isSelected: boolean) => void; onEdit: () => void; onDelete: (id: string) => void; }' is not assignable to type 'ProductTableRowProps'.
+  Property 'key' does not exist on type 'ProductTableRowProps'.
+src/components/Analytics.tsx(127,35): error TS2322: Type '{ key: number; height: string; rounded: "lg"; }' is not assignable to type 'SkeletonProps'.
+  Property 'key' does not exist on type 'SkeletonProps'.
+src/components/OrderList.tsx(86,26): error TS2345: Argument of type 'unknown[]' is not assignable to parameter of type 'string[]'.
+  Type 'unknown' is not assignable to type 'string'.
+src/components/ProductForm.tsx(30,34): error TS2503: Cannot find namespace 'React'.
+src/components/ProductForm.tsx(43,30): error TS2503: Cannot find namespace 'React'.
+src/components/system/ErrorBoundary.tsx(17,14): error TS2339: Property 'state' does not exist on type 'ErrorBoundary'.
+src/components/system/ErrorBoundary.tsx(30,14): error TS2339: Property 'setState' does not exist on type 'ErrorBoundary'.
+src/components/system/ErrorBoundary.tsx(45,18): error TS2339: Property 'state' does not exist on type 'ErrorBoundary'.
+src/components/system/ErrorBoundary.tsx(68,38): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+src/components/system/ErrorBoundary.tsx(68,54): error TS2339: Property 'state' does not exist on type 'ErrorBoundary'.
+src/components/system/ErrorBoundary.tsx(72,43): error TS2339: Property 'state' does not exist on type 'ErrorBoundary'.
+src/components/system/ErrorBoundary.tsx(74,39): error TS2339: Property 'state' does not exist on type 'ErrorBoundary'.
+src/components/system/ErrorBoundary.tsx(80,51): error TS2339: Property 'state' does not exist on type 'ErrorBoundary'.
+src/components/system/ErrorBoundary.tsx(114,21): error TS2339: Property 'props' does not exist on type 'ErrorBoundary'.
+src/components/ui/Skeleton.tsx(50,21): error TS2322: Type '{ key: string; height: string; width: string; }' is not assignable to type 'SkeletonProps'.
+  Property 'key' does not exist on type 'SkeletonProps'.
+src/components/ui/Skeleton.tsx(79,35): error TS2322: Type '{ key: string; height: string; width: string; }' is not assignable to type 'SkeletonProps'.
+  Property 'key' does not exist on type 'SkeletonProps'.
+src/components/ui/Skeleton.tsx(89,39): error TS2322: Type '{ key: string; height: string; }' is not assignable to type 'SkeletonProps'.
+  Property 'key' does not exist on type 'SkeletonProps'.
+src/pages/store/StorePage.tsx(48,42): error TS2322: Type '{ key: string; product: Product; }' is not assignable to type 'ProductCardProps'.
+  Property 'key' does not exist on type 'ProductCardProps'.
+tailwind.config.ts(1,29): error TS2307: Cannot find module 'tailwindcss' or its corresponding type declarations.

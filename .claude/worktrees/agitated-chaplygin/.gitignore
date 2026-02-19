@@ -1,0 +1,88 @@
+# ===================================
+# BREWCART ADMIN - GITIGNORE
+# Professional Vite + React + TypeScript
+# ===================================
+
+# ===== DEPENDENCIES =====
+node_modules/
+.pnp
+.pnp.js
+
+# ===== ENVIRONMENT VARIABLES =====
+# CRITICAL: Never commit sensitive keys!
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
+
+# ===== BUILD OUTPUT =====
+dist/
+dist-ssr/
+build/
+*.local
+
+# ===== LOGS =====
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ===== EDITOR / IDE =====
+# VS Code
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+
+# ===== OS FILES =====
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+
+# ===== TESTING =====
+coverage/
+*.lcov
+.nyc_output
+
+# ===== MISC =====
+*.tsbuildinfo
+.cache/
+.temp/
+.tmp/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# ===== SUPABASE =====
+# Keep schema but ignore local dev files
+supabase/.branches/
+supabase/.temp/
+
+# ===== VITE SPECIFIC =====
+.vite/
+
+# ===== OPTIONAL =====
+# Uncomment if using these tools:
+# .eslintcache
+# .stylelintcache

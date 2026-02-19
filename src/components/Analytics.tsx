@@ -1,0 +1,235 @@
+import React, { useEffect, useState } from 'react';
+import { getOrders } from '../lib/storage';
+import { Order } from '../types';
+import {
+    LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
+    XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
+} from 'recharts';
+import { TrendingUp, DollarSign, ShoppingBag, Calendar } from 'lucide-react';
+import Skeleton from './ui/Skeleton';
+
+interface RevenueData { today: number; week: number; month: number; total: number; }
+interface DailyRevenue { date: string; revenue: number; }
+interface ProductSales { name: string; sales: number; }
+interface StatusDistribution { status: string; count: number; }
+
+const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+
+export default function Analytics() {
+    const [loading, setLoading] = useState(true);
+    const [orders, setOrders] = useState<Order[]>([]);
+    const [revenueData, setRevenueData] = useState<RevenueData>({ today: 0, week: 0, month: 0, total: 0 });
+    const [dailyRevenue, setDailyRevenue] = useState<DailyRevenue[]>([]);
+    const [topProducts, setTopProducts] = useState<ProductSales[]>([]);
+    const [statusDistribution, setStatusDistribution] = useState<StatusDistribution[]>([]);
+
+    useEffect(() => {
+        const load = async () => {
+            try {
+                const fetchedOrders = await getOrders();
+                const safeOrders = Array.isArray(fetchedOrders) ? fetchedOrders : [];
+                setOrders(safeOrders);
+                calculateRevenueMetrics(safeOrders);
+                calculateDailyRevenue(safeOrders);
+                calculateTopProducts(safeOrders);
+                calculateStatusDistribution(safeOrders);
+            } catch (e) {
+                console.error("Failed to load analytics data", e);
+                setOrders([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+        load();
+    }, []);
+
+    const calculateRevenueMetrics = (orders: Order[]) => {
+        const now = new Date();
+        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const weekStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+        const metrics = orders.reduce((acc, order) => {
+            const orderDate = new Date(order.created_at);
+            const amount = Number(order.total_amount) || 0;
+            acc.total += amount;
+            if (orderDate >= todayStart) acc.today += amount;
+            if (orderDate >= weekStart) acc.week += amount;
+            if (orderDate >= monthStart) acc.month += amount;
+            return acc;
+        }, { today: 0, week: 0, month: 0, total: 0 });
+        setRevenueData(metrics);
+    };
+
+    const calculateDailyRevenue = (orders: Order[]) => {
+        const last7Days = Array.from({ length: 7 }, (_, i) => {
+            const date = new Date();
+            date.setDate(date.getDate() - (6 - i));
+            return date.toISOString().split('T')[0];
+        });
+        const revenueMap = new Map<string, number>();
+        last7Days.forEach(date => revenueMap.set(date, 0));
+        orders.forEach(order => {
+            const orderDate = new Date(order.created_at).toISOString().split('T')[0];
+            if (revenueMap.has(orderDate)) {
+                revenueMap.set(orderDate, revenueMap.get(orderDate)! + Number(order.total_amount));
+            }
+        });
+        setDailyRevenue(last7Days.map(date => ({
+            date: new Date(date).toLocaleDateString('en-MY', { month: 'short', day: 'numeric' }),
+            revenue: revenueMap.get(date) || 0,
+        })));
+    };
+
+    const calculateTopProducts = (orders: Order[]) => {
+        const productSales = new Map<string, number>();
+        orders.forEach(order => {
+            if (order.items && Array.isArray(order.items)) {
+                order.items.forEach((item: any) => {
+                    const name = item.product?.name || 'Unknown';
+                    productSales.set(name, (productSales.get(name) || 0) + (item.qty || 0));
+                });
+            }
+        });
+        setTopProducts(
+            Array.from(productSales.entries())
+                .map(([name, sales]) => ({ name, sales }))
+                .sort((a, b) => b.sales - a.sales)
+                .slice(0, 5)
+        );
+    };
+
+    const calculateStatusDistribution = (orders: Order[]) => {
+        const statusCount = new Map<string, number>();
+        orders.forEach(order => {
+            const status = order.status || 'pending';
+            statusCount.set(status, (statusCount.get(status) || 0) + 1);
+        });
+        setStatusDistribution(
+            Array.from(statusCount.entries()).map(([status, count]) => ({
+                status: status.charAt(0).toUpperCase() + status.slice(1),
+                count,
+            }))
+        );
+    };
+
+    const StatCard = ({ title, value, icon: Icon, color }: any) => (
+        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+            <div className="flex items-start justify-between">
+                <div>
+                    <p className="text-sm font-medium text-slate-500 mb-1">{title}</p>
+                    <h3 className="text-2xl font-bold text-slate-900">
+                        {loading ? <Skeleton width="100px" height="32px" /> : `RM ${value.toFixed(2)}`}
+                    </h3>
+                </div>
+                <div className={`p-3 rounded-lg ${color}`}>
+                    <Icon size={24} className="text-white" />
+                </div>
+            </div>
+        </div>
+    );
+
+    if (loading) {
+        return (
+            <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {Array.from({ length: 4 }).map((_, i) => (
+                        <Skeleton key={i} height="120px" rounded="lg" />
+                    ))}
+                </div>
+                <Skeleton height="400px" rounded="lg" />
+            </div>
+        );
+    }
+
+    return (
+        <div className="space-y-6">
+            <h2 className="text-2xl font-bold text-slate-800">Analytics</h2>
+
+            {/* Revenue Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <StatCard title="Today's Revenue" value={revenueData.today} icon={DollarSign} color="bg-emerald-500" />
+                <StatCard title="This Week" value={revenueData.week} icon={TrendingUp} color="bg-blue-600" />
+                <StatCard title="This Month" value={revenueData.month} icon={Calendar} color="bg-orange-500" />
+                <StatCard title="Total Revenue" value={revenueData.total} icon={ShoppingBag} color="bg-purple-600" />
+            </div>
+
+            {/* Charts Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Daily Revenue Line Chart */}
+                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                    <h3 className="text-lg font-bold text-slate-900 mb-4">Daily Revenue (Last 7 Days)</h3>
+                    <ResponsiveContainer width="100%" height={300}>
+                        <LineChart data={dailyRevenue}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                            <XAxis dataKey="date" stroke="#64748b" />
+                            <YAxis stroke="#64748b" />
+                            <Tooltip contentStyle={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px' }} formatter={(value: number) => `RM ${value.toFixed(2)}`} />
+                            <Legend />
+                            <Line type="monotone" dataKey="revenue" stroke="#3b82f6" strokeWidth={2} dot={{ fill: '#3b82f6' }} />
+                        </LineChart>
+                    </ResponsiveContainer>
+                </div>
+
+                {/* Top Products Bar Chart */}
+                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                    <h3 className="text-lg font-bold text-slate-900 mb-4">Top 5 Products</h3>
+                    <ResponsiveContainer width="100%" height={300}>
+                        <BarChart data={topProducts}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                            <XAxis dataKey="name" stroke="#64748b" />
+                            <YAxis stroke="#64748b" />
+                            <Tooltip contentStyle={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px' }} />
+                            <Legend />
+                            <Bar dataKey="sales" fill="#10b981" radius={[8, 8, 0, 0]} />
+                        </BarChart>
+                    </ResponsiveContainer>
+                </div>
+
+                {/* Order Status Pie Chart */}
+                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                    <h3 className="text-lg font-bold text-slate-900 mb-4">Order Status Distribution</h3>
+                    <ResponsiveContainer width="100%" height={300}>
+                        <PieChart>
+                            <Pie data={statusDistribution} cx="50%" cy="50%" labelLine={false} label={({ status, percent }) => `${status} (${(percent * 100).toFixed(0)}%)`} outerRadius={80} fill="#8884d8" dataKey="count">
+                                {statusDistribution.map((_entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                ))}
+                            </Pie>
+                            <Tooltip />
+                        </PieChart>
+                    </ResponsiveContainer>
+                </div>
+
+                {/* Summary Stats */}
+                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                    <h3 className="text-lg font-bold text-slate-900 mb-4">Quick Stats</h3>
+                    <div className="space-y-4">
+                        <div className="flex justify-between items-center pb-3 border-b border-slate-100">
+                            <span className="text-slate-600">Total Orders</span>
+                            <span className="font-bold text-slate-900">{orders.length}</span>
+                        </div>
+                        <div className="flex justify-between items-center pb-3 border-b border-slate-100">
+                            <span className="text-slate-600">Average Order Value</span>
+                            <span className="font-bold text-emerald-600">
+                                RM {orders.length > 0 ? (revenueData.total / orders.length).toFixed(2) : '0.00'}
+                            </span>
+                        </div>
+                        <div className="flex justify-between items-center pb-3 border-b border-slate-100">
+                            <span className="text-slate-600">Orders This Week</span>
+                            <span className="font-bold text-blue-600">
+                                {orders.filter(o => new Date(o.created_at) >= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length}
+                            </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <span className="text-slate-600">Orders Today</span>
+                            <span className="font-bold text-orange-600">
+                                {orders.filter(o => new Date(o.created_at).toDateString() === new Date().toDateString()).length}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
