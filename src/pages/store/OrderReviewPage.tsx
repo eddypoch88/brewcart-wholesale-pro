@@ -1,9 +1,15 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
-import { getOrders, getSettings, updateOrderPaymentMethod, uploadPaymentProof, updatePaymentProof } from '../../lib/storage';
+import { getOrders, getSettings, uploadPaymentProof, updatePaymentProof } from '../../lib/storage';
 import { Order, StoreSettings } from '../../types';
-import { Loader2, CheckCircle, AlertCircle, Copy, MessageSquare, CreditCard, Truck, Upload, Image, X, Camera } from 'lucide-react';
+import { Loader2, CheckCircle, AlertCircle, Copy, MessageSquare, CreditCard, Truck, Upload, X, Camera, QrCode } from 'lucide-react';
 import toast from 'react-hot-toast';
+
+const methodLabels: Record<string, string> = {
+    bank_transfer: 'Bank Transfer',
+    duitnow: 'DuitNow QR',
+    cod: 'Cash on Delivery',
+};
 
 export default function OrderReviewPage() {
     const { orderId } = useParams();
@@ -11,10 +17,7 @@ export default function OrderReviewPage() {
     const [order, setOrder] = useState<Order | null>(null);
     const [settings, setSettings] = useState<StoreSettings | null>(null);
     const [loading, setLoading] = useState(true);
-    const [paymentMethod, setPaymentMethod] = useState<'cod' | 'bank_transfer' | null>(null);
-    const [submitting, setSubmitting] = useState(false);
 
-    // Receipt upload states
     const [receiptFile, setReceiptFile] = useState<File | null>(null);
     const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
     const [uploading, setUploading] = useState(false);
@@ -41,26 +44,10 @@ export default function OrderReviewPage() {
         fetchData();
     }, [orderId]);
 
-    const handleConfirmPayment = async () => {
-        if (!order || !paymentMethod) return;
-        setSubmitting(true);
-        try {
-            await updateOrderPaymentMethod(order.id, paymentMethod);
-            setOrder({ ...order, payment_method: paymentMethod });
-            toast.success("Payment method confirmed!");
-        } catch (error) {
-            console.error(error);
-            toast.error("Failed to update payment method");
-        } finally {
-            setSubmitting(false);
-        }
-    };
-
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        // Validate file
         if (!file.type.startsWith('image/')) {
             toast.error('Please select an image file');
             return;
@@ -99,7 +86,6 @@ export default function OrderReviewPage() {
         setUploadProgress(10);
 
         try {
-            // Simulate progress
             setUploadProgress(30);
             const publicUrl = await uploadPaymentProof(order.id, receiptFile);
             setUploadProgress(70);
@@ -111,7 +97,6 @@ export default function OrderReviewPage() {
             await updatePaymentProof(order.id, publicUrl, 'pending_verification');
             setUploadProgress(100);
 
-            // Update local state
             setOrder({
                 ...order,
                 payment_proof: publicUrl,
@@ -120,14 +105,13 @@ export default function OrderReviewPage() {
 
             toast.success('Receipt uploaded successfully!');
 
-            // Send WhatsApp notification to admin
             const adminPhone = settings.whatsapp_number?.replace(/[^0-9]/g, '');
             if (adminPhone) {
                 const message = `📸 *Payment Receipt Uploaded!*\n\n` +
                     `*Order ID:* ${order.id}\n` +
                     `*Customer:* ${order.customer_name}\n` +
                     `*Total:* RM ${(order.total || 0).toFixed(2)}\n` +
-                    `*Payment:* Bank Transfer\n\n` +
+                    `*Payment:* ${methodLabels[order.payment_method || ''] || order.payment_method}\n\n` +
                     `Please verify the payment in your admin dashboard.\n` +
                     `📋 Receipt: ${publicUrl}`;
 
@@ -152,10 +136,9 @@ export default function OrderReviewPage() {
     if (loading) return <div className="min-h-screen flex items-center justify-center bg-slate-50"><Loader2 className="animate-spin text-blue-600" size={32} /></div>;
     if (!order || !settings) return <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-500">Order not found</div>;
 
-    const isPendingPayment = order.payment_method === 'pending';
-    const isBankTransfer = order.payment_method === 'bank_transfer';
     const hasReceipt = !!order.payment_proof;
     const paymentStatus = order.payment_status || 'unpaid';
+    const pm = order.payment_method || 'pending';
 
     const statusConfig: Record<string, { bg: string; text: string; label: string; icon: any }> = {
         unpaid: { bg: 'bg-red-50', text: 'text-red-700', label: 'Unpaid', icon: AlertCircle },
@@ -197,13 +180,11 @@ export default function OrderReviewPage() {
                             <CreditCard size={18} /> Payment Info
                         </h3>
                         <div className="space-y-3">
-                            {/* Payment Status Badge */}
                             <div className={`p-3 ${currentStatus.bg} ${currentStatus.text} rounded-lg text-sm flex items-start gap-2`}>
                                 <StatusIcon size={16} className={`shrink-0 mt-0.5 ${paymentStatus === 'pending_verification' ? 'animate-spin' : ''}`} />
                                 <div>
                                     <span className="font-bold">{currentStatus.label}</span>
-                                    {isPendingPayment && <p className="mt-1 text-xs opacity-80">Please select a payment method below.</p>}
-                                    {isBankTransfer && !hasReceipt && paymentStatus === 'unpaid' && (
+                                    {(pm === 'bank_transfer' || pm === 'duitnow') && !hasReceipt && paymentStatus === 'unpaid' && (
                                         <p className="mt-1 text-xs opacity-80">Please upload your payment receipt below.</p>
                                     )}
                                     {paymentStatus === 'pending_verification' && (
@@ -215,10 +196,15 @@ export default function OrderReviewPage() {
                                 </div>
                             </div>
 
-                            {!isPendingPayment && (
+                            {pm !== 'pending' ? (
                                 <div className="p-3 bg-slate-50 rounded-lg text-sm">
                                     <span className="text-slate-500">Method: </span>
-                                    <span className="font-bold text-slate-900">{order.payment_method === 'cod' ? 'Cash on Delivery' : 'Bank Transfer'}</span>
+                                    <span className="font-bold text-slate-900">{methodLabels[pm] || pm}</span>
+                                </div>
+                            ) : (
+                                <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm flex items-center gap-2 text-yellow-700">
+                                    <AlertCircle size={16} className="shrink-0" />
+                                    <span className="font-medium">No payment method selected</span>
                                 </div>
                             )}
 
@@ -255,61 +241,66 @@ export default function OrderReviewPage() {
                     </div>
                 </div>
 
-                {/* ══════════════════════════════════════════════════════ */}
-                {/* RECEIPT UPLOAD SECTION (Bank Transfer — After Confirm) */}
-                {/* ══════════════════════════════════════════════════════ */}
-                {isBankTransfer && paymentStatus !== 'paid' && (
+                {/* SECTION A — Bank Transfer Details */}
+                {pm === 'bank_transfer' && (
+                    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 space-y-4">
+                        <h3 className="font-bold text-slate-900 flex items-center gap-2">
+                            <CreditCard size={18} /> Bank Transfer Details
+                        </h3>
+                        <div className="space-y-3">
+                            <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg border border-slate-100">
+                                <div>
+                                    <p className="text-xs text-slate-500">Bank Name</p>
+                                    <p className="font-bold text-sm text-slate-900">{settings.bank_name || 'Not configured'}</p>
+                                </div>
+                            </div>
+                            <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg border border-slate-100">
+                                <div>
+                                    <p className="text-xs text-slate-500">Account Number</p>
+                                    <p className="font-bold text-sm text-slate-900 font-mono">{settings.bank_account_number || 'Not configured'}</p>
+                                </div>
+                                {settings.bank_account_number && (
+                                    <button onClick={() => copyToClipboard(settings.bank_account_number)} className="p-2 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-blue-600 transition-colors">
+                                        <Copy size={16} />
+                                    </button>
+                                )}
+                            </div>
+                            <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg border border-slate-100">
+                                <div>
+                                    <p className="text-xs text-slate-500">Account Holder</p>
+                                    <p className="font-bold text-sm text-slate-900">{settings.bank_holder_name || 'Not configured'}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* SECTION B — DuitNow QR Payment */}
+                {pm === 'duitnow' && settings.qr_code_url && (
+                    <div className="bg-white rounded-2xl shadow-sm border border-purple-200 p-6 space-y-4">
+                        <h3 className="font-bold text-purple-600 flex items-center gap-2">
+                            <QrCode size={18} /> DuitNow QR Payment
+                        </h3>
+                        <div className="text-center space-y-3">
+                            <div className="inline-block p-3 bg-white rounded-xl border-2 border-purple-200 shadow-sm">
+                                <img
+                                    src={settings.qr_code_url}
+                                    alt="DuitNow QR Code"
+                                    className="w-56 h-56 object-contain mx-auto"
+                                />
+                            </div>
+                            <p className="text-sm text-slate-500">Scan using any Malaysian banking app</p>
+                        </div>
+                    </div>
+                )}
+
+                {/* SECTION C — Upload Payment Receipt (bank_transfer or duitnow, not paid) */}
+                {(pm === 'bank_transfer' || pm === 'duitnow') && paymentStatus !== 'paid' && (
                     <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 space-y-6">
                         <h3 className="font-bold text-slate-900 flex items-center gap-2">
                             <Camera size={18} /> Upload Payment Receipt
                         </h3>
 
-                        {/* Bank Details */}
-                        <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
-                            <p className="text-xs font-bold text-slate-500 uppercase mb-3">Bank Details — Transfer Here</p>
-                            <div className="space-y-3">
-                                <div className="flex justify-between items-center p-3 bg-white rounded-lg border border-slate-100">
-                                    <div>
-                                        <p className="text-xs text-slate-500">Bank Name</p>
-                                        <p className="font-bold text-sm text-slate-900">{settings.bank_name || 'Not configured'}</p>
-                                    </div>
-                                </div>
-                                <div className="flex justify-between items-center p-3 bg-white rounded-lg border border-slate-100">
-                                    <div>
-                                        <p className="text-xs text-slate-500">Account Number</p>
-                                        <p className="font-bold text-sm text-slate-900 font-mono">{settings.bank_account_number || 'Not configured'}</p>
-                                    </div>
-                                    {settings.bank_account_number && (
-                                        <button onClick={() => copyToClipboard(settings.bank_account_number)} className="p-2 hover:bg-slate-50 rounded-lg text-slate-400 hover:text-blue-600 transition-colors">
-                                            <Copy size={16} />
-                                        </button>
-                                    )}
-                                </div>
-                                <div className="flex justify-between items-center p-3 bg-white rounded-lg border border-slate-100">
-                                    <div>
-                                        <p className="text-xs text-slate-500">Account Holder</p>
-                                        <p className="font-bold text-sm text-slate-900">{settings.bank_holder_name || 'Not configured'}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* DuitNow QR Code */}
-                        {settings.qr_code_url && (
-                            <div className="text-center space-y-3">
-                                <p className="text-xs font-bold text-purple-600 uppercase">Scan & Pay with DuitNow</p>
-                                <div className="inline-block p-3 bg-white rounded-xl border-2 border-purple-200 shadow-sm">
-                                    <img
-                                        src={settings.qr_code_url}
-                                        alt="DuitNow QR Code"
-                                        className="w-56 h-56 object-contain mx-auto"
-                                    />
-                                </div>
-                                <p className="text-xs text-slate-400">Scan QR above using your banking app</p>
-                            </div>
-                        )}
-
-                        {/* Already uploaded receipt */}
                         {hasReceipt && paymentStatus === 'pending_verification' && (
                             <div className="space-y-3">
                                 <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-800 flex items-start gap-2">
@@ -333,7 +324,6 @@ export default function OrderReviewPage() {
                             </div>
                         )}
 
-                        {/* Upload Area */}
                         <div
                             onDragOver={(e) => e.preventDefault()}
                             onDrop={handleDrop}
@@ -384,7 +374,6 @@ export default function OrderReviewPage() {
                             )}
                         </div>
 
-                        {/* Upload Progress */}
                         {uploading && (
                             <div className="space-y-2">
                                 <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
@@ -397,7 +386,6 @@ export default function OrderReviewPage() {
                             </div>
                         )}
 
-                        {/* Submit Button */}
                         {receiptFile && !uploading && (
                             <button
                                 onClick={handleUploadReceipt}
@@ -410,73 +398,30 @@ export default function OrderReviewPage() {
                     </div>
                 )}
 
-                {/* Payment Selection (Only if pending) */}
-                {isPendingPayment && (
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 space-y-6">
-                        <h3 className="font-bold text-slate-900 flex items-center gap-2">
-                            <CreditCard size={18} /> Select Payment Method
-                        </h3>
-
-                        <div className="grid grid-cols-1 gap-4">
-                            <label className={`relative flex items-center p-4 border rounded-xl cursor-pointer transition-all ${paymentMethod === 'bank_transfer' ? 'border-blue-600 bg-blue-50 ring-1 ring-blue-600' : 'border-slate-200 hover:border-slate-300'}`}>
-                                <input
-                                    type="radio"
-                                    name="payment_method"
-                                    className="sr-only"
-                                    checked={paymentMethod === 'bank_transfer'}
-                                    onChange={() => setPaymentMethod('bank_transfer')}
-                                />
-                                <div className="flex-1">
-                                    <div className="flex items-center justify-between mb-1">
-                                        <span className="font-bold text-slate-900">Bank Transfer / QR Pay</span>
-                                        <CreditCard size={20} className="text-slate-400" />
-                                    </div>
-                                    <p className="text-xs text-slate-500">Transfer directly to our bank account</p>
-                                </div>
-                            </label>
-
-                            <label className={`relative flex items-center p-4 border rounded-xl cursor-pointer transition-all ${paymentMethod === 'cod' ? 'border-blue-600 bg-blue-50 ring-1 ring-blue-600' : 'border-slate-200 hover:border-slate-300'}`}>
-                                <input
-                                    type="radio"
-                                    name="payment_method"
-                                    className="sr-only"
-                                    checked={paymentMethod === 'cod'}
-                                    onChange={() => setPaymentMethod('cod')}
-                                />
-                                <div className="flex-1">
-                                    <div className="flex items-center justify-between mb-1">
-                                        <span className="font-bold text-slate-900">Cash on Delivery (COD)</span>
-                                        <Truck size={20} className="text-slate-400" />
-                                    </div>
-                                    <p className="text-xs text-slate-500">Pay when you receive the goods</p>
-                                </div>
-                            </label>
+                {/* SECTION D — Cash on Delivery */}
+                {pm === 'cod' && (
+                    <div className="bg-green-50 rounded-2xl p-4">
+                        <div className="flex items-start gap-3">
+                            <Truck size={20} className="text-green-600 shrink-0 mt-0.5" />
+                            <div>
+                                <p className="font-bold text-green-800">Cash on Delivery</p>
+                                <p className="text-sm text-green-700 mt-1">Please prepare exact amount upon delivery. Our team will contact you to confirm delivery time.</p>
+                            </div>
                         </div>
-
-                        <button
-                            onClick={handleConfirmPayment}
-                            disabled={submitting || !paymentMethod}
-                            className="w-full py-3 px-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-blue-200 flex items-center justify-center gap-2"
-                        >
-                            {submitting ? <Loader2 className="animate-spin" size={20} /> : <CheckCircle size={20} />}
-                            Confirm Payment Method
-                        </button>
                     </div>
                 )}
 
                 {/* Footer Action */}
-                {!isPendingPayment && (
-                    <div className="text-center pt-8">
-                        <p className="text-slate-500 text-sm mb-4">Need help?</p>
-                        <button
-                            onClick={() => window.open(`https://wa.me/${settings.whatsapp_number.replace(/[^0-9]/g, '')}`, '_blank')}
-                            className="inline-flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-50 transition-colors"
-                        >
-                            <MessageSquare size={18} className="text-green-600" />
-                            Contact Support
-                        </button>
-                    </div>
-                )}
+                <div className="text-center pt-8">
+                    <p className="text-slate-500 text-sm mb-4">Need help?</p>
+                    <button
+                        onClick={() => window.open(`https://wa.me/${settings.whatsapp_number.replace(/[^0-9]/g, '')}`, '_blank')}
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-50 transition-colors"
+                    >
+                        <MessageSquare size={18} className="text-green-600" />
+                        Contact Support
+                    </button>
+                </div>
 
             </div>
         </div>
