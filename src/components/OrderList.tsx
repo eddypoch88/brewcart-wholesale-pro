@@ -391,16 +391,16 @@ export default function OrderList() {
                         <p className="text-slate-500">No orders found.</p>
                     </div>
                 ) : (
-                    <div className="space-y-3">
+                    <div className="space-y-2">
                         {filteredOrders.map((order) => (
-                            <div key={order.id} className={`bg-white border rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow ${selectedOrderIds.has(order.id) ? 'border-blue-500 ring-1 ring-blue-500' : 'border-slate-200'}`}>
+                            <div key={order.id} className={`bg-white border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow ${selectedOrderIds.has(order.id) ? 'border-blue-500 ring-1 ring-blue-500' : 'border-slate-200'}`}>
 
                                 {/* HEADER */}
                                 <div
-                                    className="p-4 flex flex-col md:flex-row justify-between items-center cursor-pointer hover:bg-slate-50/50 transition-colors"
+                                    className="p-3 flex flex-col md:flex-row justify-between cursor-pointer hover:bg-slate-50/50 transition-colors"
                                     onClick={() => toggleExpand(order.id)}
                                 >
-                                    <div className="flex gap-3 items-center w-full md:w-auto mb-3 md:mb-0">
+                                    <div className="flex gap-2.5 items-center w-full md:w-auto mb-2 md:mb-0">
                                         <div
                                             onClick={(e) => {
                                                 e.stopPropagation();
@@ -409,39 +409,36 @@ export default function OrderList() {
                                             className="cursor-pointer flex-shrink-0"
                                         >
                                             {selectedOrderIds.has(order.id) ? (
-                                                <CheckSquare size={18} className="text-blue-600" />
+                                                <CheckSquare size={16} className="text-blue-600" />
                                             ) : (
-                                                <Square size={18} className="text-slate-300" />
+                                                <Square size={16} className="text-slate-300" />
                                             )}
                                         </div>
-                                        <div className={`p-2.5 rounded-full flex-shrink-0 ${order.status === 'delivered' ? 'bg-green-50 text-green-600' : 'bg-amber-50 text-amber-600'}`}>
-                                            <ShoppingBag size={18} />
-                                        </div>
                                         <div className="min-w-0">
-                                            <h3 className="text-lg font-semibold text-slate-900 leading-tight truncate">{order.customer_name}</h3>
-                                            <div className="flex items-center gap-1.5 text-xs text-slate-400 mt-0.5">
-                                                <Clock size={11} /> {formatDate(order.created_at)}
-                                            </div>
+                                            <h3 className="text-base font-semibold text-slate-900 leading-tight truncate">{order.customer_name}</h3>
+                                            <p className="text-xs text-slate-400 mt-0.5 flex items-center gap-1">
+                                                <Clock size={10} /> {formatDate(order.created_at)}
+                                            </p>
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-3 w-full md:w-auto justify-between">
+                                    <div className="flex items-center gap-2 w-full md:w-auto justify-between">
                                         <div>
-                                            <p className="text-xs uppercase tracking-wide text-slate-400 mb-0.5">Total Amount</p>
-                                            <p className="text-2xl font-bold text-emerald-600 leading-none">
+                                            <p className="text-[10px] uppercase tracking-wide text-slate-400">Total</p>
+                                            <p className="text-xl font-bold text-emerald-600 leading-none">
                                                 RM {(Number(order.total) || 0).toFixed(2)}
                                             </p>
                                         </div>
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-1.5">
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     handlePrint(order);
                                                 }}
-                                                className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                                className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
                                                 title="Print Receipt"
                                             >
-                                                <Printer size={16} />
+                                                <Printer size={14} />
                                             </button>
                                             <OrderStatusDropdown
                                                 currentStatus={order.status}
@@ -449,15 +446,15 @@ export default function OrderList() {
                                                 onStatusChange={handleStatusChange}
                                                 isUpdating={updatingOrderId === order.id}
                                             />
-                                            {expandedOrderIds.has(order.id) ? <ChevronUp size={18} className="text-slate-400" /> : <ChevronDown size={18} className="text-slate-400" />}
+                                            {expandedOrderIds.has(order.id) ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* DETAIL */}
                                 {expandedOrderIds.has(order.id) && (
-                                    <div className="border-t border-slate-100 p-4 bg-white">
-                                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    <div className="border-t border-slate-100 p-3 bg-white">
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                                             {/* LEFT COLUMN */}
                                             <div className="space-y-6">
                                                 {/* Customer Details */}

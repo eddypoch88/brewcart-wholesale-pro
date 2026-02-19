@@ -549,11 +549,11 @@ export default function Settings() {
             </div>
 
             {/* SAVE BUTTON */}
-            <div className="flex justify-end sticky bottom-4 z-10">
+            <div className="sticky bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 -mx-6 -mb-8 mt-6 z-10">
                 <button
                     onClick={handleSave}
                     disabled={saveLoading}
-                    className="bg-blue-600 text-white px-8 py-3 rounded-lg font-bold flex items-center gap-2 hover:bg-blue-700 disabled:opacity-50 transition-all shadow-lg"
+                    className="w-full bg-blue-600 text-white py-3 rounded-lg text-base font-semibold flex items-center justify-center gap-2 hover:bg-blue-700 disabled:opacity-50 transition-all"
                 >
                     {saveLoading ? (
                         <>
