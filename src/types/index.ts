@@ -47,7 +47,7 @@ export interface Order {
     delivery_address?: string;
     payment_method?: string;
     payment_proof?: string;
-    payment_status?: 'paid' | 'unpaid';
+    payment_status?: 'paid' | 'unpaid' | 'pending_verification';
     customer_notes?: string;
     admin_notes?: string;
 }
@@ -72,6 +72,8 @@ export interface StoreSettings {
     // Payment Methods
     accept_cod: boolean;
     accept_bank_transfer: boolean;
+    bank_name: string;
+    bank_holder_name: string;
     bank_account_number: string;
 
     // Operating Hours

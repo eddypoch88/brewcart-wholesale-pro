@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Calendar, Phone, User, ShoppingBag, ChevronDown, ChevronUp, Clock, Search, Download, Printer, MapPin, CreditCard, FileText, Save, Trash2, CheckSquare, Square } from 'lucide-react';
-import { getOrders, updateOrderStatus, updateOrderNotes, getSettings, deleteOrders } from '../lib/storage';
+import { Calendar, Phone, User, ShoppingBag, ChevronDown, ChevronUp, Clock, Search, Download, Printer, MapPin, CreditCard, FileText, Save, Trash2, CheckSquare, Square, Image, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { getOrders, updateOrderStatus, updateOrderNotes, getSettings, deleteOrders, updatePaymentStatus } from '../lib/storage';
 import { Order } from '../types';
 import { DEFAULT_SETTINGS } from '../data/mockData';
 import toast from 'react-hot-toast';
@@ -492,8 +492,64 @@ export default function OrderList() {
                                                         <h4 className="font-bold text-sm text-slate-700 mb-3 flex items-center gap-2">
                                                             <CreditCard size={16} /> Payment Method
                                                         </h4>
-                                                        <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg text-sm font-medium">
-                                                            {order.payment_method}
+                                                        <div className="space-y-3">
+                                                            <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg text-sm font-medium">
+                                                                {order.payment_method === 'bank_transfer' ? 'Bank Transfer' : order.payment_method === 'cod' ? 'Cash on Delivery' : order.payment_method}
+                                                            </div>
+
+                                                            {/* Payment Status */}
+                                                            <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium ${order.payment_status === 'paid' ? 'bg-green-50 text-green-700' :
+                                                                    order.payment_status === 'pending_verification' ? 'bg-amber-50 text-amber-700' :
+                                                                        'bg-red-50 text-red-700'
+                                                                }`}>
+                                                                {order.payment_status === 'paid' ? <CheckCircle size={14} /> :
+                                                                    order.payment_status === 'pending_verification' ? <Loader2 size={14} className="animate-spin" /> :
+                                                                        <AlertCircle size={14} />}
+                                                                {order.payment_status === 'paid' ? 'Verified & Paid' :
+                                                                    order.payment_status === 'pending_verification' ? 'Pending Verification' :
+                                                                        'Unpaid'}
+                                                            </div>
+
+                                                            {/* Receipt Image */}
+                                                            {order.payment_proof && (
+                                                                <div className="space-y-2">
+                                                                    <p className="text-xs font-bold text-slate-500 flex items-center gap-1">
+                                                                        <Image size={12} /> Payment Receipt
+                                                                    </p>
+                                                                    <a
+                                                                        href={order.payment_proof}
+                                                                        target="_blank"
+                                                                        rel="noreferrer"
+                                                                        className="block"
+                                                                    >
+                                                                        <img
+                                                                            src={order.payment_proof}
+                                                                            alt="Payment Receipt"
+                                                                            className="w-full max-w-xs max-h-48 object-contain rounded-lg border border-slate-200 hover:ring-2 hover:ring-blue-400 transition-all cursor-pointer"
+                                                                        />
+                                                                    </a>
+                                                                </div>
+                                                            )}
+
+                                                            {/* Verify Payment Button */}
+                                                            {order.payment_status === 'pending_verification' && (
+                                                                <button
+                                                                    onClick={async (e) => {
+                                                                        e.stopPropagation();
+                                                                        try {
+                                                                            await updatePaymentStatus(order.id, 'paid');
+                                                                            setOrders(prev => prev.map(o => o.id === order.id ? { ...o, payment_status: 'paid' } : o));
+                                                                            toast.success(`Payment verified for ${order.customer_name}`);
+                                                                        } catch (err) {
+                                                                            toast.error('Failed to verify payment');
+                                                                        }
+                                                                    }}
+                                                                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 font-medium text-sm transition-colors shadow-sm"
+                                                                >
+                                                                    <CheckCircle size={16} />
+                                                                    Verify Payment
+                                                                </button>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 )}

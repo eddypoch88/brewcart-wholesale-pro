@@ -265,6 +265,62 @@ export const updateOrderPaymentMethod = async (orderId: string, method: string) 
     if (error) throw error;
 };
 
+// ── Receipt Upload ──
+export async function uploadPaymentProof(orderId: string, file: File): Promise<string | null> {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${orderId}-${Date.now()}.${fileExt}`;
+    const filePath = `receipts/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+        .from('receipts')
+        .upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: true
+        });
+
+    if (uploadError) {
+        console.error('Error uploading receipt:', uploadError);
+        return null;
+    }
+
+    const { data } = supabase.storage.from('receipts').getPublicUrl(filePath);
+    return data.publicUrl;
+}
+
+export async function updatePaymentProof(
+    orderId: string,
+    proofUrl: string,
+    paymentStatus: 'unpaid' | 'pending_verification' | 'paid' = 'pending_verification'
+): Promise<void> {
+    const { error } = await supabase
+        .from('orders')
+        .update({
+            payment_proof: proofUrl,
+            payment_status: paymentStatus
+        })
+        .eq('id', orderId);
+
+    if (error) {
+        console.error('Error updating payment proof:', error);
+        throw error;
+    }
+}
+
+export async function updatePaymentStatus(
+    orderId: string,
+    status: 'unpaid' | 'pending_verification' | 'paid'
+): Promise<void> {
+    const { error } = await supabase
+        .from('orders')
+        .update({ payment_status: status })
+        .eq('id', orderId);
+
+    if (error) {
+        console.error('Error updating payment status:', error);
+        throw error;
+    }
+}
+
 // ── Settings ──
 export const getSettings = async (): Promise<StoreSettings> => {
     const { data, error } = await supabase
@@ -282,14 +338,13 @@ export const getSettings = async (): Promise<StoreSettings> => {
     return {
         ...DEFAULT_SETTINGS,
         store_name: data.store_name,
-        whatsapp_number: data.whatsapp, // Map 'whatsapp' -> 'whatsapp_number'
+        whatsapp_number: data.whatsapp,
         currency: data.currency,
         delivery_fee: data.delivery_fee,
         free_delivery_threshold: data.free_delivery_threshold,
-        // Map other fields if they exist in DB, otherwise use defaults
-        bank_account_number: data.bank_account,
-        // Note: data.bank_name and data.bank_account_name handled if we add them to StoreSettings types later
-        // For now MVP fields:
+        bank_name: data.bank_name || '',
+        bank_holder_name: data.bank_holder_name || data.bank_account_name || '',
+        bank_account_number: data.bank_account || '',
     };
 }
 
