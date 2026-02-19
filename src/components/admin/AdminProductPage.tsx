@@ -77,15 +77,15 @@ export default function AdminProductPage() {
             {/* HEADER */}
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900">Product Management</h1>
-                    <p className="text-slate-500 text-sm">{products.length} products total</p>
+                    <h1 className="text-3xl font-bold text-slate-900">Product Management</h1>
+                    <p className="text-sm text-slate-500 mt-1">{products.length} products total</p>
                 </div>
                 {!isFormOpen && (
                     <div className="flex gap-3">
-                        <button onClick={handleSeedData} className="px-4 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 font-medium text-sm">
+                        <button onClick={handleSeedData} className="px-4 py-2 bg-white border border-slate-200 text-slate-500 rounded-lg hover:bg-slate-50 font-medium text-sm transition-colors">
                             Seed Sample Data
                         </button>
-                        <button onClick={handleCreateNew} className="bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 shadow-sm transition-all flex items-center gap-2 font-medium">
+                        <button onClick={handleCreateNew} className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 shadow-sm transition-all flex items-center gap-2 font-medium text-base">
                             <Plus size={18} /> Add Product
                         </button>
                     </div>

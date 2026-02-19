@@ -30,7 +30,7 @@ export default function ProductTableRow({ product, isSelected, onSelect, onEdit,
     return (
         <tr className={`
             md:table-row md:border-b md:border-slate-100 md:hover:bg-slate-50 md:transition-colors md:bg-transparent
-            grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 p-4 border border-slate-200 rounded-xl mb-3 bg-white relative shadow-sm
+            grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 p-4 border border-slate-200 rounded-xl mb-3 bg-white relative shadow-sm hover:shadow-md transition-shadow
             ${isSelected ? 'bg-blue-50/50 border-blue-200' : ''}
         `}>
             {/* Checkbox */}
@@ -67,21 +67,21 @@ export default function ProductTableRow({ product, isSelected, onSelect, onEdit,
             {/* Name + Price */}
             <td className="md:table-cell md:px-6 md:py-4 self-center">
                 <div className="flex flex-col">
-                    <span className="font-semibold text-slate-900 text-sm truncate max-w-[200px] md:max-w-xs">{product.name}</span>
-                    <span className="text-xs text-slate-500 font-medium mt-0.5">RM {product.price.toFixed(2)}</span>
+                    <span className="font-semibold text-slate-900 text-base truncate max-w-[200px] md:max-w-xs">{product.name}</span>
+                    <span className="text-sm text-blue-600 font-bold mt-0.5">RM {product.price.toFixed(2)}</span>
                 </div>
             </td>
 
             {/* Status / Stock */}
             <td className="md:table-cell md:w-32 md:px-6 md:py-4 col-start-2 -mt-2 md:mt-0 md:col-auto">
                 <div className="flex flex-row md:flex-col gap-2 md:gap-1 items-center md:items-start">
-                    <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide border
+                    <span className={`inline-flex px-2 py-1 rounded text-xs font-bold uppercase tracking-wide border
                         ${product.status === 'active'
                             ? 'bg-green-50 text-green-700 border-green-100'
                             : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
                         {product.status || 'Draft'}
                     </span>
-                    <span className={`text-xs font-medium ${product.stock > 0 ? 'text-slate-600' : 'text-red-500'}`}>
+                    <span className={`text-xs font-medium ${product.stock > 0 ? 'text-slate-500' : 'text-red-500'}`}>
                         {product.stock} in stock
                     </span>
                 </div>

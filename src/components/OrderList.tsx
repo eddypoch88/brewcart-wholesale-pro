@@ -285,35 +285,35 @@ export default function OrderList() {
                 {/* HEADER WITH SEARCH & EXPORT */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
-                        <h2 className="text-2xl font-bold text-slate-800">Order History</h2>
-                        <span className="text-sm text-slate-500">{filteredOrders.length} orders</span>
+                        <h2 className="text-3xl font-bold text-slate-900">Order History</h2>
+                        <span className="text-sm text-slate-500 mt-1 block">{filteredOrders.length} orders</span>
                     </div>
-                    <div className="flex gap-3 w-full md:w-auto">
+                    <div className="flex gap-2 w-full md:w-auto">
                         <div className="relative flex-1 md:w-64">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                             <input
                                 type="text"
                                 placeholder="Search by name or phone..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                className="w-full h-11 pl-10 pr-4 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-colors"
                             />
                         </div>
                         {selectedOrderIds.size > 0 && (
                             <button
                                 onClick={handleDeleteSelected}
-                                className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition-colors"
+                                className="flex items-center gap-2 h-11 px-4 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium text-sm transition-colors"
                             >
-                                <Trash2 size={18} />
+                                <Trash2 size={16} />
                                 <span className="hidden sm:inline">Delete ({selectedOrderIds.size})</span>
                             </button>
                         )}
                         <button
                             onClick={exportToCSV}
                             disabled={filteredOrders.length === 0}
-                            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
+                            className="flex items-center gap-2 h-11 px-4 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm transition-colors"
                         >
-                            <Download size={18} />
+                            <Download size={16} />
                             <span className="hidden sm:inline">Export CSV</span>
                         </button>
                     </div>
@@ -325,8 +325,8 @@ export default function OrderList() {
                         <button
                             key={tab.value}
                             onClick={() => setStatusFilter(tab.value)}
-                            className={`px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap transition-colors ${statusFilter === tab.value
-                                ? 'bg-blue-600 text-white'
+                            className={`h-11 px-4 rounded-lg font-medium text-sm whitespace-nowrap transition-colors ${statusFilter === tab.value
+                                ? 'bg-blue-600 text-white shadow-sm'
                                 : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
                                 }`}
                         >
@@ -336,39 +336,39 @@ export default function OrderList() {
                 </div>
 
                 {/* DATE RANGE FILTER & SELECT ALL */}
-                <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center bg-white p-4 rounded-lg border border-slate-200">
-                    <div className="flex items-center gap-4">
+                <div className="flex flex-col md:flex-row gap-3 justify-between items-start md:items-center bg-white p-3 rounded-lg border border-slate-200">
+                    <div className="flex items-center gap-3">
                         <button
                             onClick={() => handleSelectAll(filteredIds)}
-                            className="flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-slate-900"
+                            className="flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-slate-900 transition-colors"
                         >
                             {isAllSelected ? (
-                                <CheckSquare size={20} className="text-blue-600" />
+                                <CheckSquare size={18} className="text-blue-600" />
                             ) : (
-                                <Square size={20} className="text-slate-400" />
+                                <Square size={18} className="text-slate-400" />
                             )}
                             Select All
                         </button>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-3">
-                        <Calendar size={18} className="text-slate-400" />
-                        <div className="flex items-center gap-2">
-                            <label className="text-sm font-medium text-slate-700">From:</label>
+                    <div className="flex flex-wrap items-center gap-2">
+                        <Calendar size={16} className="text-slate-400" />
+                        <div className="flex items-center gap-1.5">
+                            <label className="text-sm text-slate-500">From:</label>
                             <input
                                 type="date"
                                 value={dateFrom}
                                 onChange={(e) => setDateFrom(e.target.value)}
-                                className="px-3 py-1.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                className="h-9 px-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-colors"
                             />
                         </div>
-                        <div className="flex items-center gap-2">
-                            <label className="text-sm font-medium text-slate-700">To:</label>
+                        <div className="flex items-center gap-1.5">
+                            <label className="text-sm text-slate-500">To:</label>
                             <input
                                 type="date"
                                 value={dateTo}
                                 onChange={(e) => setDateTo(e.target.value)}
-                                className="px-3 py-1.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                className="h-9 px-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-colors"
                             />
                         </div>
                         {(dateFrom || dateTo) && (
@@ -377,7 +377,7 @@ export default function OrderList() {
                                     setDateFrom('');
                                     setDateTo('');
                                 }}
-                                className="px-3 py-1.5 text-sm text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+                                className="h-9 px-3 text-sm text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
                             >
                                 Clear
                             </button>
@@ -391,70 +391,72 @@ export default function OrderList() {
                         <p className="text-slate-500">No orders found.</p>
                     </div>
                 ) : (
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                         {filteredOrders.map((order) => (
-                            <div key={order.id} className={`bg-white border rounded-xl overflow-hidden hover:shadow-md transition-shadow ${selectedOrderIds.has(order.id) ? 'border-blue-500 ring-1 ring-blue-500' : 'border-slate-200'}`}>
+                            <div key={order.id} className={`bg-white border rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow ${selectedOrderIds.has(order.id) ? 'border-blue-500 ring-1 ring-blue-500' : 'border-slate-200'}`}>
 
                                 {/* HEADER */}
                                 <div
-                                    className="p-5 flex flex-col md:flex-row justify-between items-center cursor-pointer bg-slate-50/50"
+                                    className="p-4 flex flex-col md:flex-row justify-between items-center cursor-pointer hover:bg-slate-50/50 transition-colors"
                                     onClick={() => toggleExpand(order.id)}
                                 >
-                                    <div className="flex gap-4 items-center w-full md:w-auto mb-4 md:mb-0">
+                                    <div className="flex gap-3 items-center w-full md:w-auto mb-3 md:mb-0">
                                         <div
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 toggleSelectOrder(order.id);
                                             }}
-                                            className="cursor-pointer"
+                                            className="cursor-pointer flex-shrink-0"
                                         >
                                             {selectedOrderIds.has(order.id) ? (
-                                                <CheckSquare size={20} className="text-blue-600" />
+                                                <CheckSquare size={18} className="text-blue-600" />
                                             ) : (
-                                                <Square size={20} className="text-slate-400" />
+                                                <Square size={18} className="text-slate-300" />
                                             )}
                                         </div>
-                                        <div className={`p-3 rounded-full ${order.status === 'delivered' ? 'bg-green-100 text-green-600' : 'bg-yellow-100 text-yellow-600'}`}>
-                                            <ShoppingBag size={20} />
+                                        <div className={`p-2.5 rounded-full flex-shrink-0 ${order.status === 'delivered' ? 'bg-green-50 text-green-600' : 'bg-amber-50 text-amber-600'}`}>
+                                            <ShoppingBag size={18} />
                                         </div>
-                                        <div>
-                                            <h3 className="font-bold text-slate-900">{order.customer_name}</h3>
-                                            <div className="flex items-center gap-2 text-xs text-slate-500 mt-1">
-                                                <Clock size={12} /> {formatDate(order.created_at)}
+                                        <div className="min-w-0">
+                                            <h3 className="text-lg font-semibold text-slate-900 leading-tight truncate">{order.customer_name}</h3>
+                                            <div className="flex items-center gap-1.5 text-xs text-slate-400 mt-0.5">
+                                                <Clock size={11} /> {formatDate(order.created_at)}
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-4 w-full md:w-auto justify-between">
-                                        <div className="text-right">
-                                            <p className="text-xs text-slate-500">Total Amount</p>
-                                            <p className="font-bold text-lg text-emerald-600">
+                                    <div className="flex items-center gap-3 w-full md:w-auto justify-between">
+                                        <div>
+                                            <p className="text-xs uppercase tracking-wide text-slate-400 mb-0.5">Total Amount</p>
+                                            <p className="text-2xl font-bold text-emerald-600 leading-none">
                                                 RM {(Number(order.total) || 0).toFixed(2)}
                                             </p>
                                         </div>
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handlePrint(order);
-                                            }}
-                                            className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                            title="Print Receipt"
-                                        >
-                                            <Printer size={18} />
-                                        </button>
-                                        <OrderStatusDropdown
-                                            currentStatus={order.status}
-                                            orderId={order.id}
-                                            onStatusChange={handleStatusChange}
-                                            isUpdating={updatingOrderId === order.id}
-                                        />
-                                        {expandedOrderIds.has(order.id) ? <ChevronUp size={20} className="text-slate-400" /> : <ChevronDown size={20} className="text-slate-400" />}
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handlePrint(order);
+                                                }}
+                                                className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                                title="Print Receipt"
+                                            >
+                                                <Printer size={16} />
+                                            </button>
+                                            <OrderStatusDropdown
+                                                currentStatus={order.status}
+                                                orderId={order.id}
+                                                onStatusChange={handleStatusChange}
+                                                isUpdating={updatingOrderId === order.id}
+                                            />
+                                            {expandedOrderIds.has(order.id) ? <ChevronUp size={18} className="text-slate-400" /> : <ChevronDown size={18} className="text-slate-400" />}
+                                        </div>
                                     </div>
                                 </div>
 
                                 {/* DETAIL */}
                                 {expandedOrderIds.has(order.id) && (
-                                    <div className="border-t border-slate-100 p-5 bg-white">
+                                    <div className="border-t border-slate-100 p-4 bg-white">
                                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                             {/* LEFT COLUMN */}
                                             <div className="space-y-6">
@@ -499,8 +501,8 @@ export default function OrderList() {
 
                                                             {/* Payment Status */}
                                                             <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium ${order.payment_status === 'paid' ? 'bg-green-50 text-green-700' :
-                                                                    order.payment_status === 'pending_verification' ? 'bg-amber-50 text-amber-700' :
-                                                                        'bg-red-50 text-red-700'
+                                                                order.payment_status === 'pending_verification' ? 'bg-amber-50 text-amber-700' :
+                                                                    'bg-red-50 text-red-700'
                                                                 }`}>
                                                                 {order.payment_status === 'paid' ? <CheckCircle size={14} /> :
                                                                     order.payment_status === 'pending_verification' ? <Loader2 size={14} className="animate-spin" /> :
