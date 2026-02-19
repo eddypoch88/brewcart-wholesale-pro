@@ -2,23 +2,28 @@ import { Link } from 'react-router-dom';
 import { ShoppingCart, Settings } from 'lucide-react';
 import { getCart, getSettings } from '../../lib/storage';
 import { useState, useEffect } from 'react';
+import { StoreSettings } from '../../types';
+import { DEFAULT_SETTINGS } from '../../data/mockData';
 
 export default function Navbar() {
-    const settings = getSettings();
+    const [settings, setSettings] = useState<StoreSettings>(DEFAULT_SETTINGS);
     const [cartCount, setCartCount] = useState(0);
+
+    useEffect(() => {
+        getSettings().then(s => { if (s) setSettings(s); });
+    }, []);
 
     useEffect(() => {
         const updateCount = () => setCartCount(getCart().reduce((s, c) => s + c.qty, 0));
         updateCount();
-        // Listen for storage changes from other tabs / components
         window.addEventListener('storage', updateCount);
-        // Custom event for same-tab updates
         window.addEventListener('cart-updated', updateCount);
         return () => {
             window.removeEventListener('storage', updateCount);
             window.removeEventListener('cart-updated', updateCount);
         };
     }, []);
+
 
     return (
         <nav className="sticky top-0 z-30 bg-white/80 backdrop-blur-lg border-b border-slate-200">
