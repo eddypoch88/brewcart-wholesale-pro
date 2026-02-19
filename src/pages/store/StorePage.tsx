@@ -1,14 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { getProducts, getSettings } from '../../lib/storage';
 import { Product, StoreSettings } from '../../types';
 import { DEFAULT_SETTINGS } from '../../data/mockData';
 import ProductCard from '../../components/store/ProductCard';
-import { ShoppingBag, Sparkles, Loader2 } from 'lucide-react';
+import { ShoppingBag, Sparkles, Loader2, Search, X } from 'lucide-react';
 
 export default function StorePage() {
     const [settings, setSettings] = useState<StoreSettings>(DEFAULT_SETTINGS);
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
+
+    const [searchQuery, setSearchQuery] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState('All');
 
     useEffect(() => {
         async function loadData() {
@@ -27,6 +30,24 @@ export default function StorePage() {
         }
         loadData();
     }, []);
+
+    // Derive unique categories
+    const categories = useMemo(() => {
+        const cats = new Set<string>();
+        products.forEach(p => {
+            if (p.category) cats.add(p.category);
+        });
+        return ['All', ...Array.from(cats).sort()];
+    }, [products]);
+
+    // Filter products
+    const filteredProducts = useMemo(() => {
+        return products.filter(p => {
+            const matchesSearch = !searchQuery || p.name.toLowerCase().includes(searchQuery.toLowerCase());
+            const matchesCategory = selectedCategory === 'All' || p.category === selectedCategory;
+            return matchesSearch && matchesCategory;
+        });
+    }, [products, searchQuery, selectedCategory]);
 
     if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin text-blue-600" /></div>;
 
@@ -54,21 +75,71 @@ export default function StorePage() {
                 </div>
             </section>
 
-            {/* PRODUCTS GRID */}
+            {/* PRODUCTS SECTION */}
             <section id="products" className="max-w-6xl mx-auto px-4 py-16">
-                <div className="text-center mb-12">
+                <div className="text-center mb-8">
                     <h2 className="text-3xl font-bold text-slate-900 mb-2">Our Products</h2>
                     <p className="text-slate-500">Fresh, handcrafted, and made to order.</p>
                 </div>
 
-                {products.length === 0 ? (
+                {/* Search Bar */}
+                <div className="max-w-md mx-auto mb-6">
+                    <div className="relative">
+                        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <input
+                            type="text"
+                            placeholder="Search products..."
+                            value={searchQuery}
+                            onChange={e => setSearchQuery(e.target.value)}
+                            className="w-full pl-11 pr-10 py-3 border border-slate-200 rounded-full bg-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none shadow-sm transition-all"
+                        />
+                        {searchQuery && (
+                            <button
+                                onClick={() => setSearchQuery('')}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 transition-colors"
+                            >
+                                <X size={16} />
+                            </button>
+                        )}
+                    </div>
+                </div>
+
+                {/* Category Pills */}
+                {categories.length > 1 && (
+                    <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-4 mb-6 justify-center flex-wrap">
+                        {categories.map(cat => (
+                            <button
+                                key={cat}
+                                onClick={() => setSelectedCategory(cat)}
+                                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${selectedCategory === cat
+                                        ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
+                                        : 'bg-white text-slate-600 border border-slate-200 hover:border-blue-300 hover:text-blue-600'
+                                    }`}
+                            >
+                                {cat}
+                            </button>
+                        ))}
+                    </div>
+                )}
+
+                {/* Product Grid */}
+                {filteredProducts.length === 0 ? (
                     <div className="text-center py-20 text-slate-400">
-                        <ShoppingBag className="w-16 h-16 mx-auto mb-4 text-slate-300" />
-                        <p className="text-lg">No products available yet.</p>
+                        <Search className="w-16 h-16 mx-auto mb-4 text-slate-300" />
+                        <p className="text-lg font-medium">No products found</p>
+                        <p className="text-sm mt-1">Try a different search or category</p>
+                        {(searchQuery || selectedCategory !== 'All') && (
+                            <button
+                                onClick={() => { setSearchQuery(''); setSelectedCategory('All'); }}
+                                className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-full text-sm font-medium hover:bg-blue-700 transition-colors"
+                            >
+                                Clear Filters
+                            </button>
+                        )}
                     </div>
                 ) : (
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-                        {products.map(product => (
+                        {filteredProducts.map(product => (
                             <ProductCard key={product.id} product={product} />
                         ))}
                     </div>
