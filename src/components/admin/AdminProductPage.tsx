@@ -85,7 +85,7 @@ export default function AdminProductPage() {
                         <button onClick={handleSeedData} className="px-4 py-2 bg-white border border-slate-200 text-slate-500 rounded-lg hover:bg-slate-50 font-medium text-sm transition-colors">
                             Seed Sample Data
                         </button>
-                        <button onClick={handleCreateNew} className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 shadow-sm transition-all flex items-center gap-2 font-medium text-base">
+                        <button onClick={handleCreateNew} className="hidden md:flex bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 shadow-sm transition-all items-center gap-2 font-medium text-base">
                             <Plus size={18} /> Add Product
                         </button>
                     </div>
@@ -156,6 +156,16 @@ export default function AdminProductPage() {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {!isFormOpen && (
+                <button
+                    onClick={handleCreateNew}
+                    title="Add Product"
+                    className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg flex items-center justify-center transition-transform scale-100 md:hidden"
+                >
+                    <Plus size={24} />
+                </button>
             )}
         </div>
     );
