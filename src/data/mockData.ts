@@ -23,6 +23,7 @@ export const DEFAULT_SETTINGS: StoreSettings = {
     bank_name: '',
     bank_holder_name: '',
     bank_account_number: '',
+    qr_code_url: '',
 
     // Operating Hours
     operating_hours: {

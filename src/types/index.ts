@@ -75,6 +75,7 @@ export interface StoreSettings {
     bank_name: string;
     bank_holder_name: string;
     bank_account_number: string;
+    qr_code_url: string;
 
     // Operating Hours
     operating_hours: {

@@ -363,18 +363,105 @@ export default function Settings() {
                         </label>
                     </div>
                     {settings.accept_bank_transfer && (
-                        <div className="ml-8 mt-3">
-                            <label className="block text-sm font-medium text-slate-700 mb-2 flex items-center gap-2">
-                                <BanknoteIcon size={16} className="text-green-600" />
-                                Bank Account Number
-                            </label>
-                            <input
-                                type="text"
-                                value={settings.bank_account_number}
-                                onChange={(e) => updateSettings({ bank_account_number: e.target.value })}
-                                placeholder="1234567890"
-                                className="w-full md:w-1/2 border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none"
-                            />
+                        <div className="ml-8 mt-3 space-y-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
+                            {/* Bank Name */}
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-2 flex items-center gap-2">
+                                    <Building2 size={16} className="text-blue-600" />
+                                    Bank Name
+                                </label>
+                                <input
+                                    type="text"
+                                    value={settings.bank_name}
+                                    onChange={(e) => updateSettings({ bank_name: e.target.value })}
+                                    placeholder="e.g. Maybank, CIMB, RHB"
+                                    className="w-full md:w-2/3 border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none"
+                                />
+                            </div>
+
+                            {/* Account Holder Name */}
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-2 flex items-center gap-2">
+                                    <CreditCard size={16} className="text-green-600" />
+                                    Account Holder Name
+                                </label>
+                                <input
+                                    type="text"
+                                    value={settings.bank_holder_name}
+                                    onChange={(e) => updateSettings({ bank_holder_name: e.target.value })}
+                                    placeholder="e.g. BrewCart Sdn Bhd / Ali bin Abu"
+                                    className="w-full md:w-2/3 border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none"
+                                />
+                            </div>
+
+                            {/* Bank Account Number */}
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-2 flex items-center gap-2">
+                                    <BanknoteIcon size={16} className="text-green-600" />
+                                    Bank Account Number
+                                </label>
+                                <input
+                                    type="text"
+                                    value={settings.bank_account_number}
+                                    onChange={(e) => updateSettings({ bank_account_number: e.target.value })}
+                                    placeholder="1234567890"
+                                    className="w-full md:w-2/3 border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none"
+                                />
+                            </div>
+
+                            {/* DuitNow QR Code Upload */}
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-2 flex items-center gap-2">
+                                    <ImageIcon size={16} className="text-purple-600" />
+                                    DuitNow QR Code
+                                </label>
+                                <p className="text-xs text-slate-500 mb-3">Upload your DuitNow QR so customers can scan & pay directly</p>
+
+                                {settings.qr_code_url ? (
+                                    <div className="relative inline-block">
+                                        <img
+                                            src={settings.qr_code_url}
+                                            alt="DuitNow QR Code"
+                                            className="w-48 h-48 object-contain rounded-lg border-2 border-purple-200 bg-white p-2 shadow-sm"
+                                        />
+                                        <button
+                                            onClick={() => updateSettings({ qr_code_url: '' })}
+                                            className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-red-600 transition-colors"
+                                        >
+                                            <X size={14} />
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div
+                                        onClick={() => document.getElementById('qr-upload')?.click()}
+                                        className="w-48 h-48 border-2 border-dashed border-purple-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-purple-500 hover:bg-purple-50/50 transition-all"
+                                    >
+                                        <ImageIcon size={32} className="text-purple-300 mb-2" />
+                                        <p className="text-xs text-purple-500 font-medium">Upload QR Code</p>
+                                        <p className="text-xs text-slate-400 mt-1">PNG, JPG</p>
+                                    </div>
+                                )}
+                                <input
+                                    id="qr-upload"
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                                        const file = e.target.files?.[0];
+                                        if (!file) return;
+                                        if (file.size > 2 * 1024 * 1024) {
+                                            toast.error('❌ QR image must be under 2MB');
+                                            return;
+                                        }
+                                        const reader = new FileReader();
+                                        reader.onloadend = () => {
+                                            updateSettings({ qr_code_url: reader.result as string });
+                                            toast.success('✅ QR Code uploaded!');
+                                        };
+                                        reader.readAsDataURL(file);
+                                    }}
+                                />
+                            </div>
                         </div>
                     )}
                 </div>

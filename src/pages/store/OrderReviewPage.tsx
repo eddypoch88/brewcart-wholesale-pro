@@ -294,6 +294,21 @@ export default function OrderReviewPage() {
                             </div>
                         </div>
 
+                        {/* DuitNow QR Code */}
+                        {settings.qr_code_url && (
+                            <div className="text-center space-y-3">
+                                <p className="text-xs font-bold text-purple-600 uppercase">Scan & Pay with DuitNow</p>
+                                <div className="inline-block p-3 bg-white rounded-xl border-2 border-purple-200 shadow-sm">
+                                    <img
+                                        src={settings.qr_code_url}
+                                        alt="DuitNow QR Code"
+                                        className="w-56 h-56 object-contain mx-auto"
+                                    />
+                                </div>
+                                <p className="text-xs text-slate-400">Scan QR above using your banking app</p>
+                            </div>
+                        )}
+
                         {/* Already uploaded receipt */}
                         {hasReceipt && paymentStatus === 'pending_verification' && (
                             <div className="space-y-3">

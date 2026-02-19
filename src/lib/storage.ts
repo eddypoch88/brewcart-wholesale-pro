@@ -345,6 +345,7 @@ export const getSettings = async (): Promise<StoreSettings> => {
         bank_name: data.bank_name || '',
         bank_holder_name: data.bank_holder_name || data.bank_account_name || '',
         bank_account_number: data.bank_account || '',
+        qr_code_url: data.qr_code_url || '',
     };
 }
 
@@ -358,6 +359,9 @@ export async function saveSettings(settings: StoreSettings): Promise<void> {
         delivery_fee: settings.delivery_fee,
         free_delivery_threshold: settings.free_delivery_threshold,
         bank_account: settings.bank_account_number,
+        bank_name: settings.bank_name,
+        bank_holder_name: settings.bank_holder_name,
+        qr_code_url: settings.qr_code_url,
         // Add other mapped fields if needed
         updated_at: new Date().toISOString()
     };
