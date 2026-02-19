@@ -418,7 +418,7 @@ export default function OrderList() {
                                     <div className="my-3 border-t border-gray-100"></div>
 
                                     <div className="flex items-center justify-between">
-                                        <p className="text-2xl font-bold text-emerald-600 tracking-tight">
+                                        <p className="text-base font-bold text-emerald-600 tracking-tight">
                                             RM {(Number(order.total) || 0).toFixed(2)}
                                         </p>
                                         <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
