@@ -43,3 +43,22 @@ h6 {
     margin: 1cm;
   }
 }
+
+/* Strict Portrait Mode PWA Guard */
+@media screen and (orientation: landscape) and (max-width: 900px) {
+  body::after {
+    content: "Please rotate your device to Portrait mode 📲";
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: #0f172a; /* Slate 900 */
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    font-size: 1.25rem;
+    font-weight: bold;
+    text-align: center;
+    backdrop-filter: blur(10px);
+  }
+}
