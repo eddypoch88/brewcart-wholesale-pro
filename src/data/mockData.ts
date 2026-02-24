@@ -38,6 +38,11 @@ export const DEFAULT_SETTINGS: StoreSettings = {
 
     // Notifications
     whatsapp_order_notifications: true,
+
+    // Marketing Integrations
+    fb_pixel_id: '',
+    google_analytics_id: '',
+    tiktok_pixel_id: '',
 };
 
 export const MOCK_PRODUCTS: Product[] = [

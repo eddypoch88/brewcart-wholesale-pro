@@ -90,6 +90,11 @@ export interface StoreSettings {
 
     // Notifications
     whatsapp_order_notifications: boolean;
+
+    // Marketing Integrations
+    fb_pixel_id?: string;
+    google_analytics_id?: string;
+    tiktok_pixel_id?: string;
 }
 
 export interface CartItem {

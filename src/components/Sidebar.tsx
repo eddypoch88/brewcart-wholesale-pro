@@ -1,4 +1,4 @@
-import { Menu, X, LayoutDashboard, Package, ShoppingBag, Settings, ExternalLink, TrendingUp, LogOut, Sun, Moon } from "lucide-react";
+import { Menu, X, LayoutDashboard, Package, ShoppingBag, Settings, ExternalLink, TrendingUp, LogOut, Sun, Moon, Megaphone } from "lucide-react";
 import { useCallback } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useStore } from "../context/StoreContext";
@@ -114,6 +114,7 @@ export default function Sidebar({
                     {navItem("analytics", "Analytics", TrendingUp)}
                     {navItem("products", "Products", Package)}
                     {navItem("orders", "Orders", ShoppingBag)}
+                    {navItem("marketing", "Marketing", Megaphone)}
                     {navItem("settings", "Settings", Settings)}
 
                 </nav>

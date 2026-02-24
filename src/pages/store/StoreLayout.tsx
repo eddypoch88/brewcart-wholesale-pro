@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom';
 import Navbar from '../../components/store/Navbar';
 import Footer from '../../components/store/Footer';
 import InstallPrompt from '../../components/system/InstallPrompt';
+import StoreMarketingPixels from '../../components/store/StoreMarketingPixels';
 
 export default function StoreLayout() {
     return (
@@ -12,6 +13,7 @@ export default function StoreLayout() {
             </main>
             <Footer />
             <InstallPrompt />
+            <StoreMarketingPixels />
         </div>
     );
 }

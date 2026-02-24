@@ -385,6 +385,9 @@ export const getSettings = async (): Promise<StoreSettings> => {
         bank_holder_name: data.bank_holder_name || data.bank_account_name || '',
         bank_account_number: data.bank_account || '',
         qr_code_url: data.qr_code_url || '',
+        fb_pixel_id: data.fb_pixel_id || '',
+        google_analytics_id: data.google_analytics_id || '',
+        tiktok_pixel_id: data.tiktok_pixel_id || '',
     };
 }
 
