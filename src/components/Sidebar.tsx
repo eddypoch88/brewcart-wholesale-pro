@@ -121,14 +121,18 @@ export default function Sidebar({
                 {/* Bottom Actions Section */}
                 <div className="px-3 py-3 border-t border-slate-800">
                     <div className="space-y-1 mb-2">
-                        {isPWAReady && (
-                            <button
-                                onClick={installApp}
-                                className="w-full flex items-center justify-center gap-2 px-4 py-3 mb-2 bg-gradient-to-r from-cyan-400 via-teal-500 to-emerald-500 text-white rounded-xl shadow-lg shadow-cyan-500/30 transition-transform duration-300 hover:scale-105 hover:shadow-cyan-500/50 font-bold animate-pulse"
-                            >
-                                <span>📲 Install App</span>
-                            </button>
-                        )}
+                        <button
+                            onClick={() => {
+                                if (isPWAReady) {
+                                    installApp();
+                                } else {
+                                    alert("Browser requirement: To install, please use Chrome/Safari and look for the 'Add to Home Screen' option in your browser menu, or ensure you haven't already installed it.");
+                                }
+                            }}
+                            className="w-full flex items-center justify-center gap-2 px-4 py-3 mb-2 bg-gradient-to-r from-cyan-400 via-teal-500 to-emerald-500 text-white rounded-xl shadow-lg shadow-cyan-500/30 transition-transform duration-300 hover:scale-105 hover:shadow-cyan-500/50 font-bold animate-pulse"
+                        >
+                            <span>📲 Install App</span>
+                        </button>
                         <a
                             href="/"
                             onClick={closeSidebarOnMobile}
@@ -153,11 +157,12 @@ export default function Sidebar({
                         </div>
                         <button
                             onClick={toggleTheme}
-                            className={`relative w-10 h-5 rounded-full transition-colors duration-300 ${theme === 'dark' ? 'bg-blue-500' : 'bg-slate-700'
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 focus:outline-none ${theme === 'dark' ? 'bg-blue-500' : 'bg-slate-700'
                                 }`}
                         >
-                            <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-300 ${theme === 'dark' ? 'translate-x-[22px]' : 'translate-x-0.5'
-                                }`}
+                            <span
+                                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${theme === 'dark' ? 'translate-x-6' : 'translate-x-1'
+                                    }`}
                             />
                         </button>
                     </div>
