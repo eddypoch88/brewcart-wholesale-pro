@@ -1,33 +1,49 @@
 import { useState, useEffect } from 'react';
 
+// Global state to store the prompt event
+let deferredPrompt: any = null;
+const listeners = new Set<(isReady: boolean) => void>();
+
+// Attach the listener globally as soon as this file is loaded
+if (typeof window !== 'undefined') {
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        listeners.forEach(listener => listener(true));
+    });
+}
+
 export function usePWA() {
-    const [prompt, setPrompt] = useState<any>(null);
+    const [isReady, setIsReady] = useState(!!deferredPrompt);
 
     useEffect(() => {
-        const handler = (e: any) => {
-            e.preventDefault(); // Prevent the mini-infobar from appearing on mobile
-            setPrompt(e);       // Stash the event so it can be triggered later.
+        // Sync local state with global state immediately on mount
+        setIsReady(!!deferredPrompt);
+
+        // Register listener for future updates
+        const listener = (ready: boolean) => setIsReady(ready);
+        listeners.add(listener);
+
+        return () => {
+            listeners.delete(listener);
         };
-
-        window.addEventListener('beforeinstallprompt', handler);
-
-        return () => window.removeEventListener('beforeinstallprompt', handler);
     }, []);
 
     const installApp = async () => {
-        if (!prompt) return;
+        if (!deferredPrompt) return;
 
-        // Show the install prompt
-        prompt.prompt();
+        // Show the prompt
+        deferredPrompt.prompt();
 
-        // Wait for the user to respond to the prompt
-        const { outcome } = await prompt.userChoice;
+        // Wait for user choice
+        const { outcome } = await deferredPrompt.userChoice;
 
         if (outcome === 'accepted') {
             console.log('User accepted the install prompt');
-            setPrompt(null); // Hide button after install
+            deferredPrompt = null;
+            listeners.forEach(listener => listener(false));
         }
     };
 
-    return { isReady: !!prompt, installApp };
+    return { isReady, installApp };
 }
