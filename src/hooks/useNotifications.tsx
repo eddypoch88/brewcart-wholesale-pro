@@ -14,6 +14,7 @@ interface NotificationsContextValue {
     notifications: NotificationItem[];
     unreadCount: number;
     markAllAsRead: () => void;
+    markAsRead: (id: string) => void;
     clearNotification: (id: string) => void;
     addNotification: (n: NotificationItem) => void; // Manual test helper
 }
@@ -142,11 +143,12 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
 
     const unreadCount = notifications.filter(n => !n.read).length;
     const markAllAsRead = () => setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    const markAsRead = (id: string) => setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
     const clearNotification = (id: string) => setNotifications(prev => prev.filter(n => n.id !== id));
     const addNotification = (n: NotificationItem) => setNotifications(prev => [n, ...prev]);
 
     return (
-        <NotificationsContext.Provider value={{ notifications, unreadCount, markAllAsRead, clearNotification, addNotification }
+        <NotificationsContext.Provider value={{ notifications, unreadCount, markAllAsRead, markAsRead, clearNotification, addNotification }
         }>
             {children}
         </NotificationsContext.Provider>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Calendar, Phone, User, ShoppingBag, ChevronDown, ChevronUp, Clock, Search, Download, Printer, MapPin, CreditCard, FileText, Save, Trash2, CheckSquare, Square, Image, CheckCircle, AlertCircle, Loader2, X } from 'lucide-react';
 import { getOrders, updateOrderStatus, updateOrderNotes, getSettings, deleteOrders, updatePaymentStatus } from '../lib/storage';
 import { Order } from '../types';
@@ -20,9 +21,34 @@ export default function OrderList() {
     const [orderToPrint, setOrderToPrint] = useState<Order | null>(null);
     const [editingNotes, setEditingNotes] = useState<{ [key: string]: string }>({});
 
+    const [highlightId, setHighlightId] = useState<string | null>(null);
+    const [searchParams, setSearchParams] = useSearchParams();
+
     useEffect(() => {
         loadData();
     }, []);
+
+    useEffect(() => {
+        const orderId = searchParams.get('orderId');
+        if (orderId && orders.length > 0) {
+            setHighlightId(orderId);
+            setExpandedOrderIds(prev => new Set(prev).add(orderId));
+
+            setTimeout(() => {
+                const el = document.getElementById(`order-${orderId}`);
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 100);
+
+            const timer = setTimeout(() => {
+                setHighlightId(null);
+                setSearchParams({});
+            }, 3000);
+
+            return () => clearTimeout(timer);
+        }
+    }, [searchParams, orders.length, setSearchParams]);
 
     const loadData = async () => {
         setLoading(true);
@@ -397,7 +423,16 @@ export default function OrderList() {
                 ) : (
                     <div className="space-y-2">
                         {filteredOrders.map((order) => (
-                            <div key={order.id} className={`bg-white rounded-2xl shadow-sm overflow-hidden ${selectedOrderIds.has(order.id) ? 'ring-2 ring-blue-500' : ''}`}>
+                            <div
+                                id={`order-${order.id}`}
+                                key={order.id}
+                                className={`rounded-2xl shadow-sm overflow-hidden transition-all duration-500 ${highlightId === order.id
+                                        ? 'bg-yellow-50 border-2 border-yellow-300'
+                                        : selectedOrderIds.has(order.id)
+                                            ? 'bg-white ring-2 ring-blue-500'
+                                            : 'bg-white'
+                                    }`}
+                            >
 
                                 {/* CARD HEADER */}
                                 <div

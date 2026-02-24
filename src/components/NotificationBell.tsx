@@ -5,7 +5,7 @@ import { useNotifications, NotificationItem } from '../hooks/useNotifications';
 
 export default function NotificationBell() {
     const [isOpen, setIsOpen] = useState(false);
-    const { notifications, unreadCount, markAllAsRead, clearNotification } = useNotifications();
+    const { notifications, unreadCount, markAllAsRead, markAsRead, clearNotification } = useNotifications();
     const dropdownRef = useRef<HTMLDivElement>(null);
     const navigate = useNavigate();
 
@@ -20,9 +20,10 @@ export default function NotificationBell() {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const handleItemClick = (_n: NotificationItem) => {
+    const handleItemClick = (n: NotificationItem) => {
+        markAsRead(n.id);
         setIsOpen(false);
-        navigate('/admin/orders');
+        navigate(`/admin/orders?orderId=${n.id}`);
     };
 
     const formatTime = (dateStr: string) => {
