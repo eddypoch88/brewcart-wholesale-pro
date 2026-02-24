@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getCart, updateCartQty, removeFromCart, clearCart, getSettings } from '../../lib/storage';
+import { getCart, updateCartQty, removeFromCart, clearCart } from '../../lib/storage';
 import { CartItem } from '../../types';
 import { Trash2, ShoppingBag, Plus, Minus, ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function CartPage() {
     const [cart, setCart] = useState<CartItem[]>([]);
-    const settings = getSettings();
 
     const loadCart = () => setCart(getCart());
 

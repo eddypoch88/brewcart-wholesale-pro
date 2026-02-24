@@ -35,11 +35,10 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                             <Route path="/" element={<StorePage />} />
                             <Route path="/product/:id" element={<ProductPage />} />
                             <Route path="/cart" element={<CartPage />} />
+                            <Route path="/checkout" element={<CheckoutPage />} />
+                            <Route path="/order-confirmation" element={<OrderConfirmationPage />} />
+                            <Route path="/order-review/:orderId" element={<OrderReviewPage />} />
                         </Route>
-
-                        <Route path="/checkout" element={<CheckoutPage />} />
-                        <Route path="/order-confirmation" element={<OrderConfirmationPage />} />
-                        <Route path="/order-review/:orderId" element={<OrderReviewPage />} />
 
                         {/* ADMIN CMS - PROTECTED */}
                         <Route path="/admin" element={
