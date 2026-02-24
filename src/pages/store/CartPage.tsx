@@ -67,42 +67,40 @@ export default function CartPage() {
 
             <div className="space-y-4 mb-8">
                 {cart.map(item => (
-                    <div key={item.product.id} className="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-4">
+                    <div key={item.product.id} className="bg-white border border-slate-200 rounded-xl p-4 flex items-center justify-between gap-3 w-full">
                         {/* Image */}
-                        <div className="w-20 h-20 rounded-lg overflow-hidden bg-slate-100 flex-shrink-0 border border-slate-200">
-                            {item.product.images?.[0] ? (
-                                <img src={item.product.images[0]} alt={item.product.name} className="w-full h-full object-cover" />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center text-slate-300">
-                                    <ShoppingBag size={24} />
-                                </div>
-                            )}
-                        </div>
+                        {item.product.images?.[0] ? (
+                            <img src={item.product.images[0]} alt={item.product.name} className="w-16 h-16 rounded-lg object-cover flex-shrink-0 border border-slate-200" />
+                        ) : (
+                            <div className="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center text-slate-300 flex-shrink-0 border border-slate-200">
+                                <ShoppingBag size={20} />
+                            </div>
+                        )}
 
-                        {/* Info */}
+                        {/* Name + Price */}
                         <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-slate-900 truncate">{item.product.name}</h3>
-                            <p className="text-sm text-blue-600 font-medium">RM {item.product.price.toFixed(2)}</p>
+                            <p className="font-medium text-sm text-slate-900 truncate">{item.product.name}</p>
+                            <p className="text-blue-600 font-semibold text-sm">RM {item.product.price.toFixed(2)}</p>
                         </div>
 
-                        {/* Qty */}
-                        <div className="flex items-center border border-slate-200 rounded-lg overflow-hidden">
-                            <button onClick={() => handleQtyChange(item.product.id, -1)} className="px-3 py-2 text-slate-500 hover:bg-slate-50 transition">
+                        {/* Quantity controls */}
+                        <div className="flex items-center gap-2 flex-shrink-0 border border-slate-200 rounded-lg overflow-hidden bg-slate-50">
+                            <button onClick={() => handleQtyChange(item.product.id, -1)} className="px-2 py-1 text-slate-500 hover:bg-slate-200 transition">
                                 <Minus size={14} />
                             </button>
-                            <span className="w-10 text-center font-bold text-sm">{item.qty}</span>
-                            <button onClick={() => handleQtyChange(item.product.id, 1)} className="px-3 py-2 text-slate-500 hover:bg-slate-50 transition">
+                            <span className="w-6 text-center font-bold text-sm">{item.qty}</span>
+                            <button onClick={() => handleQtyChange(item.product.id, 1)} className="px-2 py-1 text-slate-500 hover:bg-slate-200 transition">
                                 <Plus size={14} />
                             </button>
                         </div>
 
-                        {/* Subtotal */}
-                        <div className="text-right w-24 flex-shrink-0">
-                            <p className="font-bold text-slate-900">RM {(item.product.price * item.qty).toFixed(2)}</p>
-                        </div>
+                        {/* Total */}
+                        <p className="text-sm font-bold flex-shrink-0 w-16 text-right text-slate-900 hidden sm:block">
+                            RM {(item.product.price * item.qty).toFixed(2)}
+                        </p>
 
                         {/* Remove */}
-                        <button onClick={() => handleRemove(item.product.id)} className="text-slate-400 hover:text-red-500 transition p-2">
+                        <button onClick={() => handleRemove(item.product.id)} className="text-slate-400 hover:text-red-500 transition p-2 flex-shrink-0">
                             <Trash2 size={16} />
                         </button>
                     </div>

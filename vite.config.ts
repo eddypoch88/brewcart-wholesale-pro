@@ -3,22 +3,7 @@ import fs from 'fs';
 import { defineConfig, loadEnv, Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// Custom plugin: stamps a build timestamp into sw.js so every deploy
-// gets a unique cache name — old caches are automatically purged.
-function injectSwVersion(): Plugin {
-  return {
-    name: 'inject-sw-version',
-    closeBundle() {
-      const swPath = path.resolve(__dirname, 'dist', 'sw.js');
-      if (fs.existsSync(swPath)) {
-        const timestamp = Date.now().toString();
-        const content = fs.readFileSync(swPath, 'utf-8');
-        fs.writeFileSync(swPath, content.replace('__CACHE_VERSION__', timestamp), 'utf-8');
-        console.log(`[sw-version] Cache version stamped: brewcart-${timestamp}`);
-      }
-    },
-  };
-}
+import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
@@ -28,7 +13,41 @@ export default defineConfig(({ mode }) => {
       port: 3000,
       host: '0.0.0.0',
     },
-    plugins: [react(), injectSwVersion()],
+    plugins: [
+      react(),
+      VitePWA({
+        registerType: 'autoUpdate',
+        includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+        workbox: {
+          cleanupOutdatedCaches: true,
+          skipWaiting: true,
+          clientsClaim: true,
+          navigateFallbackDenylist: [/^\/api/],
+        },
+        manifest: {
+          name: 'BrewCart Wholesale Pro',
+          short_name: 'BrewCart',
+          description: 'B2B Wholesale Ordering Application',
+          theme_color: '#0f172a',
+          background_color: '#0f172a',
+          display: 'standalone',
+          orientation: 'portrait',
+          icons: [
+            {
+              src: 'pwa-192x192.png',
+              sizes: '192x192',
+              type: 'image/png'
+            },
+            {
+              src: 'pwa-512x512.png',
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'any maskable'
+            }
+          ]
+        }
+      })
+    ],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),

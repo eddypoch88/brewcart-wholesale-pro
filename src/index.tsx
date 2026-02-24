@@ -4,6 +4,22 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { StoreProvider } from './context/StoreContext';
 import { AuthProvider } from './context/AuthContext';
 import { Toaster } from 'react-hot-toast';
+import { registerSW } from 'virtual:pwa-register';
+
+// White Screen Killer: Auto-reload when old chunks fail to load after a deployment
+window.addEventListener('error', (e) => {
+    if (/Loading chunk [\d]+ failed/.test(e.message) || /dynamically imported module/.test(e.message)) {
+        console.warn('Chunk load error detected, reloading page to fetch new version...');
+        window.location.reload();
+    }
+});
+
+// Auto-update Service Worker
+const updateSW = registerSW({
+    onNeedRefresh() {
+        updateSW(true);
+    }
+});
 
 // Admin
 import App from './App';

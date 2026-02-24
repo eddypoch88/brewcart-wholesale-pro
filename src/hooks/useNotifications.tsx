@@ -72,50 +72,71 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
 
         console.log('[Notifications] Subscribing to Supabase realtime orders...');
 
-        const channel = supabase
-            .channel('orders-notifications-global')
-            .on(
-                'postgres_changes',
-                { event: 'INSERT', schema: 'public', table: 'orders' },
-                (payload) => {
-                    console.log('[Notification] New order received:', payload.new);
-                    const order = payload.new as any;
+        // Request Web Notification permission
+        if ('Notification' in window && Notification.permission !== 'denied') {
+            Notification.requestPermission();
+        }
 
-                    // Notify for all new orders (pending check optional — new orders always start pending)
-                    const newNotification: NotificationItem = {
-                        id: order.id,
-                        customerName: order.customer_name || 'Unknown',
-                        total: order.total_amount || order.total || 0,
-                        createdAt: order.created_at || new Date().toISOString(),
-                        read: false
-                    };
+        let channel: ReturnType<typeof supabase.channel>;
 
-                    setNotifications(prev => [newNotification, ...prev]);
-                    playSound();
-                    toast.success(
-                        `🛒 New Order from ${newNotification.customerName}! RM ${Number(newNotification.total).toFixed(2)}`,
-                        { duration: 6000, position: 'top-center' }
-                    );
-                }
-            )
-            .on(
-                'postgres_changes',
-                { event: 'UPDATE', schema: 'public', table: 'orders' },
-                (payload) => {
-                    const order = payload.new as any;
-                    console.log('[Notification] Order updated:', order.id, '→', order.status);
-                    if (order.status !== 'pending') {
-                        setNotifications(prev => prev.filter(n => n.id !== order.id));
+        const setupChannel = () => {
+            channel = supabase
+                .channel(`orders-notifications-global-${Date.now()}`)
+                .on(
+                    'postgres_changes',
+                    { event: 'INSERT', schema: 'public', table: 'orders' },
+                    (payload) => {
+                        console.log('[Notification] New order received:', payload.new);
+                        const order = payload.new as any;
+
+                        const newNotification: NotificationItem = {
+                            id: order.id,
+                            customerName: order.customer_name || 'Unknown',
+                            total: order.total_amount || order.total || 0,
+                            createdAt: order.created_at || new Date().toISOString(),
+                            read: false
+                        };
+
+                        setNotifications(prev => [newNotification, ...prev]);
+                        playSound();
+                        toast.success(
+                            `🛒 New Order from ${newNotification.customerName}! RM ${Number(newNotification.total).toFixed(2)}`,
+                            { duration: 6000, position: 'top-center' }
+                        );
+
+                        // Web Notifications API (System Push Notification)
+                        if ('Notification' in window && Notification.permission === 'granted') {
+                            new Notification('🛒 New Order!', {
+                                body: `${newNotification.customerName} - RM ${Number(newNotification.total).toFixed(2)}`,
+                                icon: '/pwa-192x192.png',
+                            });
+                        }
                     }
-                }
-            )
-            .subscribe((status) => {
-                console.log('[Notifications] Channel status:', status);
-            });
+                )
+                .on(
+                    'postgres_changes',
+                    { event: 'UPDATE', schema: 'public', table: 'orders' },
+                    (payload) => {
+                        const order = payload.new as any;
+                        if (order.status !== 'pending') {
+                            setNotifications(prev => prev.filter(n => n.id !== order.id));
+                        }
+                    }
+                )
+                .subscribe((status) => {
+                    console.log('[Notifications] Channel status:', status);
+                    if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+                        console.warn('[Notifications] Connection lost. Reconnecting in 3 seconds...');
+                        setTimeout(setupChannel, 3000);
+                    }
+                });
+        };
+
+        setupChannel();
 
         return () => {
             console.log('[Notifications] Unsubscribing from realtime channel.');
-            supabase.removeChannel(channel);
+            if (channel) supabase.removeChannel(channel);
         };
     }, []);
 
@@ -125,10 +146,10 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
     const addNotification = (n: NotificationItem) => setNotifications(prev => [n, ...prev]);
 
     return (
-        <NotificationsContext.Provider value= {{ notifications, unreadCount, markAllAsRead, clearNotification, addNotification }
-}>
-    { children }
-    </NotificationsContext.Provider>
+        <NotificationsContext.Provider value={{ notifications, unreadCount, markAllAsRead, clearNotification, addNotification }
+        }>
+            {children}
+        </NotificationsContext.Provider>
     );
 }
 
