@@ -32,6 +32,7 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
     });
 
     const audioRef = useRef<HTMLAudioElement | null>(null);
+    const seenOrderIds = useRef<Set<string>>(new Set(notifications.map(n => n.id)));
 
     // Persist to localStorage whenever notifications change
     useEffect(() => {
@@ -89,6 +90,13 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
                     (payload) => {
                         console.log('[Notification] New order received:', payload.new);
                         const order = payload.new as any;
+
+                        // Deduplicate events to prevent double-processing and React key warnings
+                        if (seenOrderIds.current.has(order.id)) {
+                            console.log('[Notification] Duplicate event ignored for order:', order.id);
+                            return;
+                        }
+                        seenOrderIds.current.add(order.id);
 
                         const newNotification: NotificationItem = {
                             id: order.id,
