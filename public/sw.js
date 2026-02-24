@@ -21,14 +21,32 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-    // Network-first for API calls, cache-first for assets
-    if (event.request.url.includes('/rest/') || event.request.url.includes('supabase')) {
+    const url = event.request.url;
+
+    // Skip non-GET requests (POST, etc.) — cannot be cached
+    if (event.request.method !== 'GET') return;
+
+    // Skip dev-only / extension requests
+    if (
+        url.startsWith('chrome-extension') ||
+        url.includes('hot-update') ||
+        url.includes('__vite') ||
+        url.includes('ws://') ||
+        url.includes('wss://')
+    ) return;
+
+    // Network-first for Supabase API calls
+    if (url.includes('/rest/') || url.includes('supabase')) {
         event.respondWith(
             fetch(event.request).catch(() => caches.match(event.request))
         );
-    } else {
-        event.respondWith(
-            caches.match(event.request).then((cached) => cached || fetch(event.request))
-        );
+        return;
     }
+
+    // Cache-first for everything else (app shell, assets)
+    event.respondWith(
+        caches.match(event.request).then((cached) =>
+            cached || fetch(event.request).catch(() => new Response('', { status: 408 }))
+        )
+    );
 });
