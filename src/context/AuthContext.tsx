@@ -6,7 +6,7 @@ interface AuthContextType {
     user: User | null;
     session: Session | null;
     loading: boolean;
-    signIn: (email: string) => Promise<void>; // Magic link or password
+    signIn: (email: string, password: string) => Promise<{ error: string | null }>;
     signOut: () => Promise<void>;
 }
 
@@ -14,7 +14,7 @@ const AuthContext = createContext<AuthContextType>({
     user: null,
     session: null,
     loading: true,
-    signIn: async () => { },
+    signIn: async () => ({ error: null }),
     signOut: async () => { },
 });
 
@@ -26,14 +26,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Check active sessions and sets the user
         supabase.auth.getSession().then(({ data: { session } }) => {
             setSession(session);
             setUser(session?.user ?? null);
             setLoading(false);
         });
 
-        // Listen for changes on auth state (logged in, signed out, etc.)
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             setSession(session);
             setUser(session?.user ?? null);
@@ -43,18 +41,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return () => subscription.unsubscribe();
     }, []);
 
-    const value = {
-        user,
-        session,
-        loading,
-        signIn: async (email: string) => {
-            // Placeholder for now, Login Page will handle actual sign in call
-            console.log("Sign in triggered for", email);
-        },
-        signOut: async () => {
-            await supabase.auth.signOut();
-        },
+    const signIn = async (email: string, password: string): Promise<{ error: string | null }> => {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) return { error: error.message };
+        return { error: null };
     };
 
-    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+    const signOut = async () => {
+        await supabase.auth.signOut();
+    };
+
+    return (
+        <AuthContext.Provider value={{ user, session, loading, signIn, signOut }}>
+            {children}
+        </AuthContext.Provider>
+    );
 }

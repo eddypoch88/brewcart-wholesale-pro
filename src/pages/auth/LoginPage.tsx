@@ -1,6 +1,6 @@
 import { useState, FormEvent } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../context/AuthContext';
 import { Lock, Mail, Loader2, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -10,11 +10,11 @@ export default function LoginPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
+    const { signIn } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
 
-    // Default to dashboard or the page they tried to visit
-    const from = location.state?.from?.pathname || '/';
+    const from = location.state?.from?.pathname || '/admin';
 
     const handleLogin = async (e: FormEvent) => {
         e.preventDefault();
@@ -22,12 +22,8 @@ export default function LoginPage() {
         setError('');
 
         try {
-            const { error } = await supabase.auth.signInWithPassword({
-                email,
-                password,
-            });
-
-            if (error) throw error;
+            const { error } = await signIn(email, password);
+            if (error) throw new Error(error);
 
             toast.success('Welcome back!');
             navigate(from, { replace: true });
