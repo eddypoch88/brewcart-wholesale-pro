@@ -1,15 +1,12 @@
 import { Menu, X, LayoutDashboard, Package, ShoppingBag, Settings, ExternalLink, TrendingUp } from "lucide-react";
 import { useCallback } from "react";
+import { NavLink } from "react-router-dom";
 import { useStore } from "../context/StoreContext";
 
 export default function Sidebar({
-    activeTab,
-    setActiveTab,
     sidebarOpen,
     setSidebarOpen,
 }: {
-    activeTab: string;
-    setActiveTab: (tab: string) => void;
     sidebarOpen: boolean;
     setSidebarOpen: (open: boolean) => void;
 }) {
@@ -23,18 +20,16 @@ export default function Sidebar({
         }
     }, [setSidebarOpen]);
 
-    const navItem = (key: string, label: string, Icon: any) => (
-        <button
-            onClick={() => {
-                setActiveTab(key);
-                closeSidebarOnMobile();
-            }}
-            className={`w-full text-left px-4 py-3 rounded-lg transition flex items-center gap-3
-        ${activeTab === key ? "bg-blue-600 text-white" : "text-slate-400 hover:bg-slate-800 hover:text-white"}`}
+    const navItem = (to: string, label: string, Icon: any) => (
+        <NavLink
+            to={to}
+            onClick={closeSidebarOnMobile}
+            className={({ isActive }) => `w-full text-left px-4 py-3 rounded-lg transition flex items-center gap-3
+        ${isActive ? "bg-blue-600 text-white" : "text-slate-400 hover:bg-slate-800 hover:text-white"}`}
         >
             <Icon size={20} />
             <span className="font-medium">{label}</span>
-        </button>
+        </NavLink>
     );
 
     return (

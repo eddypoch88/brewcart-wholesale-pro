@@ -45,7 +45,34 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                             <ProtectedRoute>
                                 <App />
                             </ProtectedRoute>
-                        } />
+                        }>
+                            <Route index element={<Navigate to="dashboard" replace />} />
+                            <Route path="dashboard" element={
+                                <React.Suspense fallback={<div className="p-8">Loading...</div>}>
+                                    {React.createElement(React.lazy(() => import('./components/Dashboard')))}
+                                </React.Suspense>
+                            } />
+                            <Route path="analytics" element={
+                                <React.Suspense fallback={<div className="p-8">Loading...</div>}>
+                                    {React.createElement(React.lazy(() => import('./components/Analytics')))}
+                                </React.Suspense>
+                            } />
+                            <Route path="products" element={
+                                <React.Suspense fallback={<div className="p-8">Loading...</div>}>
+                                    {React.createElement(React.lazy(() => import('./components/admin/AdminProductPage')))}
+                                </React.Suspense>
+                            } />
+                            <Route path="orders" element={
+                                <React.Suspense fallback={<div className="p-8">Loading...</div>}>
+                                    {React.createElement(React.lazy(() => import('./components/OrderList')))}
+                                </React.Suspense>
+                            } />
+                            <Route path="settings" element={
+                                <React.Suspense fallback={<div className="p-8">Loading...</div>}>
+                                    {React.createElement(React.lazy(() => import('./components/Settings')))}
+                                </React.Suspense>
+                            } />
+                        </Route>
                     </Routes>
                     <Toaster position="top-right" />
                 </BrowserRouter>
