@@ -3,6 +3,7 @@ import { useCallback } from "react";
 import { NavLink } from "react-router-dom";
 import { useStore } from "../context/StoreContext";
 import NotificationBell from "./NotificationBell";
+import { useNotifications } from "../hooks/useNotifications";
 
 export default function Sidebar({
     sidebarOpen,
@@ -12,6 +13,7 @@ export default function Sidebar({
     setSidebarOpen: (open: boolean) => void;
 }) {
     const { settings } = useStore();
+    const { addNotification } = useNotifications();
     const storeName = settings.store_name || "BrewCart Pro";
 
     const closeSidebarOnMobile = useCallback(() => {
@@ -94,6 +96,22 @@ export default function Sidebar({
                 <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
 
                     <NotificationBell />
+
+                    {/* TEST BUTTON (Temporary) */}
+                    <button
+                        onClick={() => {
+                            addNotification({
+                                id: `TEST-${Date.now()}`,
+                                customerName: 'Test User',
+                                total: 99.99,
+                                createdAt: new Date().toISOString(),
+                                read: false
+                            });
+                        }}
+                        className="w-full flex justify-center mt-2 px-4 py-2 bg-slate-800 text-slate-400 text-xs rounded-lg hover:text-white"
+                    >
+                        Test Demo Notification
+                    </button>
 
                     <div className="border-t border-slate-800 my-5" />
 
