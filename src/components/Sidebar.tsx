@@ -119,49 +119,48 @@ export default function Sidebar({
                 </nav>
 
                 {/* Bottom Actions Section */}
-                <div className="px-3 py-3 border-t border-slate-800 space-y-1">
-                    <a
-                        href="/"
-                        onClick={closeSidebarOnMobile}
-                        className="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/5 hover:text-white rounded-xl transition-all duration-200 group"
-                    >
-                        <ExternalLink size={20} className="transition-transform duration-200 group-hover:scale-105" />
-                        <span className="text-sm font-medium">View Storefront</span>
-                    </a>
+                <div className="px-3 py-3 border-t border-slate-800">
+                    <div className="space-y-1 mb-2">
+                        {isPWAReady && (
+                            <button
+                                onClick={installApp}
+                                className="w-full flex items-center justify-center gap-2 px-4 py-3 mb-2 bg-gradient-to-r from-cyan-400 via-teal-500 to-emerald-500 text-white rounded-xl shadow-lg shadow-cyan-500/30 transition-transform duration-300 hover:scale-105 hover:shadow-cyan-500/50 font-bold animate-pulse"
+                            >
+                                <span>📲 Install App</span>
+                            </button>
+                        )}
+                        <a
+                            href="/"
+                            onClick={closeSidebarOnMobile}
+                            className="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/5 hover:text-white rounded-xl transition-all duration-200 group"
+                        >
+                            <ExternalLink size={20} className="transition-transform duration-200 group-hover:scale-105" />
+                            <span className="text-sm font-medium">View Storefront</span>
+                        </a>
 
-                    <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-white/5 border border-white/5">
-                        <div className="flex items-center gap-3 text-slate-300 text-sm font-medium">
-                            {theme === 'dark' ? <Sun size={20} className="text-slate-400" /> : <Moon size={20} className="text-slate-400" />}
-                            <span>{theme === 'dark' ? 'Dark Mode' : 'Light Mode'}</span>
+                        <button
+                            onClick={handleLogout}
+                            className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-400/10 rounded-xl transition-colors"
+                        >
+                            <LogOut size={20} />
+                            <span className="text-sm font-medium">Sign Out</span>
+                        </button>
+                    </div>
+
+                    <div className="flex items-center justify-between px-4 pt-4 pb-2 border-t border-slate-800">
+                        <div className="text-slate-400 text-sm font-medium">
+                            Dark Mode
                         </div>
                         <button
                             onClick={toggleTheme}
-                            className={`relative w-11 h-6 rounded-full transition-all duration-300 ${theme === 'dark' ? 'bg-blue-500/80' : 'bg-slate-600/50'
+                            className={`relative w-10 h-5 rounded-full transition-colors duration-300 ${theme === 'dark' ? 'bg-blue-500' : 'bg-slate-700'
                                 }`}
                         >
-                            <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow-md transition-all duration-300 ${theme === 'dark' ? 'left-6' : 'left-1'
+                            <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-300 ${theme === 'dark' ? 'translate-x-[22px]' : 'translate-x-0.5'
                                 }`}
                             />
                         </button>
                     </div>
-
-                    {isPWAReady && (
-                        <button
-                            onClick={installApp}
-                            className="w-full flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-600/20 to-blue-600/5 hover:from-blue-600/30 hover:to-blue-600/10 text-blue-400 border border-blue-500/20 rounded-xl transition-all duration-200 group"
-                        >
-                            <span className="text-sm font-semibold">Install Admin App</span>
-                            <span className="text-xs font-bold text-white bg-blue-500 rounded px-1.5 py-0.5 shadow-sm group-hover:scale-105 transition-transform">+</span>
-                        </button>
-                    )}
-
-                    <button
-                        onClick={handleLogout}
-                        className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-400/10 rounded-xl transition-colors"
-                    >
-                        <LogOut size={20} />
-                        <span className="text-sm font-medium">Sign Out</span>
-                    </button>
                 </div>
 
                 {/* Footer */}
