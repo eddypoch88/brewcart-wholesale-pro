@@ -4,14 +4,7 @@ import { getCart, getSettings, getProducts, createOrder, updateProductStock, cle
 import { CartItem, Order, StoreSettings } from '../../types';
 import { ChevronLeft, Truck, AlertCircle, Loader2, CreditCard, QrCode } from 'lucide-react';
 import toast from 'react-hot-toast';
-
-type PaymentMethod = 'bank_transfer' | 'duitnow' | 'cod';
-
-const paymentMethods: { id: PaymentMethod; label: string; microcopy: string; icon: any; group: 'instant' | 'other' }[] = [
-    { id: 'bank_transfer', label: 'Bank Transfer', microcopy: 'Transfer to our bank account', icon: CreditCard, group: 'instant' },
-    { id: 'duitnow', label: 'DuitNow QR', microcopy: 'Scan QR with any banking app', icon: QrCode, group: 'instant' },
-    { id: 'cod', label: 'Cash on Delivery', microcopy: 'Pay when your stock arrives', icon: Truck, group: 'other' },
-];
+import PaymentSection from '../../components/store/PaymentSection';
 
 export default function CheckoutPage() {
     const navigate = useNavigate();
@@ -24,7 +17,6 @@ export default function CheckoutPage() {
     const [phone, setPhone] = useState('');
     const [address, setAddress] = useState('');
     const [notes, setNotes] = useState('');
-    const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null);
 
     const [stockError, setStockError] = useState<string | null>(null);
     const [products, setProducts] = useState<any[]>([]);
@@ -71,18 +63,22 @@ export default function CheckoutPage() {
         return true;
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-
+    const handleProcessPayment = async (method: string) => {
         if (!cart.length) return;
         if (!settings) return;
+
+        const form = document.getElementById('checkout-form') as HTMLFormElement;
+        if (form && !form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
 
         if (!fullName || !phone || !address) {
             toast.error('Please fill in all required fields');
             return;
         }
 
-        if (!paymentMethod) {
+        if (!method) {
             toast.error('Please select a payment method');
             return;
         }
@@ -117,7 +113,7 @@ export default function CheckoutPage() {
                 total: total,
                 status: 'pending',
                 created_at: new Date().toISOString(),
-                payment_method: paymentMethod,
+                payment_method: method,
                 payment_proof: undefined,
                 payment_status: 'unpaid'
             };
@@ -138,7 +134,7 @@ export default function CheckoutPage() {
             const orderReviewLink = `https://brewcart-wholesale-pro.vercel.app/order-review/${newOrder.id}`;
 
             const itemsList = cart.map(c => `• ${c.product.name} x${c.qty}`).join('\n');
-            const methodLabel = paymentMethod === 'bank_transfer' ? 'Bank Transfer' : paymentMethod === 'duitnow' ? 'DuitNow QR' : 'Cash on Delivery';
+            const methodLabel = method === 'bank_transfer' ? 'Bank Transfer' : method === 'duitnow' ? 'DuitNow QR' : method === 'stripe' ? 'Credit/Debit Card' : method === 'toyyibpay' ? 'FPX Banking' : 'Cash on Delivery';
             const message = `✅ *New Order Received!* \n\n` +
                 `*Order ID:* ${newOrder.id}\n` +
                 `*Customer:* ${fullName}\n` +
@@ -158,7 +154,15 @@ export default function CheckoutPage() {
                 window.open(`https://wa.me/${adminPhone}?text=${encodeURIComponent(message)}`, '_blank');
             }
 
-            navigate(`/order-confirmation?orderId=${newOrder.id}`);
+            if (method === 'toyyibpay') {
+                toast.loading('Redirecting to Bank...');
+                // ESOK KITA SAMBUNG SINI: Logic redirect ke ToyyibPay
+            } else if (method === 'stripe') {
+                toast.loading('Opening Stripe Secure Checkout...');
+                // ESOK KITA SAMBUNG SINI: Logic Stripe
+            } else {
+                navigate(`/order-confirmation?orderId=${newOrder.id}`);
+            }
 
         } catch (error: any) {
             console.error("Order Submission Error:", error);
@@ -173,9 +177,6 @@ export default function CheckoutPage() {
     const subtotal = cart.reduce((sum, item) => sum + (item.product.price * item.qty), 0);
     const deliveryFee = subtotal >= (settings.free_delivery_threshold || Infinity) ? 0 : (settings.delivery_fee || 0);
     const total = subtotal + deliveryFee;
-
-    const instantMethods = paymentMethods.filter(m => m.group === 'instant');
-    const otherMethods = paymentMethods.filter(m => m.group === 'other');
 
     return (
         <div className="min-h-screen bg-slate-50 pb-20">
@@ -217,7 +218,7 @@ export default function CheckoutPage() {
                     </div>
                 </section>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form id="checkout-form" onSubmit={(e) => e.preventDefault()} className="space-y-6">
                     <section className="bg-white rounded-xl border border-slate-200 overflow-hidden">
                         <div className="p-4 bg-slate-50 border-b border-slate-100 flex items-center gap-2">
                             <Truck size={18} className="text-blue-600" />
@@ -270,81 +271,19 @@ export default function CheckoutPage() {
                         </div>
                     </section>
 
-                    <section className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-                        <div className="p-4 bg-slate-50 border-b border-slate-100 flex items-center gap-2">
-                            <CreditCard size={18} className="text-blue-600" />
-                            <h2 className="font-bold text-slate-800">Payment Method</h2>
-                        </div>
-                        <div className="p-4 space-y-5">
-                            <div>
-                                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Instant Payment</p>
-                                <div className="space-y-3">
-                                    {instantMethods.map((method) => {
-                                        const Icon = method.icon;
-                                        const selected = paymentMethod === method.id;
-                                        return (
-                                            <button
-                                                key={method.id}
-                                                type="button"
-                                                onClick={() => setPaymentMethod(method.id)}
-                                                className={`w-full flex items-center gap-3 p-4 border rounded-2xl cursor-pointer transition-all text-left ${selected ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500' : 'border-slate-200 bg-white'}`}
-                                            >
-                                                <Icon size={20} className={selected ? 'text-blue-600' : 'text-slate-400'} />
-                                                <div className="flex-1">
-                                                    <p className="font-medium text-slate-900">{method.label}</p>
-                                                    <p className="text-xs text-slate-500">{method.microcopy}</p>
-                                                </div>
-                                                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${selected ? 'border-blue-600' : 'border-slate-300'}`}>
-                                                    {selected && <div className="w-2.5 h-2.5 rounded-full bg-blue-600" />}
-                                                </div>
-                                            </button>
-                                        );
-                                    })}
-                                </div>
+                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        {isSubmitting ? (
+                            <div className="flex flex-col items-center justify-center p-8 text-slate-500">
+                                <Loader2 className="animate-spin mb-4 text-blue-600" size={32} />
+                                <p>Processing your order...</p>
                             </div>
-                            <div>
-                                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Other</p>
-                                <div className="space-y-3">
-                                    {otherMethods.map((method) => {
-                                        const Icon = method.icon;
-                                        const selected = paymentMethod === method.id;
-                                        return (
-                                            <button
-                                                key={method.id}
-                                                type="button"
-                                                onClick={() => setPaymentMethod(method.id)}
-                                                className={`w-full flex items-center gap-3 p-4 border rounded-2xl cursor-pointer transition-all text-left ${selected ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500' : 'border-slate-200 bg-white'}`}
-                                            >
-                                                <Icon size={20} className={selected ? 'text-blue-600' : 'text-slate-400'} />
-                                                <div className="flex-1">
-                                                    <p className="font-medium text-slate-900">{method.label}</p>
-                                                    <p className="text-xs text-slate-500">{method.microcopy}</p>
-                                                </div>
-                                                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${selected ? 'border-blue-600' : 'border-slate-300'}`}>
-                                                    {selected && <div className="w-2.5 h-2.5 rounded-full bg-blue-600" />}
-                                                </div>
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
-                    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-20 md:relative md:shadow-none md:border-t-0 md:bg-transparent md:p-0">
-                        <div className="max-w-xl mx-auto flex items-center justify-between gap-4">
-                            <div>
-                                <p className="text-slate-500 text-sm">Total Amount</p>
-                                <p className="text-2xl font-bold text-slate-900">RM {total.toFixed(2)}</p>
-                            </div>
-                            <button
-                                type="submit"
-                                disabled={isSubmitting || !!stockError || !paymentMethod}
-                                className="bg-green-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-lg shadow-green-200 transition-all active:scale-[0.98]"
-                            >
-                                {isSubmitting ? <Loader2 className="animate-spin" /> : 'Place Order'}
-                            </button>
-                        </div>
+                        ) : (
+                            <PaymentSection
+                                storeId="1"
+                                amount={total}
+                                onPay={handleProcessPayment}
+                            />
+                        )}
                     </div>
                 </form>
             </div>
