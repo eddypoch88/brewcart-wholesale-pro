@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../../lib/supabase';
 import { getCart, getSettings, getProducts, createOrder, updateProductStock, clearCart } from '../../lib/storage';
 import { CartItem, Order, StoreSettings } from '../../types';
 import { ChevronLeft, Truck, AlertCircle, Loader2, CreditCard, QrCode } from 'lucide-react';
@@ -155,12 +156,52 @@ export default function CheckoutPage() {
             }
 
             if (method === 'toyyibpay') {
-                toast.loading('Redirecting to Bank...');
-                // ESOK KITA SAMBUNG SINI: Logic redirect ke ToyyibPay
+                toast.loading('Initializing FPX Payment...', { id: 'payment' });
+
+                const { data, error } = await supabase.functions.invoke('toyyibpay-create-bill', {
+                    body: {
+                        amount: total,
+                        orderId: newOrder.id,
+                        storeId: 1, // Assuming global store ID for now
+                        customerName: fullName,
+                        customerEmail: 'customer@brewcart-demo.com', // Optional email
+                        customerPhone: phone
+                    }
+                });
+
+                if (error || !data?.url) {
+                    console.error("ToyyibPay Error:", error || data);
+                    toast.error('Failed to connect to Bank. Please try again.', { id: 'payment' });
+                    return; // Stop and let user try again
+                }
+
+                toast.success('Redirecting to Bank...', { id: 'payment' });
+                window.location.href = data.url;
+
             } else if (method === 'stripe') {
-                toast.loading('Opening Stripe Secure Checkout...');
-                // ESOK KITA SAMBUNG SINI: Logic Stripe
+                toast.loading('Opening Secure Checkout...', { id: 'payment' });
+
+                const { data, error } = await supabase.functions.invoke('stripe-checkout', {
+                    body: {
+                        amount: total,
+                        orderId: newOrder.id,
+                        storeId: 1,
+                        items: cart,
+                        customerEmail: 'customer@brewcart-demo.com'
+                    }
+                });
+
+                if (error || !data?.url) {
+                    console.error("Stripe Error:", error || data);
+                    toast.error('Failed to initialize secure checkout.', { id: 'payment' });
+                    return;
+                }
+
+                toast.success('Redirecting to Stripe...', { id: 'payment' });
+                window.location.href = data.url;
+
             } else {
+                toast.success('Order Placed Successfully!');
                 navigate(`/order-confirmation?orderId=${newOrder.id}`);
             }
 

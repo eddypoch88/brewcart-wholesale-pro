@@ -7,6 +7,10 @@ export default function OrderConfirmationPage() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const orderId = searchParams.get('orderId');
+    const gateway = searchParams.get('gateway');
+    const sessionId = searchParams.get('session_id'); // Stripe
+    const billcode = searchParams.get('billcode'); // Toyyibpay
+
     const [settings, setSettings] = useState<any>(null);
     const [order, setOrder] = useState<any>(null);
     const [loading, setLoading] = useState(true);
@@ -18,12 +22,19 @@ export default function OrderConfirmationPage() {
                 getOrders()
             ]);
             setSettings(fetchedSettings);
-            const foundOrder = fetchedOrders.find((o: any) => o.id === orderId);
+            let foundOrder = fetchedOrders.find((o: any) => o.id === orderId);
+
+            // Note: In a real prod environment, you'd confirm payment server-side via webhook. 
+            // Here, we optimistically set payment_status to 'paid' if they return from gateway
+            if (foundOrder && gateway && (sessionId || billcode)) {
+                foundOrder = { ...foundOrder, payment_status: 'paid' };
+            }
+
             setOrder(foundOrder);
             setLoading(false);
         };
         loadData();
-    }, [orderId]);
+    }, [orderId, gateway, sessionId, billcode]);
 
     if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin text-blue-600" /></div>;
 
@@ -46,17 +57,34 @@ export default function OrderConfirmationPage() {
                     </p>
                 </div>
 
-                <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
-                    <p className="text-sm text-slate-500 uppercase font-semibold tracking-wider mb-1">Order ID</p>
-                    <p className="text-xl font-mono font-bold text-slate-900 tracking-wide">{orderId || 'Unknown'}</p>
+                <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 flex items-center justify-between">
+                    <div>
+                        <p className="text-sm text-slate-500 font-semibold mb-1">Order ID</p>
+                        <p className="text-lg font-mono font-bold text-slate-900">{orderId || 'Unknown'}</p>
+                    </div>
+                    {order?.payment_status === 'paid' && (
+                        <div className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1 border border-green-200">
+                            <CheckCircle size={14} /> Paid
+                        </div>
+                    )}
                 </div>
 
-                {order?.payment_method === 'bank_transfer' && (
+                {order?.payment_method === 'bank_transfer' && order?.payment_status !== 'paid' && (
                     <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm text-yellow-800 flex gap-3 text-left">
                         <AlertCircle className="shrink-0 mt-0.5" size={18} />
                         <p>
                             <strong>Payment Proof Required:</strong><br />
                             Please send your payment receipt to our WhatsApp number now to complete your order.
+                        </p>
+                    </div>
+                )}
+
+                {order?.payment_method === 'cod' && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800 flex gap-3 text-left">
+                        <AlertCircle className="shrink-0 mt-0.5" size={18} />
+                        <p>
+                            <strong>Cash on Delivery:</strong><br />
+                            Please prepare exact change when your order arrives.
                         </p>
                     </div>
                 )}
