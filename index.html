@@ -51,7 +51,25 @@
       window.location.hostname !== 'localhost' &&
       window.location.hostname !== '127.0.0.1') {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js').catch(() => { });
+        navigator.serviceWorker.register('/sw.js').then((reg) => {
+          // When a new SW is found, watch for it to become active
+          reg.addEventListener('updatefound', () => {
+            const newSW = reg.installing;
+            if (!newSW) return;
+            newSW.addEventListener('statechange', () => {
+              if (newSW.state === 'activated' && navigator.serviceWorker.controller) {
+                window.location.reload();
+              }
+            });
+          });
+        }).catch(() => { });
+
+        // Also handle the SW_UPDATED postMessage from sw.js
+        navigator.serviceWorker.addEventListener('message', (event) => {
+          if (event.data && event.data.type === 'SW_UPDATED') {
+            window.location.reload();
+          }
+        });
       });
     }
   </script>
