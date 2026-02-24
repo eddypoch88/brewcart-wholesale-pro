@@ -4,12 +4,10 @@ import { getCart, getSettings } from '../../lib/storage';
 import { useState, useEffect } from 'react';
 import { StoreSettings } from '../../types';
 import { DEFAULT_SETTINGS } from '../../data/mockData';
-import { usePWA } from '../../hooks/usePWA';
 
 export default function Navbar() {
     const [settings, setSettings] = useState<StoreSettings>(DEFAULT_SETTINGS);
     const [cartCount, setCartCount] = useState(0);
-    const { isReady: isPWAReady, installApp } = usePWA();
 
     useEffect(() => {
         getSettings().then(s => { if (s) setSettings(s); });
@@ -44,19 +42,6 @@ export default function Navbar() {
                         <Settings size={16} />
                         <span className="hidden sm:block">Admin</span>
                     </Link>
-
-                    {isPWAReady && (
-                        <button
-                            onClick={installApp}
-                            className="hidden sm:flex items-center gap-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded-full text-xs font-bold tracking-wide border border-blue-200 transition shadow-sm animate-pulse"
-                        >
-                            <span className="relative flex h-2 w-2">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
-                            </span>
-                            Install App
-                        </button>
-                    )}
 
                     <Link to="/cart" className="relative p-2 text-slate-600 hover:text-slate-900 transition">
                         <ShoppingCart size={22} />
