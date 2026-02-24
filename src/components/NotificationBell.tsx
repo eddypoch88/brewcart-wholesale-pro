@@ -20,9 +20,9 @@ export default function NotificationBell() {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const handleItemClick = (n: NotificationItem) => {
+    const handleItemClick = (_n: NotificationItem) => {
         setIsOpen(false);
-        navigate('/orders'); // Navigate to orders page
+        navigate('/admin/orders');
     };
 
     const formatTime = (dateStr: string) => {
@@ -109,9 +109,9 @@ export default function NotificationBell() {
                     </div>
 
                     {notifications.length > 0 && (
-                        <div className="p-2 border-t border-slate-100 bg-slate-50">
+                        <div className="p-2 border-t border-slate-100 bg-slate-50 flex flex-col gap-1">
                             <button
-                                onClick={() => { setIsOpen(false); navigate('/orders'); }}
+                                onClick={() => { setIsOpen(false); navigate('/admin/orders'); }}
                                 className="w-full py-2 text-xs text-slate-500 font-bold hover:text-slate-800 transition-colors"
                             >
                                 View all orders
