@@ -14,7 +14,6 @@ export default function Sidebar({
     const { settings } = useStore();
     const storeName = settings.store_name || "BrewCart Pro";
 
-    // Close sidebar on mobile after any menu click (deferred so animation isn't swallowed by re-render)
     const closeSidebarOnMobile = useCallback(() => {
         if (window.innerWidth < 768) {
             setTimeout(() => setSidebarOpen(false), 150);
@@ -25,11 +24,23 @@ export default function Sidebar({
         <NavLink
             to={to}
             onClick={closeSidebarOnMobile}
-            className={({ isActive }) => `w-full text-left px-4 py-3 rounded-lg transition flex items-center gap-3
-        ${isActive ? "bg-blue-600 text-white" : "text-slate-400 hover:bg-slate-800 hover:text-white"}`}
+            className={({ isActive }) =>
+                `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group
+                ${isActive
+                    ? "bg-gradient-to-r from-blue-600/20 to-transparent border-l-2 border-blue-500 text-white"
+                    : "text-slate-400 hover:bg-white/5 hover:text-white border-l-2 border-transparent"
+                }`
+            }
         >
-            <Icon size={20} />
-            <span className="font-medium">{label}</span>
+            {({ isActive }) => (
+                <>
+                    <Icon
+                        size={20}
+                        className={`transition-transform duration-200 group-hover:scale-105 ${isActive ? "text-blue-400" : ""}`}
+                    />
+                    <span className="text-sm font-medium">{label}</span>
+                </>
+            )}
         </NavLink>
     );
 
@@ -55,57 +66,58 @@ export default function Sidebar({
                 />
             )}
 
-            {/* SIDEBAR — z-[60] so it sits above the overlay (z-50) and clicks aren't intercepted */}
+            {/* SIDEBAR */}
             <aside
-                className={`fixed top-0 left-0 h-screen w-64 bg-slate-900 text-white p-6 z-[60] transition-transform duration-300 md:translate-x-0
+                className={`fixed top-0 left-0 h-screen w-64 bg-slate-900 text-white flex flex-col z-[60] transition-transform duration-300 md:translate-x-0
                     ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
             >
-                {/* Logo / Store Name */}
-                <div className="mb-8 pb-6 border-b border-slate-700 flex items-center justify-between">
-                    {settings.logo_url ? (
-                        <img src={settings.logo_url} alt={storeName} className="h-10 object-contain" />
-                    ) : (
-                        <h1 className="text-2xl font-bold">{storeName}</h1>
-                    )}
-                    <button className="md:hidden" onClick={() => setSidebarOpen(false)}>
-                        <X className="text-slate-400 hover:text-white" />
+                {/* Store Header */}
+                <div className="px-5 pt-6 pb-5 border-b border-slate-800 flex items-center justify-between">
+                    <div className="flex-1 min-w-0">
+                        {settings.logo_url ? (
+                            <img src={settings.logo_url} alt={storeName} className="h-9 object-contain" />
+                        ) : (
+                            <h1 className="text-lg font-bold text-white truncate">{storeName}</h1>
+                        )}
+                        {/* Live indicator */}
+                        <div className="flex items-center gap-1.5 mt-1">
+                            <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse inline-block" />
+                            <span className="text-xs text-green-400 font-medium">Live</span>
+                        </div>
+                    </div>
+                    <button className="md:hidden ml-2 text-slate-400 hover:text-white transition-colors" onClick={() => setSidebarOpen(false)}>
+                        <X size={20} />
                     </button>
                 </div>
 
-                {/* Notification Bell Section */}
-                <div className="px-3 mb-4">
-                    <div className="flex items-center justify-between bg-slate-800/50 p-3 rounded-xl border border-slate-700/50">
-                        <div className="flex items-center gap-3">
-                            <NotificationBell />
-                            <div className="flex flex-col">
-                                <span className="text-xs font-bold text-slate-200">Notifications</span>
-                                <span className="text-[10px] text-slate-500 uppercase tracking-wider">Real-time alerts</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="mt-6 border-t border-slate-700/50"></div>
-                </div>
+                {/* Nav */}
+                <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
 
-                <div className="flex-1 px-3 space-y-1 overflow-y-auto py-2">
+                    <NotificationBell />
+
+                    <div className="border-t border-slate-800 my-5" />
+
                     {navItem("dashboard", "Overview", LayoutDashboard)}
                     {navItem("analytics", "Analytics", TrendingUp)}
                     {navItem("products", "Products", Package)}
                     {navItem("orders", "Orders", ShoppingBag)}
                     {navItem("settings", "Settings", Settings)}
+
+                    <div className="border-t border-slate-800 my-5" />
+
                     <a
                         href="/"
                         onClick={closeSidebarOnMobile}
-                        className="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 rounded-lg transition-colors"
+                        className="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/5 hover:text-white rounded-xl transition-all duration-200 group border-l-2 border-transparent"
                     >
-                        <ExternalLink size={20} />
-                        <span className="font-medium">View Storefront</span>
+                        <ExternalLink size={20} className="transition-transform duration-200 group-hover:scale-105" />
+                        <span className="text-sm font-medium">View Storefront</span>
                     </a>
+                </nav>
 
-                    <div className="border-t border-slate-800 my-2"></div>
-                </div>
-
-                <div className="p-4 border-t border-slate-800 text-xs text-slate-500 text-center">
-                    &copy; {new Date().getFullYear()} BrewCart Engine
+                {/* Footer */}
+                <div className="px-5 py-4 border-t border-slate-800 text-[11px] text-slate-600 text-center">
+                    © {new Date().getFullYear()} BrewCart Engine
                 </div>
             </aside>
         </>

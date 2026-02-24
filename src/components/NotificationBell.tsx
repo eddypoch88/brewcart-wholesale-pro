@@ -31,62 +31,83 @@ export default function NotificationBell() {
     };
 
     return (
-        <div className="relative" ref={dropdownRef}>
-            {/* Bell Icon */}
+        <div ref={dropdownRef} className="w-full">
+            {/* Flat Premium Trigger Button */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className={`p-2 rounded-lg transition-colors relative ${isOpen ? 'bg-slate-800 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
+                className={`w-full flex items-start gap-3 px-4 py-3 rounded-xl transition-all duration-200 cursor-pointer border-l-2
+                    ${isOpen ? "bg-white/10 border-blue-500" : "hover:bg-white/5 border-transparent"}`}
             >
-                {unreadCount > 0 ? <BellRing size={20} className="animate-bounce text-yellow-500" /> : <Bell size={20} />}
+                {/* Icon + Live dot */}
+                <div className="relative mt-0.5">
+                    {unreadCount > 0
+                        ? <BellRing className="w-5 h-5 text-yellow-400 animate-bounce" />
+                        : <Bell className="w-5 h-5 text-gray-400 group-hover:text-white transition-colors" />
+                    }
+                    {unreadCount > 0 && (
+                        <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                    )}
+                </div>
 
-                {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold h-5 w-5 flex items-center justify-center rounded-full border-2 border-slate-900 shadow-lg animate-pulse">
-                        {unreadCount}
-                    </span>
-                )}
+                {/* Text */}
+                <div className="flex-1 text-left">
+                    <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold text-white">
+                            Notifications
+                        </span>
+                        {unreadCount > 0 && (
+                            <span className="text-xs bg-red-500 text-white px-1.5 py-0.5 rounded-full font-medium">
+                                {unreadCount}
+                            </span>
+                        )}
+                    </div>
+                    <p className="text-xs text-gray-400 tracking-wide mt-0.5">
+                        Real-time alerts
+                    </p>
+                </div>
             </button>
 
-            {/* Dropdown Panel */}
+            {/* Inline Panel Dropdown (opens directly below) */}
             {isOpen && (
-                <div className="absolute left-0 mt-3 w-72 bg-white rounded-xl shadow-2xl border border-slate-100 z-[70] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                    <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                        <h3 className="font-bold text-slate-800 flex items-center gap-2">
-                            New Orders 🔔
+                <div className="mx-2 mt-1 mb-2 rounded-xl bg-slate-800 border border-slate-700 overflow-hidden shadow-lg animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="p-3 border-b border-slate-700 flex justify-between items-center bg-slate-800/50">
+                        <h3 className="text-xs font-bold text-slate-300">
+                            Recent Orders
                         </h3>
                         {unreadCount > 0 && (
                             <button
                                 onClick={markAllAsRead}
-                                className="text-xs text-blue-600 hover:underline font-medium"
+                                className="text-[10px] text-blue-400 hover:text-blue-300 font-medium"
                             >
                                 Mark all as read
                             </button>
                         )}
                     </div>
 
-                    <div className="max-h-80 overflow-y-auto">
+                    <div className="max-h-60 overflow-y-auto">
                         {notifications.length === 0 ? (
-                            <div className="p-8 text-center">
-                                <ShoppingBag className="mx-auto h-8 w-8 text-slate-300 mb-2" />
-                                <p className="text-sm text-slate-500 font-medium">No new notifications</p>
+                            <div className="p-6 text-center">
+                                <ShoppingBag className="mx-auto h-6 w-6 text-slate-500 mb-2" />
+                                <p className="text-xs text-slate-400 font-medium">No new notifications</p>
                             </div>
                         ) : (
-                            <div className="divide-y divide-slate-50">
+                            <div className="divide-y divide-slate-700/50">
                                 {notifications.map((n) => (
                                     <div
                                         key={n.id}
-                                        className={`p-3 hover:bg-slate-50 transition-colors cursor-pointer relative group ${!n.read ? 'bg-blue-50/30' : ''}`}
+                                        className={`p-3 hover:bg-white/5 transition-colors cursor-pointer group ${!n.read ? 'bg-blue-500/10' : ''}`}
                                         onClick={() => handleItemClick(n)}
                                     >
                                         <div className="flex justify-between items-start mb-1">
-                                            <span className="font-bold text-sm text-slate-900 truncate pr-4">
+                                            <span className={`font-bold text-xs truncate pr-2 ${!n.read ? 'text-white' : 'text-slate-300'}`}>
                                                 {n.customerName}
                                             </span>
-                                            <span className="text-[10px] text-slate-400 font-medium whitespace-nowrap">
+                                            <span className="text-[10px] text-slate-500 whitespace-nowrap">
                                                 {formatTime(n.createdAt)}
                                             </span>
                                         </div>
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-xs text-blue-600 font-bold">
+                                        <div className="flex justify-between items-center mt-1.5">
+                                            <span className="text-[11px] text-blue-400 font-bold">
                                                 RM {Number(n.total).toFixed(2)}
                                             </span>
                                             <button
@@ -94,14 +115,11 @@ export default function NotificationBell() {
                                                     e.stopPropagation();
                                                     clearNotification(n.id);
                                                 }}
-                                                className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-red-500 transition-all"
+                                                className="opacity-0 group-hover:opacity-100 p-1 text-slate-500 hover:text-red-400 transition-all"
                                             >
-                                                <X size={14} />
+                                                <X size={12} />
                                             </button>
                                         </div>
-                                        {!n.read && (
-                                            <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600" />
-                                        )}
                                     </div>
                                 ))}
                             </div>
@@ -109,10 +127,10 @@ export default function NotificationBell() {
                     </div>
 
                     {notifications.length > 0 && (
-                        <div className="p-2 border-t border-slate-100 bg-slate-50 flex flex-col gap-1">
+                        <div className="p-2 border-t border-slate-700 bg-slate-800/50 flex flex-col gap-1">
                             <button
                                 onClick={() => { setIsOpen(false); navigate('/admin/orders'); }}
-                                className="w-full py-2 text-xs text-slate-500 font-bold hover:text-slate-800 transition-colors"
+                                className="w-full py-1.5 text-[11px] text-slate-400 font-bold hover:text-white transition-colors"
                             >
                                 View all orders
                             </button>
