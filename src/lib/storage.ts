@@ -2,86 +2,87 @@ import { Product, Order, StoreSettings, CartItem } from '../types';
 import { supabase } from './supabase';
 import { DEFAULT_SETTINGS } from '../data/mockData';
 
-// ── Products (LocalStorage Implementation) ──
-const INVENTORY_KEY = 'brewcart_products';
+// ── Products (Supabase) ──
+export async function getProducts(): Promise<Product[]> {
+    const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-function getLocalInventory(): Product[] {
-    try {
-        const raw = localStorage.getItem(INVENTORY_KEY);
-        return raw ? JSON.parse(raw) : [];
-    } catch {
+    if (error) {
+        console.error('Error fetching products:', error);
         return [];
     }
-}
-
-function saveLocalInventory(products: Product[]) {
-    localStorage.setItem(INVENTORY_KEY, JSON.stringify(products));
-}
-
-export async function getProducts(): Promise<Product[]> {
-    // Return sorted by mostly recently created
-    return getLocalInventory().sort((a, b) => {
-        return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
-    });
+    return data || [];
 }
 
 export async function getProduct(id: string): Promise<Product | null> {
-    const products = getLocalInventory();
-    return products.find(p => p.id === id) || null;
+    const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+    if (error) {
+        console.error('Error fetching product:', error);
+        return null;
+    }
+    return data;
 }
 
 export async function addProduct(product: Omit<Product, 'id' | 'created_at'>): Promise<Product | null> {
-    const products = getLocalInventory();
-    const newProduct: Product = {
-        ...product,
-        id: `prod_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
-        created_at: new Date().toISOString(),
-        status: product.status || 'active', // Ensure default status is "active"
-    };
+    const payload = { ...product, status: product.status || 'active' };
+    const { data, error } = await supabase
+        .from('products')
+        .insert([payload])
+        .select()
+        .single();
 
-    products.push(newProduct);
-    saveLocalInventory(products);
-    return newProduct;
+    if (error) {
+        console.error('Error adding product:', error);
+        return null;
+    }
+    return data;
 }
 
 export async function updateProduct(id: string, updates: Partial<Product>): Promise<void> {
-    const products = getLocalInventory();
-    const index = products.findIndex(p => p.id === id);
-    if (index !== -1) {
-        products[index] = { ...products[index], ...updates };
-        saveLocalInventory(products);
-    }
+    const { error } = await supabase
+        .from('products')
+        .update(updates)
+        .eq('id', id);
+
+    if (error) console.error('Error updating product:', error);
 }
 
 export async function deleteProduct(id: string): Promise<void> {
-    let products = getLocalInventory();
-    products = products.filter(p => p.id !== id);
-    saveLocalInventory(products);
+    const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', id);
+
+    if (error) console.error('Error deleting product:', error);
 }
 
 export async function seedProducts(): Promise<void> {
-    const products = getLocalInventory();
-    if (products.length > 0) {
-        // Already seeded
-        return;
-    }
+    const { count } = await supabase
+        .from('products')
+        .select('*', { count: 'exact', head: true });
 
-    const sampleProducts: Product[] = [
+    if (count && count > 0) return; // Already seeded
+
+    const sampleProducts = [
         {
-            id: 'p1',
             name: "Signature Blend Coffee Beans",
-            description: "A rich, full-bodied dark roast with notes of chocolate and molasses.",
+            description: "A rich, full-bodied dark roast with notes of chocolate and molasses. Perfect for espresso.",
             price: 45.00,
             compare_at_price: 55.00,
             stock: 50,
             category: "Coffee Beans",
             sku: "CB-SIG-001",
             status: "active",
-            images: ["https://images.unsplash.com/photo-1559056199-641a0ac8b55e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"],
-            created_at: new Date().toISOString()
+            images: ["https://images.unsplash.com/photo-1559056199-641a0ac8b55e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"]
         },
         {
-            id: 'p2',
             name: "Premium Matcha Powder",
             description: "Ceremonial grade matcha from Uji, Kyoto. Vibrant green color and smooth umami flavor.",
             price: 85.00,
@@ -89,11 +90,9 @@ export async function seedProducts(): Promise<void> {
             category: "Tea",
             sku: "TEA-MAT-001",
             status: "active",
-            images: ["https://images.unsplash.com/photo-1515810397858-220d588350fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"],
-            created_at: new Date().toISOString()
+            images: ["https://images.unsplash.com/photo-1515810397858-220d588350fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"]
         },
         {
-            id: 'p3',
             name: "Caramel Coffee Syrup",
             description: "Rich buttery caramel flavor. Ideal for lattes, frappuccinos, and desserts.",
             price: 28.00,
@@ -101,23 +100,63 @@ export async function seedProducts(): Promise<void> {
             category: "Syrups",
             sku: "SYR-CAR-001",
             status: "active",
-            images: ["https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"],
-            created_at: new Date().toISOString()
+            images: ["https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"]
+        },
+        {
+            name: "Oat Milk Barista Edition",
+            description: "Creamy plant-based milk formulated specifically for steaming and latte art.",
+            price: 18.00,
+            stock: 200,
+            category: "Milk",
+            sku: "MILK-OAT-001",
+            status: "active",
+            images: ["https://images.unsplash.com/photo-1603569283847-aa295f0d016a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"]
+        },
+        {
+            name: "Ceramic Coffee Mug Set",
+            description: "Set of 4 handcrafted ceramic mugs. 350ml capacity. Dishwasher safe.",
+            price: 120.00,
+            compare_at_price: 150.00,
+            stock: 15,
+            category: "Merchandise",
+            sku: "MERCH-MUG-004",
+            status: "active",
+            images: ["https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"]
         }
     ];
 
-    saveLocalInventory(sampleProducts);
+    const { error } = await supabase.from('products').insert(sampleProducts);
+    if (error) console.error('Error seeding products:', error);
 }
 
 export async function updateProductStock(items: { product: { id: string }, qty: number }[]): Promise<void> {
-    const products = getLocalInventory();
     for (const item of items) {
-        const productIndex = products.findIndex(p => p.id === item.product.id);
-        if (productIndex !== -1) {
-            products[productIndex].stock = Math.max(0, products[productIndex].stock - item.qty);
+        try {
+            const { data: product, error: fetchError } = await supabase
+                .from('products')
+                .select('stock')
+                .eq('id', item.product.id)
+                .single();
+
+            if (fetchError || !product) {
+                console.error(`Failed to fetch stock for product ${item.product.id}`, fetchError);
+                continue;
+            }
+
+            const newStock = Math.max(0, product.stock - item.qty);
+
+            const { error: updateError } = await supabase
+                .from('products')
+                .update({ stock: newStock })
+                .eq('id', item.product.id);
+
+            if (updateError) {
+                console.error(`Failed to update stock for product ${item.product.id}`, updateError);
+            }
+        } catch (e) {
+            console.error('Error in updateProductStock loop:', e);
         }
     }
-    saveLocalInventory(products);
 }
 
 // ── Orders ──
