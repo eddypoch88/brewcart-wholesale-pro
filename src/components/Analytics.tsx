@@ -51,7 +51,7 @@ export default function Analytics() {
 
         const metrics = orders.reduce((acc, order) => {
             const orderDate = new Date(order.created_at);
-            const amount = Number(order.total_amount) || 0;
+            const amount = Number(order.total) || 0;
             acc.total += amount;
             if (orderDate >= todayStart) acc.today += amount;
             if (orderDate >= weekStart) acc.week += amount;
@@ -62,20 +62,20 @@ export default function Analytics() {
     };
 
     const calculateDailyRevenue = (orders: Order[]) => {
-        const last7Days = Array.from({ length: 7 }, (_, i) => {
+        const last30Days = Array.from({ length: 30 }, (_, i) => {
             const date = new Date();
-            date.setDate(date.getDate() - (6 - i));
+            date.setDate(date.getDate() - (29 - i));
             return date.toISOString().split('T')[0];
         });
         const revenueMap = new Map<string, number>();
-        last7Days.forEach(date => revenueMap.set(date, 0));
+        last30Days.forEach(date => revenueMap.set(date, 0));
         orders.forEach(order => {
             const orderDate = new Date(order.created_at).toISOString().split('T')[0];
             if (revenueMap.has(orderDate)) {
-                revenueMap.set(orderDate, revenueMap.get(orderDate)! + Number(order.total_amount));
+                revenueMap.set(orderDate, revenueMap.get(orderDate)! + (Number(order.total) || 0));
             }
         });
-        setDailyRevenue(last7Days.map(date => ({
+        setDailyRevenue(last30Days.map(date => ({
             date: new Date(date).toLocaleDateString('en-MY', { month: 'short', day: 'numeric' }),
             revenue: revenueMap.get(date) || 0,
         })));
@@ -134,7 +134,9 @@ export default function Analytics() {
             <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {Array.from({ length: 4 }).map((_, i) => (
-                        <Skeleton key={i} height="120px" rounded="lg" />
+                        <div key={i}>
+                            <Skeleton height="120px" rounded="lg" />
+                        </div>
                     ))}
                 </div>
                 <Skeleton height="400px" rounded="lg" />
@@ -158,7 +160,7 @@ export default function Analytics() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Daily Revenue Line Chart */}
                 <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                    <h3 className="text-lg font-bold text-slate-900 mb-4">Daily Revenue (Last 7 Days)</h3>
+                    <h3 className="text-lg font-bold text-slate-900 mb-4">Daily Revenue (Last 30 Days)</h3>
                     <ResponsiveContainer width="100%" height={300}>
                         <LineChart data={dailyRevenue}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />

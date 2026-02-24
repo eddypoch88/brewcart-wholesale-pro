@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getProducts, getOrders } from '../lib/storage';
 import { Product, Order } from '../types';
-import { Package, ShoppingBag, DollarSign, TrendingUp, BarChart3 } from 'lucide-react';
+import { Package, ShoppingBag, DollarSign, TrendingUp, BarChart3, Clock, Calendar } from 'lucide-react';
 import Skeleton from './ui/Skeleton';
 import {
     LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
@@ -29,10 +29,15 @@ export default function Dashboard() {
     }, []);
 
     const ordersList = Array.isArray(orders) ? orders : [];
-    const productsList = Array.isArray(products) ? products : [];
 
     const totalRevenue = ordersList.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
     const avgOrder = ordersList.length > 0 ? totalRevenue / ordersList.length : 0;
+
+    const pendingOrders = ordersList.filter(o => o.status === 'pending').length;
+    const todaysOrders = ordersList.filter(o => {
+        if (!o.created_at) return false;
+        return new Date(o.created_at).toDateString() === new Date().toDateString();
+    }).length;
 
     // 7-day revenue data
     const getDailyRevenue = () => {
@@ -99,8 +104,8 @@ export default function Dashboard() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <StatCard title="Total Revenue" value={`RM ${totalRevenue.toFixed(2)}`} icon={DollarSign} color="bg-emerald-500" />
                 <StatCard title="Total Orders" value={ordersList.length} icon={ShoppingBag} color="bg-blue-600" />
-                <StatCard title="Active Products" value={productsList.filter(p => p.status === 'active').length} icon={Package} color="bg-orange-500" />
-                <StatCard title="Avg Order" value={`RM ${avgOrder.toFixed(2)}`} icon={TrendingUp} color="bg-purple-500" />
+                <StatCard title="Pending Orders" value={pendingOrders} icon={Clock} color="bg-orange-500" />
+                <StatCard title="Today's Orders" value={todaysOrders} icon={Calendar} color="bg-purple-500" />
             </div>
 
             {/* CHARTS ROW */}
@@ -192,14 +197,17 @@ export default function Dashboard() {
 
                     {/* Recent Orders */}
                     <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 lg:col-span-2">
-                        <h3 className="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2">
-                            <ShoppingBag size={16} className="text-blue-600" /> Recent Orders
-                        </h3>
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-sm font-bold text-slate-700 flex items-center gap-2">
+                                <ShoppingBag size={16} className="text-blue-600" /> Recent Orders
+                            </h3>
+                            <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-1 rounded">Avg Order: RM {avgOrder.toFixed(2)}</span>
+                        </div>
                         {ordersList.length === 0 ? (
                             <div className="text-center py-8 text-slate-400 text-sm">No orders yet.</div>
                         ) : (
                             <div className="divide-y divide-slate-100">
-                                {ordersList.slice(0, 6).map((order) => (
+                                {ordersList.slice(0, 10).map((order) => (
                                     <div key={order.id} className="py-3 flex justify-between items-center">
                                         <div>
                                             <p className="font-bold text-sm text-slate-900">{order.customer_name}</p>
