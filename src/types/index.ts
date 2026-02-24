@@ -95,6 +95,14 @@ export interface StoreSettings {
     fb_pixel_id?: string;
     google_analytics_id?: string;
     tiktok_pixel_id?: string;
+
+    // Payment Gateways
+    stripe_publishable_key?: string;
+    stripe_secret_key?: string;
+    is_stripe_enabled?: boolean;
+    toyyibpay_secret_key?: string;
+    toyyibpay_category_code?: string;
+    is_toyyibpay_enabled?: boolean;
 }
 
 export interface CartItem {

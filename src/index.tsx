@@ -94,6 +94,11 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                                 {React.createElement(React.lazy(() => import('./pages/admin/MarketingSettings')))}
                             </React.Suspense>
                         } />
+                        <Route path="payment" element={
+                            <React.Suspense fallback={<div className="p-8">Loading...</div>}>
+                                {React.createElement(React.lazy(() => import('./pages/admin/PaymentSettings')))}
+                            </React.Suspense>
+                        } />
                     </Route>
                 </Routes>
                 <Toaster position="top-right" />

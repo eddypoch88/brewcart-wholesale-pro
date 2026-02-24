@@ -388,6 +388,12 @@ export const getSettings = async (): Promise<StoreSettings> => {
         fb_pixel_id: data.fb_pixel_id || '',
         google_analytics_id: data.google_analytics_id || '',
         tiktok_pixel_id: data.tiktok_pixel_id || '',
+        stripe_publishable_key: data.stripe_publishable_key || '',
+        stripe_secret_key: data.stripe_secret_key || '',
+        is_stripe_enabled: data.is_stripe_enabled || false,
+        toyyibpay_secret_key: data.toyyibpay_secret_key || '',
+        toyyibpay_category_code: data.toyyibpay_category_code || '',
+        is_toyyibpay_enabled: data.is_toyyibpay_enabled || false,
     };
 }
 

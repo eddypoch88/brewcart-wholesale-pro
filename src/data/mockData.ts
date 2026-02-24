@@ -43,6 +43,14 @@ export const DEFAULT_SETTINGS: StoreSettings = {
     fb_pixel_id: '',
     google_analytics_id: '',
     tiktok_pixel_id: '',
+
+    // Payment Gateways
+    stripe_publishable_key: '',
+    stripe_secret_key: '',
+    is_stripe_enabled: false,
+    toyyibpay_secret_key: '',
+    toyyibpay_category_code: '',
+    is_toyyibpay_enabled: false,
 };
 
 export const MOCK_PRODUCTS: Product[] = [
