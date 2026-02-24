@@ -282,6 +282,37 @@ export async function uploadPaymentProof(orderId: string, file: File): Promise<s
     return data.publicUrl;
 }
 
+export async function uploadProductImage(file: File): Promise<string> {
+    const MAX_SIZE = 2 * 1024 * 1024; // 2MB
+    if (file.size > MAX_SIZE) {
+        throw new Error('Image size must be less than 2MB');
+    }
+
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+        throw new Error('Only JPG, PNG and WebP images are allowed');
+    }
+
+    const cleanName = file.name.replace(/[^a-zA-Z0-9.-]/g, '');
+    const fileName = `${Date.now()}-${cleanName}`;
+    const filePath = `images/${fileName}`; // Keeping them in 'images' folder inside 'product-images' bucket or straight to root
+
+    const { error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: true
+        });
+
+    if (uploadError) {
+        console.error('Error uploading product image:', uploadError);
+        throw new Error('Failed to upload image to storage');
+    }
+
+    const { data } = supabase.storage.from('product-images').getPublicUrl(filePath);
+    return data.publicUrl;
+}
+
 export async function updatePaymentProof(
     orderId: string,
     proofUrl: string,

@@ -53,9 +53,24 @@ export default function ProductPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                 {/* IMAGE */}
-                <div className="aspect-square bg-slate-100 rounded-2xl overflow-hidden border border-slate-200">
+                <div className="aspect-square bg-slate-100 rounded-2xl overflow-hidden border border-slate-200 relative">
                     {product.images?.[0] ? (
-                        <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
+                        <>
+                            <img
+                                src={product.images[0]}
+                                alt={product.name}
+                                loading="lazy"
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                    e.currentTarget.style.display = 'none';
+                                    e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                                }}
+                            />
+                            <div className="hidden absolute inset-0 w-full h-full flex flex-col items-center justify-center text-slate-300 bg-slate-100">
+                                <Package size={64} />
+                                <span className="text-sm font-semibold mt-2">Image unavailable</span>
+                            </div>
+                        </>
                     ) : (
                         <div className="w-full h-full flex items-center justify-center text-slate-300">
                             <Package size={64} />

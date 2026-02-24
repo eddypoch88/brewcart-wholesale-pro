@@ -45,17 +45,23 @@ export default function ProductTableRow({ product, isSelected, onSelect, onEdit,
 
             {/* Thumbnail */}
             <td className="md:table-cell md:w-20 md:px-6 md:py-4 pl-10 md:pl-0">
-                <div className="h-14 w-14 rounded-md overflow-hidden bg-slate-100 border border-slate-200 flex-shrink-0">
+                <div className="h-14 w-14 rounded-md overflow-hidden bg-slate-100 border border-slate-200 flex-shrink-0 relative">
                     {safeImages[0] ? (
-                        <img
-                            src={safeImages[0]}
-                            alt={product.name}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                                e.currentTarget.style.display = 'none';
-                                e.currentTarget.parentElement?.classList.add('flex', 'items-center', 'justify-center');
-                            }}
-                        />
+                        <>
+                            <img
+                                src={safeImages[0]}
+                                alt={product.name}
+                                loading="lazy"
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                    e.currentTarget.style.display = 'none';
+                                    e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                                }}
+                            />
+                            <div className="hidden absolute inset-0 w-full h-full flex items-center justify-center text-slate-400 bg-slate-100">
+                                <Package size={20} />
+                            </div>
+                        </>
                     ) : (
                         <div className="w-full h-full flex items-center justify-center text-slate-400">
                             <Package size={20} />

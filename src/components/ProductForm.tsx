@@ -3,7 +3,7 @@ import { Upload, X, Loader2 } from 'lucide-react';
 import { Product } from '../types';
 import toast from 'react-hot-toast';
 import VariantBuilder from './ui/VariantBuilder';
-import { addProduct, updateProduct } from '../lib/storage';
+import { addProduct, updateProduct, uploadProductImage } from '../lib/storage';
 
 interface ProductFormProps {
     onSuccess: () => void;
@@ -13,6 +13,7 @@ interface ProductFormProps {
 
 export default function ProductForm({ onSuccess, onCancel, initialData }: ProductFormProps) {
     const [loading, setLoading] = useState(false);
+    const [imageUploading, setImageUploading] = useState(false);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
 
     const [formData, setFormData] = useState<Partial<Product>>({
@@ -27,16 +28,22 @@ export default function ProductForm({ onSuccess, onCancel, initialData }: Produc
         }
     }, [initialData]);
 
-    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files?.[0]) {
             const file = e.target.files[0];
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const base64 = reader.result as string;
-                setImagePreview(base64);
-                setFormData(prev => ({ ...prev, images: [base64] }));
-            };
-            reader.readAsDataURL(file);
+            setImageUploading(true);
+            try {
+                const url = await uploadProductImage(file);
+                setImagePreview(url);
+                setFormData(prev => ({ ...prev, images: [url] }));
+                toast.success('Image uploaded successfully');
+            } catch (err: any) {
+                toast.error(err.message || 'Failed to upload image');
+                // Reset file input
+                e.target.value = '';
+            } finally {
+                setImageUploading(false);
+            }
         }
     };
 
@@ -94,18 +101,28 @@ export default function ProductForm({ onSuccess, onCancel, initialData }: Produc
                     {/* MEDIA */}
                     <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
                         <h3 className="font-semibold text-slate-700">Media</h3>
-                        <div className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center hover:bg-slate-50 transition cursor-pointer relative">
-                            <input type="file" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept="image/*" onChange={handleFileSelect} disabled={loading} />
+                        <div className={`border-2 border-dashed ${imageUploading ? 'border-blue-400 bg-blue-50' : 'border-slate-300 hover:bg-slate-50'} rounded-lg p-8 text-center transition cursor-pointer relative`}>
+                            <input type="file" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed" accept="image/png, image/jpeg, image/webp" onChange={handleFileSelect} disabled={loading || imageUploading} />
                             <div className="flex flex-col items-center pointer-events-none">
-                                <Upload className="w-8 h-8 text-slate-400 mb-2" />
-                                <span className="text-blue-600 font-medium">Click to upload image</span>
+                                {imageUploading ? (
+                                    <>
+                                        <Loader2 className="w-8 h-8 text-blue-500 mb-2 animate-spin" />
+                                        <span className="text-blue-600 font-medium">Uploading image...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Upload className="w-8 h-8 text-slate-400 mb-2" />
+                                        <span className="text-blue-600 font-medium">Click to upload image</span>
+                                        <span className="text-xs text-slate-500 mt-1">PNG, JPG, WebP up to 2MB</span>
+                                    </>
+                                )}
                             </div>
                         </div>
-                        {imagePreview && (
+                        {imagePreview && !imageUploading && (
                             <div className="relative w-32 h-32 rounded-lg overflow-hidden border mt-4 group">
                                 <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
                                 <button type="button" onClick={() => { setImagePreview(null); setFormData(p => ({ ...p, images: [] })); }}
-                                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition">
+                                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition shadow-sm">
                                     <X className="w-3 h-3" />
                                 </button>
                             </div>

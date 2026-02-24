@@ -10,13 +10,24 @@ export default function ProductCard({ product }: ProductCardProps) {
     return (
         <Link to={`/product/${product.id}`} className="group bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
             {/* Image */}
-            <div className="aspect-square bg-slate-100 overflow-hidden">
+            <div className="aspect-square bg-slate-100 overflow-hidden relative">
                 {product.images?.[0] ? (
-                    <img
-                        src={product.images[0]}
-                        alt={product.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
+                    <>
+                        <img
+                            src={product.images[0]}
+                            alt={product.name}
+                            loading="lazy"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                                e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                            }}
+                        />
+                        <div className="hidden absolute inset-0 w-full h-full flex flex-col items-center justify-center text-slate-300 bg-slate-100">
+                            <Package size={48} />
+                            <span className="text-xs font-semibold mt-2">Image unavailable</span>
+                        </div>
+                    </>
                 ) : (
                     <div className="w-full h-full flex items-center justify-center text-slate-300">
                         <Package size={48} />
