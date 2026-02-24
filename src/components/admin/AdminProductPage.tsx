@@ -4,7 +4,7 @@ import ProductForm from '../ProductForm';
 import ProductTableRow from './ProductTableRow';
 import { Product } from '../../types';
 import toast from 'react-hot-toast';
-import { getProducts, deleteProduct, seedProducts } from '../../lib/storage';
+import { getProducts, deleteProduct, seedProducts, deleteProductImage } from '../../lib/storage';
 
 export default function AdminProductPage() {
     const [products, setProducts] = useState<Product[]>([]);
@@ -28,7 +28,17 @@ export default function AdminProductPage() {
 
     const handleDeleteProduct = async (id: string) => {
         if (!confirm('Are you sure you want to delete this product?')) return;
+        const product = products.find(p => p.id === id);
         await deleteProduct(id);
+
+        if (product?.images?.length) {
+            for (const img of product.images) {
+                if (img.includes('/product-images/')) {
+                    await deleteProductImage(img).catch(console.error);
+                }
+            }
+        }
+
         toast.success('Product deleted!');
         loadProducts();
     };
@@ -43,7 +53,20 @@ export default function AdminProductPage() {
 
     const handleBulkDelete = async () => {
         if (!confirm(`Delete ${selectedIds.length} products?`)) return;
+
+        const productsToDelete = products.filter(p => selectedIds.includes(p.id));
         await Promise.all(selectedIds.map(id => deleteProduct(id)));
+
+        for (const product of productsToDelete) {
+            if (product?.images?.length) {
+                for (const img of product.images) {
+                    if (img.includes('/product-images/')) {
+                        await deleteProductImage(img).catch(console.error);
+                    }
+                }
+            }
+        }
+
         toast.success('Bulk delete complete');
         setSelectedIds([]);
         loadProducts();

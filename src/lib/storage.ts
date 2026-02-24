@@ -4,15 +4,22 @@ import { DEFAULT_SETTINGS } from '../data/mockData';
 
 // ── Products (Supabase) ──
 export async function getProducts(): Promise<Product[]> {
-    const { data, error } = await supabase
+    console.log('🔍 [getProducts] Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
+    console.log('🔍 [getProducts] Fetching products...');
+
+    const { data, error, count } = await supabase
         .from('products')
-        .select('*')
+        .select('*', { count: 'exact' })
         .order('created_at', { ascending: false });
 
+    console.log('🔍 [getProducts] Response:', { data, error, count });
+
     if (error) {
-        console.error('Error fetching products:', error);
+        console.error('❌ [getProducts] Supabase error:', error.message, error.code, error.details, error.hint);
         return [];
     }
+
+    console.log(`✅ [getProducts] Got ${data?.length ?? 0} products`);
     return data || [];
 }
 
@@ -312,6 +319,12 @@ export async function uploadProductImage(file: File): Promise<string> {
     const { data } = supabase.storage.from('product-images').getPublicUrl(filePath);
     return data.publicUrl;
 }
+
+export const deleteProductImage = async (imageUrl: string) => {
+    const path = imageUrl.split('/product-images/')[1];
+    if (!path) return;
+    await supabase.storage.from('product-images').remove([path]);
+};
 
 export async function updatePaymentProof(
     orderId: string,

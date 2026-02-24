@@ -2,6 +2,7 @@ import { Menu, X, LayoutDashboard, Package, ShoppingBag, Settings, ExternalLink,
 import { useCallback } from "react";
 import { NavLink } from "react-router-dom";
 import { useStore } from "../context/StoreContext";
+import NotificationBell from "./NotificationBell";
 
 export default function Sidebar({
     sidebarOpen,
@@ -71,7 +72,21 @@ export default function Sidebar({
                     </button>
                 </div>
 
-                <div className="flex-1 px-3 space-y-1 overflow-y-auto py-4">
+                {/* Notification Bell Section */}
+                <div className="px-3 mb-4">
+                    <div className="flex items-center justify-between bg-slate-800/50 p-3 rounded-xl border border-slate-700/50">
+                        <div className="flex items-center gap-3">
+                            <NotificationBell />
+                            <div className="flex flex-col">
+                                <span className="text-xs font-bold text-slate-200">Notifications</span>
+                                <span className="text-[10px] text-slate-500 uppercase tracking-wider">Real-time alerts</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="mt-6 border-t border-slate-700/50"></div>
+                </div>
+
+                <div className="flex-1 px-3 space-y-1 overflow-y-auto py-2">
                     {navItem("dashboard", "Overview", LayoutDashboard)}
                     {navItem("analytics", "Analytics", TrendingUp)}
                     {navItem("products", "Products", Package)}

@@ -3,9 +3,13 @@ import { Outlet } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import ErrorBoundary from './components/system/ErrorBoundary';
 import { Toaster } from 'react-hot-toast';
+import { useNotifications } from './hooks/useNotifications';
 
 export default function App() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
+
+    // Listen for new orders and manage notifications globally
+    useNotifications();
 
     return (
         <div className="flex min-h-screen bg-slate-100">

@@ -73,7 +73,7 @@ export default function ProductForm({ onSuccess, onCancel, initialData }: Produc
                 <h2 className="text-2xl font-bold text-slate-800">{initialData ? 'Edit Product' : 'Add New Product'}</h2>
                 <div className="flex gap-3">
                     <button type="button" onClick={onCancel} className="px-4 py-2 text-slate-600 hover:bg-slate-200 rounded-lg font-medium">Cancel</button>
-                    <button type="submit" disabled={loading}
+                    <button type="submit" disabled={loading || imageUploading}
                         className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 font-bold shadow-md">
                         {loading && <Loader2 className="w-4 h-4 animate-spin" />}
                         {loading ? 'Saving...' : 'Save Product'}
