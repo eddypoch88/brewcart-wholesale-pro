@@ -24,6 +24,7 @@ const updateSW = registerSW({
 import App from './App';
 import LoginPage from './pages/auth/LoginPage';
 import ProtectedRoute from './components/ProtectedRoute';
+import { NotificationsProvider } from './hooks/useNotifications';
 
 // Store
 import StoreLayout from './pages/store/StoreLayout';
@@ -57,7 +58,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                     {/* ADMIN CMS - PROTECTED */}
                     <Route path="/admin" element={
                         <ProtectedRoute>
-                            <App />
+                            <NotificationsProvider>
+                                <App />
+                            </NotificationsProvider>
                         </ProtectedRoute>
                     }>
                         <Route index element={<Navigate to="dashboard" replace />} />
