@@ -5,6 +5,7 @@ import { useStore } from "../context/StoreContext";
 import NotificationBell from "./NotificationBell";
 import { useNotifications } from "../hooks/useNotifications";
 import { useTheme } from "../hooks/useTheme";
+import { usePWA } from "../hooks/usePWA";
 import { supabase } from "../lib/supabase";
 
 export default function Sidebar({
@@ -17,6 +18,7 @@ export default function Sidebar({
     const { settings } = useStore();
     const { addNotification } = useNotifications();
     const { theme, toggleTheme } = useTheme();
+    const { isReady: isPWAReady, installApp } = usePWA();
     const navigate = useNavigate();
     const storeName = settings.store_name || "BrewCart Pro";
 
@@ -142,6 +144,16 @@ export default function Sidebar({
                             />
                         </button>
                     </div>
+
+                    {isPWAReady && (
+                        <button
+                            onClick={installApp}
+                            className="w-full flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-600/20 to-blue-600/5 hover:from-blue-600/30 hover:to-blue-600/10 text-blue-400 border border-blue-500/20 rounded-xl transition-all duration-200 group"
+                        >
+                            <span className="text-sm font-semibold">Install Admin App</span>
+                            <span className="text-xs font-bold text-white bg-blue-500 rounded px-1.5 py-0.5 shadow-sm group-hover:scale-105 transition-transform">+</span>
+                        </button>
+                    )}
 
                     <button
                         onClick={handleLogout}

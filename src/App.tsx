@@ -4,7 +4,6 @@ import Sidebar from './components/Sidebar';
 import ErrorBoundary from './components/system/ErrorBoundary';
 import { Toaster } from 'react-hot-toast';
 import { NotificationsProvider } from './hooks/useNotifications';
-import InstallPWA from './components/InstallPWA';
 
 export default function App() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -19,7 +18,6 @@ export default function App() {
                     </ErrorBoundary>
                 </main>
                 <Toaster position="top-right" />
-                <InstallPWA />
             </div>
         </NotificationsProvider>
     );
