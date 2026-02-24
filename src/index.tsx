@@ -2,7 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { StoreProvider } from './context/StoreContext';
-import { AuthProvider } from './context/AuthContext';
 import { Toaster } from 'react-hot-toast';
 import { registerSW } from 'virtual:pwa-register';
 
@@ -24,7 +23,7 @@ const updateSW = registerSW({
 // Admin
 import App from './App';
 import LoginPage from './pages/auth/LoginPage';
-import ProtectedRoute from './components/system/ProtectedRoute';
+import ProtectedRoute from './components/ProtectedRoute';
 
 // Store
 import StoreLayout from './pages/store/StoreLayout';
@@ -40,59 +39,57 @@ import '../index.css';
 ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
         <StoreProvider>
-            <AuthProvider>
-                <BrowserRouter>
-                    <Routes>
-                        {/* AUTH */}
-                        <Route path="/login" element={<LoginPage />} />
+            <BrowserRouter>
+                <Routes>
+                    {/* AUTH */}
+                    <Route path="/login" element={<LoginPage />} />
 
-                        {/* FRONT STORE */}
-                        <Route element={<StoreLayout />}>
-                            <Route path="/" element={<StorePage />} />
-                            <Route path="/product/:id" element={<ProductPage />} />
-                            <Route path="/cart" element={<CartPage />} />
-                            <Route path="/checkout" element={<CheckoutPage />} />
-                            <Route path="/order-confirmation" element={<OrderConfirmationPage />} />
-                            <Route path="/order-review/:orderId" element={<OrderReviewPage />} />
-                        </Route>
+                    {/* FRONT STORE */}
+                    <Route element={<StoreLayout />}>
+                        <Route path="/" element={<StorePage />} />
+                        <Route path="/product/:id" element={<ProductPage />} />
+                        <Route path="/cart" element={<CartPage />} />
+                        <Route path="/checkout" element={<CheckoutPage />} />
+                        <Route path="/order-confirmation" element={<OrderConfirmationPage />} />
+                        <Route path="/order-review/:orderId" element={<OrderReviewPage />} />
+                    </Route>
 
-                        {/* ADMIN CMS - PROTECTED */}
-                        <Route path="/admin" element={
-                            <ProtectedRoute>
-                                <App />
-                            </ProtectedRoute>
-                        }>
-                            <Route index element={<Navigate to="dashboard" replace />} />
-                            <Route path="dashboard" element={
-                                <React.Suspense fallback={<div className="p-8">Loading...</div>}>
-                                    {React.createElement(React.lazy(() => import('./components/Dashboard')))}
-                                </React.Suspense>
-                            } />
-                            <Route path="analytics" element={
-                                <React.Suspense fallback={<div className="p-8">Loading...</div>}>
-                                    {React.createElement(React.lazy(() => import('./components/Analytics')))}
-                                </React.Suspense>
-                            } />
-                            <Route path="products" element={
-                                <React.Suspense fallback={<div className="p-8">Loading...</div>}>
-                                    {React.createElement(React.lazy(() => import('./components/admin/AdminProductPage')))}
-                                </React.Suspense>
-                            } />
-                            <Route path="orders" element={
-                                <React.Suspense fallback={<div className="p-8">Loading...</div>}>
-                                    {React.createElement(React.lazy(() => import('./components/OrderList')))}
-                                </React.Suspense>
-                            } />
-                            <Route path="settings" element={
-                                <React.Suspense fallback={<div className="p-8">Loading...</div>}>
-                                    {React.createElement(React.lazy(() => import('./components/Settings')))}
-                                </React.Suspense>
-                            } />
-                        </Route>
-                    </Routes>
-                    <Toaster position="top-right" />
-                </BrowserRouter>
-            </AuthProvider>
+                    {/* ADMIN CMS - PROTECTED */}
+                    <Route path="/admin" element={
+                        <ProtectedRoute>
+                            <App />
+                        </ProtectedRoute>
+                    }>
+                        <Route index element={<Navigate to="dashboard" replace />} />
+                        <Route path="dashboard" element={
+                            <React.Suspense fallback={<div className="p-8">Loading...</div>}>
+                                {React.createElement(React.lazy(() => import('./components/Dashboard')))}
+                            </React.Suspense>
+                        } />
+                        <Route path="analytics" element={
+                            <React.Suspense fallback={<div className="p-8">Loading...</div>}>
+                                {React.createElement(React.lazy(() => import('./components/Analytics')))}
+                            </React.Suspense>
+                        } />
+                        <Route path="products" element={
+                            <React.Suspense fallback={<div className="p-8">Loading...</div>}>
+                                {React.createElement(React.lazy(() => import('./components/admin/AdminProductPage')))}
+                            </React.Suspense>
+                        } />
+                        <Route path="orders" element={
+                            <React.Suspense fallback={<div className="p-8">Loading...</div>}>
+                                {React.createElement(React.lazy(() => import('./components/OrderList')))}
+                            </React.Suspense>
+                        } />
+                        <Route path="settings" element={
+                            <React.Suspense fallback={<div className="p-8">Loading...</div>}>
+                                {React.createElement(React.lazy(() => import('./components/Settings')))}
+                            </React.Suspense>
+                        } />
+                    </Route>
+                </Routes>
+                <Toaster position="top-right" />
+            </BrowserRouter>
         </StoreProvider>
     </React.StrictMode>
 );

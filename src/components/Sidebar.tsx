@@ -1,9 +1,10 @@
-import { Menu, X, LayoutDashboard, Package, ShoppingBag, Settings, ExternalLink, TrendingUp } from "lucide-react";
+import { Menu, X, LayoutDashboard, Package, ShoppingBag, Settings, ExternalLink, TrendingUp, LogOut } from "lucide-react";
 import { useCallback } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useStore } from "../context/StoreContext";
 import NotificationBell from "./NotificationBell";
 import { useNotifications } from "../hooks/useNotifications";
+import { supabase } from "../lib/supabase";
 
 export default function Sidebar({
     sidebarOpen,
@@ -14,7 +15,13 @@ export default function Sidebar({
 }) {
     const { settings } = useStore();
     const { addNotification } = useNotifications();
+    const navigate = useNavigate();
     const storeName = settings.store_name || "BrewCart Pro";
+
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        navigate('/login');
+    };
 
     const closeSidebarOnMobile = useCallback(() => {
         if (window.innerWidth < 768) {
@@ -116,6 +123,14 @@ export default function Sidebar({
                         <span className="text-sm font-medium">View Storefront</span>
                     </a>
                 </nav>
+
+                <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-4 text-red-400 hover:text-red-300 hover:bg-white/5 transition-colors border-t border-slate-800"
+                >
+                    <LogOut size={16} />
+                    <span className="text-sm font-medium">Sign Out</span>
+                </button>
 
                 {/* Footer */}
                 <div className="px-5 py-4 border-t border-slate-800 text-[11px] text-slate-600 text-center">
