@@ -114,11 +114,11 @@ export default function Analytics() {
     };
 
     const StatCard = ({ title, value, icon: Icon, color }: any) => (
-        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-slate-200 dark:border-gray-700 shadow-sm transition-colors duration-300">
             <div className="flex items-start justify-between">
                 <div>
-                    <p className="text-sm font-medium text-slate-500 mb-1">{title}</p>
-                    <h3 className="text-2xl font-bold text-slate-900">
+                    <p className="text-sm font-medium text-slate-500 dark:text-gray-400 mb-1">{title}</p>
+                    <h3 className="text-2xl font-bold text-slate-900 dark:text-white">
                         {loading ? <Skeleton width="100px" height="32px" /> : `RM ${value.toFixed(2)}`}
                     </h3>
                 </div>
@@ -146,7 +146,7 @@ export default function Analytics() {
 
     return (
         <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-slate-800">Analytics</h2>
+            <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Analytics</h2>
 
             {/* Revenue Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -159,8 +159,8 @@ export default function Analytics() {
             {/* Charts Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Daily Revenue Line Chart */}
-                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                    <h3 className="text-lg font-bold text-slate-900 mb-4">Daily Revenue (Last 30 Days)</h3>
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-slate-200 dark:border-gray-700 shadow-sm transition-colors duration-300">
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Daily Revenue (Last 30 Days)</h3>
                     <ResponsiveContainer width="100%" height={300}>
                         <LineChart data={dailyRevenue}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
@@ -174,8 +174,8 @@ export default function Analytics() {
                 </div>
 
                 {/* Top Products Bar Chart */}
-                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                    <h3 className="text-lg font-bold text-slate-900 mb-4">Top 5 Products</h3>
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-slate-200 dark:border-gray-700 shadow-sm transition-colors duration-300">
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Top 5 Products</h3>
                     <ResponsiveContainer width="100%" height={300}>
                         <BarChart data={topProducts}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
@@ -189,8 +189,8 @@ export default function Analytics() {
                 </div>
 
                 {/* Order Status Pie Chart */}
-                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                    <h3 className="text-lg font-bold text-slate-900 mb-4">Order Status Distribution</h3>
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-slate-200 dark:border-gray-700 shadow-sm transition-colors duration-300">
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Order Status Distribution</h3>
                     <ResponsiveContainer width="100%" height={300}>
                         <PieChart>
                             <Pie data={statusDistribution} cx="50%" cy="50%" labelLine={false} label={({ status, percent }) => `${status} (${(percent * 100).toFixed(0)}%)`} outerRadius={80} fill="#8884d8" dataKey="count">
@@ -204,27 +204,27 @@ export default function Analytics() {
                 </div>
 
                 {/* Summary Stats */}
-                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                    <h3 className="text-lg font-bold text-slate-900 mb-4">Quick Stats</h3>
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-slate-200 dark:border-gray-700 shadow-sm transition-colors duration-300">
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Quick Stats</h3>
                     <div className="space-y-4">
-                        <div className="flex justify-between items-center pb-3 border-b border-slate-100">
-                            <span className="text-slate-600">Total Orders</span>
-                            <span className="font-bold text-slate-900">{orders.length}</span>
+                        <div className="flex justify-between items-center pb-3 border-b border-slate-100 dark:border-gray-700">
+                            <span className="text-slate-600 dark:text-gray-400">Total Orders</span>
+                            <span className="font-bold text-slate-900 dark:text-white">{orders.length}</span>
                         </div>
-                        <div className="flex justify-between items-center pb-3 border-b border-slate-100">
-                            <span className="text-slate-600">Average Order Value</span>
+                        <div className="flex justify-between items-center pb-3 border-b border-slate-100 dark:border-gray-700">
+                            <span className="text-slate-600 dark:text-gray-400">Average Order Value</span>
                             <span className="font-bold text-emerald-600">
                                 RM {orders.length > 0 ? (revenueData.total / orders.length).toFixed(2) : '0.00'}
                             </span>
                         </div>
-                        <div className="flex justify-between items-center pb-3 border-b border-slate-100">
-                            <span className="text-slate-600">Orders This Week</span>
+                        <div className="flex justify-between items-center pb-3 border-b border-slate-100 dark:border-gray-700">
+                            <span className="text-slate-600 dark:text-gray-400">Orders This Week</span>
                             <span className="font-bold text-blue-600">
                                 {orders.filter(o => new Date(o.created_at) >= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length}
                             </span>
                         </div>
                         <div className="flex justify-between items-center">
-                            <span className="text-slate-600">Orders Today</span>
+                            <span className="text-slate-600 dark:text-gray-400">Orders Today</span>
                             <span className="font-bold text-orange-600">
                                 {orders.filter(o => new Date(o.created_at).toDateString() === new Date().toDateString()).length}
                             </span>

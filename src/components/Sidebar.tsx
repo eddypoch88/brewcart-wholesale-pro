@@ -1,9 +1,10 @@
-import { Menu, X, LayoutDashboard, Package, ShoppingBag, Settings, ExternalLink, TrendingUp, LogOut } from "lucide-react";
+import { Menu, X, LayoutDashboard, Package, ShoppingBag, Settings, ExternalLink, TrendingUp, LogOut, Sun, Moon } from "lucide-react";
 import { useCallback } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useStore } from "../context/StoreContext";
 import NotificationBell from "./NotificationBell";
 import { useNotifications } from "../hooks/useNotifications";
+import { useTheme } from "../hooks/useTheme";
 import { supabase } from "../lib/supabase";
 
 export default function Sidebar({
@@ -15,6 +16,7 @@ export default function Sidebar({
 }) {
     const { settings } = useStore();
     const { addNotification } = useNotifications();
+    const { theme, toggleTheme } = useTheme();
     const navigate = useNavigate();
     const storeName = settings.store_name || "BrewCart Pro";
 
@@ -103,6 +105,26 @@ export default function Sidebar({
                 <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
 
                     <NotificationBell />
+
+                    <div className="px-4 mt-4">
+                        <div className="flex items-center justify-between bg-white/5 backdrop-blur-md rounded-xl px-3 py-2 border border-white/10">
+                            <div className="flex items-center gap-2 text-sm text-gray-300">
+                                {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+                                <span className="font-medium">
+                                    {theme === 'dark' ? 'Dark' : 'Light'}
+                                </span>
+                            </div>
+                            <button
+                                onClick={toggleTheme}
+                                className={`relative w-11 h-6 rounded-full transition-all duration-300 ${theme === 'dark' ? 'bg-blue-500/80' : 'bg-gray-400/50'
+                                    }`}
+                            >
+                                <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow-md transition-all duration-300 ${theme === 'dark' ? 'left-6' : 'left-1'
+                                    }`}
+                                />
+                            </button>
+                        </div>
+                    </div>
 
                     <div className="border-t border-slate-800 my-5" />
 

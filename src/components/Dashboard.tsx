@@ -85,10 +85,10 @@ export default function Dashboard() {
     const statusDist = getStatusDist();
 
     const StatCard = ({ title, value, icon: Icon, color }: any) => (
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-start justify-between">
+        <div className="bg-white dark:bg-gray-800 p-5 rounded-xl border border-slate-200 dark:border-gray-700 shadow-sm flex items-start justify-between transition-colors duration-300">
             <div>
-                <p className="text-xs font-medium text-slate-500 mb-1">{title}</p>
-                <h3 className="text-xl font-bold text-slate-900">{loading ? <Skeleton width="80px" height="28px" /> : value}</h3>
+                <p className="text-xs font-medium text-slate-500 dark:text-gray-400 mb-1">{title}</p>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white">{loading ? <Skeleton width="80px" height="28px" /> : value}</h3>
             </div>
             <div className={`p-2.5 rounded-lg ${color} text-white`}>
                 <Icon size={20} />
@@ -98,7 +98,7 @@ export default function Dashboard() {
 
     return (
         <div className="space-y-6">
-            <h2 className="text-xl font-bold text-slate-800">Business Overview</h2>
+            <h2 className="text-xl font-bold text-slate-800 dark:text-white">Business Overview</h2>
 
             {/* STATS GRID */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -112,8 +112,8 @@ export default function Dashboard() {
             {!loading && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     {/* 7-Day Revenue */}
-                    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
-                        <h3 className="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2">
+                    <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 shadow-sm p-5 transition-colors duration-300">
+                        <h3 className="text-sm font-bold text-slate-700 dark:text-white mb-4 flex items-center gap-2">
                             <TrendingUp size={16} className="text-blue-600" /> 7-Day Revenue
                         </h3>
                         <ResponsiveContainer width="100%" height={200}>
@@ -131,8 +131,8 @@ export default function Dashboard() {
                     </div>
 
                     {/* Top Products */}
-                    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
-                        <h3 className="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2">
+                    <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 shadow-sm p-5 transition-colors duration-300">
+                        <h3 className="text-sm font-bold text-slate-700 dark:text-white mb-4 flex items-center gap-2">
                             <BarChart3 size={16} className="text-emerald-600" /> Top Products
                         </h3>
                         {topProducts.length === 0 ? (
@@ -158,8 +158,8 @@ export default function Dashboard() {
             {!loading && (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                     {/* Status Pie */}
-                    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
-                        <h3 className="text-sm font-bold text-slate-700 mb-4">Order Status</h3>
+                    <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 shadow-sm p-5 transition-colors duration-300">
+                        <h3 className="text-sm font-bold text-slate-700 dark:text-white mb-4">Order Status</h3>
                         {statusDist.length === 0 ? (
                             <div className="text-center py-12 text-slate-400 text-sm">No orders yet</div>
                         ) : (
@@ -185,7 +185,7 @@ export default function Dashboard() {
                                 </ResponsiveContainer>
                                 <div className="flex flex-wrap gap-3 mt-2 justify-center">
                                     {statusDist.map((s, i) => (
-                                        <div key={s.status} className="flex items-center gap-1.5 text-xs text-slate-600">
+                                        <div key={s.status} className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-gray-400">
                                             <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }} />
                                             <span className="capitalize">{s.status} ({s.count})</span>
                                         </div>
@@ -196,26 +196,26 @@ export default function Dashboard() {
                     </div>
 
                     {/* Recent Orders */}
-                    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 lg:col-span-2">
+                    <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 shadow-sm p-5 lg:col-span-2 transition-colors duration-300">
                         <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-sm font-bold text-slate-700 flex items-center gap-2">
+                            <h3 className="text-sm font-bold text-slate-700 dark:text-white flex items-center gap-2">
                                 <ShoppingBag size={16} className="text-blue-600" /> Recent Orders
                             </h3>
-                            <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-1 rounded">Avg Order: RM {avgOrder.toFixed(2)}</span>
+                            <span className="text-xs font-semibold text-slate-500 dark:text-gray-400 bg-slate-100 dark:bg-gray-700 px-2 py-1 rounded">Avg Order: RM {avgOrder.toFixed(2)}</span>
                         </div>
                         {ordersList.length === 0 ? (
                             <div className="text-center py-8 text-slate-400 text-sm">No orders yet.</div>
                         ) : (
-                            <div className="divide-y divide-slate-100">
+                            <div className="divide-y divide-slate-100 dark:divide-gray-700">
                                 {ordersList.slice(0, 10).map((order) => (
                                     <div key={order.id} className="py-3 flex justify-between items-center">
                                         <div>
-                                            <p className="font-bold text-sm text-slate-900">{order.customer_name}</p>
-                                            <p className="text-xs text-slate-500">{new Date(order.created_at).toLocaleDateString()}</p>
+                                            <p className="font-bold text-sm text-slate-900 dark:text-white">{order.customer_name}</p>
+                                            <p className="text-xs text-slate-500 dark:text-gray-400">{new Date(order.created_at).toLocaleDateString()}</p>
                                         </div>
                                         <div className="text-right">
                                             <span className="font-bold text-sm text-emerald-600">RM {(Number(order.total) || 0).toFixed(2)}</span>
-                                            <p className="text-xs capitalize text-slate-400">{order.status}</p>
+                                            <p className="text-xs capitalize text-slate-400 dark:text-gray-500">{order.status}</p>
                                         </div>
                                     </div>
                                 ))}

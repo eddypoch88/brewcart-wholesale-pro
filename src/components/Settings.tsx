@@ -161,48 +161,48 @@ export default function Settings() {
     };
 
     return (
-        <div className="max-w-4xl mx-auto space-y-6 pb-8">
-            <h1 className="text-2xl font-bold text-slate-900">Settings</h1>
+        <div className="max-w-4xl mx-auto space-y-6 pb-8 transition-colors duration-300">
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Settings</h1>
 
             {/* 1. STORE INFORMATION */}
-            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-                <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-slate-200 dark:border-gray-700 shadow-sm space-y-4 transition-colors duration-300">
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                     <Building2 size={20} className="text-blue-600" />
                     Store Information
                 </h2>
                 <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">Store Name</label>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Store Name</label>
                         <input
                             type="text"
                             value={settings.store_name}
                             onChange={(e) => updateSettings({ store_name: e.target.value })}
                             placeholder="My Coffee Shop"
-                            className="w-full border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none"
+                            className="w-full bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none"
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">WhatsApp Number</label>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">WhatsApp Number</label>
                         <input
                             type="text"
                             value={settings.whatsapp_number}
                             onChange={(e) => updateSettings({ whatsapp_number: e.target.value })}
                             placeholder="60123456789"
-                            className="w-full border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none"
+                            className="w-full bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none"
                         />
-                        <p className="mt-1 text-xs text-slate-500">Format: Numbers only (e.g., 60123456789)</p>
+                        <p className="mt-1 text-xs text-slate-500 dark:text-gray-400">Format: Numbers only (e.g., 60123456789)</p>
                     </div>
                 </div>
             </div>
 
             {/* 2. BRANDING */}
-            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-                <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-slate-200 dark:border-gray-700 shadow-sm space-y-4 transition-colors duration-300">
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                     <ImageIcon size={20} className="text-blue-600" />
                     Branding
                 </h2>
                 <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-3">Store Logo</label>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-3">Store Logo</label>
 
                     {/* Logo Preview */}
                     {settings.logo_url ? (
@@ -211,7 +211,7 @@ export default function Settings() {
                                 <img
                                     src={settings.logo_url}
                                     alt="Store logo"
-                                    className="w-24 h-24 rounded-full object-cover border-2 border-slate-200"
+                                    className="w-24 h-24 rounded-full object-cover border-2 border-slate-200 dark:border-gray-700"
                                 />
                                 <button
                                     onClick={handleRemoveLogo}
@@ -221,20 +221,20 @@ export default function Settings() {
                                     <X size={16} />
                                 </button>
                             </div>
-                            <div className="text-sm text-slate-600">
+                            <div className="text-sm text-slate-600 dark:text-gray-400">
                                 <p className="font-medium">Logo uploaded</p>
-                                <p className="text-xs text-slate-500">Click X to remove</p>
+                                <p className="text-xs text-slate-500 dark:text-gray-500">Click X to remove</p>
                             </div>
                         </div>
                     ) : (
-                        <div className="mb-4 w-24 h-24 rounded-full bg-slate-100 border-2 border-dashed border-slate-300 flex items-center justify-center">
-                            <ImageIcon size={32} className="text-slate-400" />
+                        <div className="mb-4 w-24 h-24 rounded-full bg-slate-100 dark:bg-gray-700 border-2 border-dashed border-slate-300 dark:border-gray-600 flex items-center justify-center">
+                            <ImageIcon size={32} className="text-slate-400 dark:text-gray-500" />
                         </div>
                     )}
 
                     {/* Upload Button */}
                     <div>
-                        <label className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg border border-blue-200 hover:bg-blue-100 transition cursor-pointer">
+                        <label className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition cursor-pointer">
                             <ImageIcon size={18} />
                             <span className="font-medium">Upload Logo</span>
                             <input
@@ -244,7 +244,7 @@ export default function Settings() {
                                 className="hidden"
                             />
                         </label>
-                        <p className="mt-2 text-xs text-slate-500">
+                        <p className="mt-2 text-xs text-slate-500 dark:text-gray-400">
                             Recommended: 400x400px, PNG or SVG with transparent background (max 2MB)
                         </p>
                     </div>
@@ -252,18 +252,18 @@ export default function Settings() {
             </div>
 
             {/* 3. CURRENCY & REGIONAL */}
-            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-                <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-slate-200 dark:border-gray-700 shadow-sm space-y-4 transition-colors duration-300">
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                     <Globe size={20} className="text-blue-600" />
                     Currency & Regional
                 </h2>
                 <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">Currency</label>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Currency</label>
                         <select
                             value={settings.currency}
                             onChange={(e) => updateSettings({ currency: e.target.value })}
-                            className="w-full border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none"
+                            className="w-full bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none"
                         >
                             <option value="MYR">MYR - Malaysian Ringgit</option>
                             <option value="USD">USD - US Dollar</option>
@@ -272,11 +272,11 @@ export default function Settings() {
                         </select>
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">Timezone</label>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Timezone</label>
                         <select
                             value={settings.timezone}
                             onChange={(e) => updateSettings({ timezone: e.target.value })}
-                            className="w-full border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none"
+                            className="w-full bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none"
                         >
                             <option value="Asia/Kuala_Lumpur">Asia/Kuala Lumpur (GMT+8)</option>
                             <option value="Asia/Singapore">Asia/Singapore (GMT+8)</option>
@@ -287,34 +287,34 @@ export default function Settings() {
             </div>
 
             {/* 3. DELIVERY SETTINGS */}
-            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-                <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-slate-200 dark:border-gray-700 shadow-sm space-y-4 transition-colors duration-300">
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                     <Truck size={20} className="text-blue-600" />
                     Delivery Settings
                 </h2>
                 <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">Delivery Fee ({settings.currency})</label>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Delivery Fee ({settings.currency})</label>
                         <input
                             type="number"
                             step="0.01"
                             value={settings.delivery_fee}
                             onChange={(e) => updateSettings({ delivery_fee: parseFloat(e.target.value) || 0 })}
                             placeholder="10.00"
-                            className="w-full border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none"
+                            className="w-full bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none"
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">Free Delivery Threshold ({settings.currency})</label>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Free Delivery Threshold ({settings.currency})</label>
                         <input
                             type="number"
                             step="0.01"
                             value={settings.free_delivery_threshold}
                             onChange={(e) => updateSettings({ free_delivery_threshold: parseFloat(e.target.value) || 0 })}
                             placeholder="50.00"
-                            className="w-full border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none"
+                            className="w-full bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none"
                         />
-                        <p className="mt-1 text-xs text-slate-500">Minimum order for free delivery</p>
+                        <p className="mt-1 text-xs text-slate-500 dark:text-gray-400">Minimum order for free delivery</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-3 pt-2">
@@ -323,17 +323,17 @@ export default function Settings() {
                         id="self-pickup"
                         checked={settings.enable_self_pickup}
                         onChange={(e) => updateSettings({ enable_self_pickup: e.target.checked })}
-                        className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                        className="w-5 h-5 rounded border-slate-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 bg-white dark:bg-gray-800"
                     />
-                    <label htmlFor="self-pickup" className="text-sm font-medium text-slate-700 cursor-pointer">
+                    <label htmlFor="self-pickup" className="text-sm font-medium text-slate-700 dark:text-gray-300 cursor-pointer">
                         Enable Self-Pickup
                     </label>
                 </div>
             </div>
 
             {/* 4. PAYMENT METHODS */}
-            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-                <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-slate-200 dark:border-gray-700 shadow-sm space-y-4 transition-colors duration-300">
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                     <CreditCard size={20} className="text-blue-600" />
                     Payment Methods
                 </h2>
@@ -344,9 +344,9 @@ export default function Settings() {
                             id="cod"
                             checked={settings.accept_cod}
                             onChange={(e) => updateSettings({ accept_cod: e.target.checked })}
-                            className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                            className="w-5 h-5 rounded border-slate-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 bg-white dark:bg-gray-800"
                         />
-                        <label htmlFor="cod" className="text-sm font-medium text-slate-700 cursor-pointer">
+                        <label htmlFor="cod" className="text-sm font-medium text-slate-700 dark:text-gray-300 cursor-pointer">
                             Accept Cash on Delivery
                         </label>
                     </div>
@@ -356,17 +356,17 @@ export default function Settings() {
                             id="bank-transfer"
                             checked={settings.accept_bank_transfer}
                             onChange={(e) => updateSettings({ accept_bank_transfer: e.target.checked })}
-                            className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                            className="w-5 h-5 rounded border-slate-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 bg-white dark:bg-gray-800"
                         />
-                        <label htmlFor="bank-transfer" className="text-sm font-medium text-slate-700 cursor-pointer">
+                        <label htmlFor="bank-transfer" className="text-sm font-medium text-slate-700 dark:text-gray-300 cursor-pointer">
                             Accept Bank Transfer
                         </label>
                     </div>
                     {settings.accept_bank_transfer && (
-                        <div className="ml-8 mt-3 space-y-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
+                        <div className="ml-8 mt-3 space-y-4 p-4 bg-slate-50 dark:bg-gray-900/50 rounded-lg border border-slate-200 dark:border-gray-700">
                             {/* Bank Name */}
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-2 flex items-center gap-2">
+                                <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 flex items-center gap-2">
                                     <Building2 size={16} className="text-blue-600" />
                                     Bank Name
                                 </label>
@@ -375,13 +375,13 @@ export default function Settings() {
                                     value={settings.bank_name}
                                     onChange={(e) => updateSettings({ bank_name: e.target.value })}
                                     placeholder="e.g. Maybank, CIMB, RHB"
-                                    className="w-full md:w-2/3 border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none"
+                                    className="w-full md:w-2/3 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none"
                                 />
                             </div>
 
                             {/* Account Holder Name */}
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-2 flex items-center gap-2">
+                                <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 flex items-center gap-2">
                                     <CreditCard size={16} className="text-green-600" />
                                     Account Holder Name
                                 </label>
@@ -390,13 +390,13 @@ export default function Settings() {
                                     value={settings.bank_holder_name}
                                     onChange={(e) => updateSettings({ bank_holder_name: e.target.value })}
                                     placeholder="e.g. BrewCart Sdn Bhd / Ali bin Abu"
-                                    className="w-full md:w-2/3 border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none"
+                                    className="w-full md:w-2/3 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none"
                                 />
                             </div>
 
                             {/* Bank Account Number */}
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-2 flex items-center gap-2">
+                                <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 flex items-center gap-2">
                                     <BanknoteIcon size={16} className="text-green-600" />
                                     Bank Account Number
                                 </label>
@@ -405,17 +405,17 @@ export default function Settings() {
                                     value={settings.bank_account_number}
                                     onChange={(e) => updateSettings({ bank_account_number: e.target.value })}
                                     placeholder="1234567890"
-                                    className="w-full md:w-2/3 border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none"
+                                    className="w-full md:w-2/3 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none"
                                 />
                             </div>
 
                             {/* DuitNow QR Code Upload */}
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-2 flex items-center gap-2">
+                                <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 flex items-center gap-2">
                                     <ImageIcon size={16} className="text-purple-600" />
                                     DuitNow QR Code
                                 </label>
-                                <p className="text-xs text-slate-500 mb-3">Upload your DuitNow QR so customers can scan & pay directly</p>
+                                <p className="text-xs text-slate-500 dark:text-gray-400 mb-3">Upload your DuitNow QR so customers can scan & pay directly</p>
 
                                 {settings.qr_code_url ? (
                                     <div className="relative inline-block">
@@ -434,11 +434,11 @@ export default function Settings() {
                                 ) : (
                                     <div
                                         onClick={() => document.getElementById('qr-upload')?.click()}
-                                        className="w-48 h-48 border-2 border-dashed border-purple-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-purple-500 hover:bg-purple-50/50 transition-all"
+                                        className="w-48 h-48 border-2 border-dashed border-purple-300 dark:border-purple-800 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-purple-500 dark:hover:border-purple-600 hover:bg-purple-50/50 dark:hover:bg-purple-900/20 transition-all"
                                     >
-                                        <ImageIcon size={32} className="text-purple-300 mb-2" />
+                                        <ImageIcon size={32} className="text-purple-300 dark:text-purple-800 mb-2" />
                                         <p className="text-xs text-purple-500 font-medium">Upload QR Code</p>
-                                        <p className="text-xs text-slate-400 mt-1">PNG, JPG</p>
+                                        <p className="text-xs text-slate-400 dark:text-gray-500 mt-1">PNG, JPG</p>
                                     </div>
                                 )}
                                 <input
@@ -468,35 +468,35 @@ export default function Settings() {
             </div>
 
             {/* 5. OPERATING HOURS */}
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 shadow-sm overflow-hidden transition-colors duration-300">
                 <div
-                    className="p-6 flex justify-between items-center cursor-pointer hover:bg-slate-50 transition-colors"
+                    className="p-6 flex justify-between items-center cursor-pointer hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors"
                     onClick={() => setIsOperatingHoursExpanded(!isOperatingHoursExpanded)}
                 >
                     <div className="flex-1">
-                        <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                        <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                             <Clock size={20} className="text-blue-600" />
                             Operating Hours
                         </h2>
                         {!isOperatingHoursExpanded && (
-                            <p className="text-sm text-slate-500 mt-1 ml-7">{getOperatingHoursSummary()}</p>
+                            <p className="text-sm text-slate-500 dark:text-gray-400 mt-1 ml-7">{getOperatingHoursSummary()}</p>
                         )}
                     </div>
                     {isOperatingHoursExpanded ? <ChevronUp size={20} className="text-slate-400" /> : <ChevronDown size={20} className="text-slate-400" />}
                 </div>
 
                 <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isOperatingHoursExpanded ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0'}`}>
-                    <div className="p-6 pt-0 space-y-3 border-t border-slate-100">
+                    <div className="p-6 pt-0 space-y-3 border-t border-slate-100 dark:border-gray-700">
                         {(['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const).map((day) => (
-                            <div key={day} className="flex items-center gap-2 pb-3 border-b border-slate-100 last:border-0 last:pb-0 overflow-hidden">
-                                <div className="w-16 md:w-24 flex-shrink-0 font-medium text-sm text-slate-700 capitalize truncate">{day.slice(0, 3)}</div>
+                            <div key={day} className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-gray-700 last:border-0 last:pb-0 overflow-hidden">
+                                <div className="w-16 md:w-24 flex-shrink-0 font-medium text-sm text-slate-700 dark:text-gray-300 capitalize truncate">{day.slice(0, 3)}</div>
                                 <div className="flex items-center gap-1.5 flex-1 min-w-0">
                                     <input
                                         type="time"
                                         value={settings.operating_hours[day].open}
                                         onChange={(e) => updateOperatingHours(day, 'open', e.target.value)}
                                         disabled={settings.operating_hours[day].closed}
-                                        className="flex-1 min-w-0 border border-slate-300 rounded-lg px-2 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none disabled:bg-slate-100"
+                                        className="flex-1 min-w-0 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-lg px-2 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none disabled:bg-slate-100 dark:disabled:bg-gray-900 text-gray-900 dark:text-white [color-scheme:light] dark:[color-scheme:dark]"
                                     />
                                     <span className="text-slate-400 text-xs flex-shrink-0">to</span>
                                     <input
@@ -504,7 +504,7 @@ export default function Settings() {
                                         value={settings.operating_hours[day].close}
                                         onChange={(e) => updateOperatingHours(day, 'close', e.target.value)}
                                         disabled={settings.operating_hours[day].closed}
-                                        className="flex-1 min-w-0 border border-slate-300 rounded-lg px-2 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none disabled:bg-slate-100"
+                                        className="flex-1 min-w-0 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-lg px-2 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none disabled:bg-slate-100 dark:disabled:bg-gray-900 text-gray-900 dark:text-white [color-scheme:light] dark:[color-scheme:dark]"
                                     />
                                 </div>
                                 <div className="flex items-center gap-1 flex-shrink-0">
@@ -513,9 +513,9 @@ export default function Settings() {
                                         id={`closed-${day}`}
                                         checked={settings.operating_hours[day].closed}
                                         onChange={(e) => updateOperatingHours(day, 'closed', e.target.checked)}
-                                        className="w-4 h-4 rounded border-slate-300 text-red-600 focus:ring-red-500"
+                                        className="w-4 h-4 rounded border-slate-300 dark:border-gray-600 text-red-600 focus:ring-red-500 bg-white dark:bg-gray-800"
                                     />
-                                    <label htmlFor={`closed-${day}`} className="text-xs text-slate-500 cursor-pointer">
+                                    <label htmlFor={`closed-${day}`} className="text-xs text-slate-500 dark:text-gray-400 cursor-pointer">
                                         Off
                                     </label>
                                 </div>
@@ -526,8 +526,8 @@ export default function Settings() {
             </div>
 
             {/* 6. NOTIFICATIONS */}
-            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-                <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-slate-200 dark:border-gray-700 shadow-sm space-y-4 transition-colors duration-300">
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                     <Bell size={20} className="text-blue-600" />
                     Notifications
                 </h2>
@@ -537,19 +537,19 @@ export default function Settings() {
                         id="whatsapp-notifications"
                         checked={settings.whatsapp_order_notifications}
                         onChange={(e) => updateSettings({ whatsapp_order_notifications: e.target.checked })}
-                        className="w-5 h-5 rounded border-slate-300 text-green-600 focus:ring-green-500"
+                        className="w-5 h-5 rounded border-slate-300 dark:border-gray-600 text-green-600 focus:ring-green-500 bg-white dark:bg-gray-800"
                     />
                     <div>
-                        <label htmlFor="whatsapp-notifications" className="text-sm font-medium text-slate-700 cursor-pointer block">
+                        <label htmlFor="whatsapp-notifications" className="text-sm font-medium text-slate-700 dark:text-gray-300 cursor-pointer block">
                             WhatsApp Order Notifications
                         </label>
-                        <p className="text-xs text-slate-500 mt-1">Get notified on WhatsApp when new orders arrive</p>
+                        <p className="text-xs text-slate-500 dark:text-gray-400 mt-1">Get notified on WhatsApp when new orders arrive</p>
                     </div>
                 </div>
             </div>
 
             {/* SAVE BUTTON */}
-            <div className="sticky bottom-0 bg-white border-t p-4 shadow-[0_-2px_10px_rgba(0,0,0,0.05)] -mx-6 -mb-8 mt-6 z-10">
+            <div className="sticky bottom-0 bg-white dark:bg-gray-800 border-t border-slate-100 dark:border-gray-700 p-4 shadow-[0_-2px_10px_rgba(0,0,0,0.05)] -mx-6 -mb-8 mt-6 z-10 transition-colors duration-300">
                 <button
                     onClick={handleSave}
                     disabled={saveLoading}

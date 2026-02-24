@@ -10,7 +10,7 @@ export default function App() {
 
     return (
         <NotificationsProvider>
-            <div className="flex min-h-screen bg-slate-100">
+            <div className="flex min-h-screen bg-slate-100 dark:bg-gray-900 transition-colors duration-300">
                 <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
                 <main className="w-full min-w-0 ml-0 p-6 md:ml-64 mt-14 md:mt-0">
                     <ErrorBoundary>

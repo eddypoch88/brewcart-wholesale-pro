@@ -211,7 +211,7 @@ export default function OrderList() {
     const filteredIds = filteredOrders.map(o => o.id);
     const isAllSelected = filteredOrders.length > 0 && filteredIds.every(id => selectedOrderIds.has(id));
 
-    if (loading) return <div className="p-10 text-center animate-pulse text-slate-400">Loading Orders...</div>;
+    if (loading) return <div className="p-10 text-center animate-pulse text-slate-400 dark:text-gray-500">Loading Orders...</div>;
 
     const statusTabs: Array<{ label: string; value: Order['status'] | 'all' }> = [
         { label: 'All', value: 'all' },
@@ -311,8 +311,8 @@ export default function OrderList() {
                 {/* HEADER WITH SEARCH & EXPORT */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
-                        <h2 className="text-3xl font-bold text-slate-900">Order History</h2>
-                        <span className="text-sm text-slate-500 mt-1 block">{filteredOrders.length} orders</span>
+                        <h2 className="text-3xl font-bold text-slate-900 dark:text-white">Order History</h2>
+                        <span className="text-sm text-slate-500 dark:text-gray-400 mt-1 block">{filteredOrders.length} orders</span>
                     </div>
                     <div className="flex gap-2 w-full md:w-auto">
                         <div className="relative flex-1 md:w-64">
@@ -322,7 +322,7 @@ export default function OrderList() {
                                 placeholder="Search by name or phone..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full h-11 pl-10 pr-4 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-colors"
+                                className="w-full h-11 pl-10 pr-4 text-sm bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-colors"
                             />
                         </div>
                         {selectedOrderIds.size > 0 && (
@@ -353,7 +353,7 @@ export default function OrderList() {
                             onClick={() => setStatusFilter(tab.value)}
                             className={`h-11 px-4 rounded-lg font-medium text-sm whitespace-nowrap transition-colors ${statusFilter === tab.value
                                 ? 'bg-blue-600 text-white shadow-sm'
-                                : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
+                                : 'bg-white dark:bg-gray-800 text-slate-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-700 border border-slate-200 dark:border-gray-700'
                                 }`}
                         >
                             {tab.label}
@@ -363,41 +363,41 @@ export default function OrderList() {
 
                 {/* DATE RANGE FILTER & SELECT ALL */}
                 {/* DATE RANGE FILTER & SELECT ALL */}
-                <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-gray-700 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors duration-300">
 
                     {/* Select All */}
                     <button
                         onClick={() => handleSelectAll(filteredIds)}
                         className="flex items-center gap-3 group"
                     >
-                        <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${isAllSelected ? 'border-blue-600 bg-blue-600' : 'border-slate-300 bg-white group-hover:border-blue-400'}`}>
+                        <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${isAllSelected ? 'border-blue-600 bg-blue-600' : 'border-slate-300 dark:border-gray-600 bg-white dark:bg-gray-800 group-hover:border-blue-400'}`}>
                             {isAllSelected && <CheckSquare size={14} className="text-white" />}
                         </div>
-                        <span className={`text-sm font-bold transition-colors ${isAllSelected ? 'text-blue-600' : 'text-slate-700 group-hover:text-slate-900'}`}>Select All</span>
+                        <span className={`text-sm font-bold transition-colors ${isAllSelected ? 'text-blue-600' : 'text-slate-700 dark:text-gray-300 group-hover:text-slate-900 dark:group-hover:text-white'}`}>Select All</span>
                     </button>
 
                     {/* Date Inputs - Grouped Pill */}
-                    <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl p-1.5 gap-2 w-full md:w-auto overflow-x-auto">
+                    <div className="flex items-center bg-slate-50 dark:bg-gray-900 border border-slate-200 dark:border-gray-700 rounded-xl p-1.5 gap-2 w-full md:w-auto overflow-x-auto">
                         <div className="flex items-center gap-2 pl-2">
-                            <Calendar size={16} className="text-slate-400 shrink-0" />
-                            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider hidden sm:inline">From</span>
+                            <Calendar size={16} className="text-slate-400 dark:text-gray-500 shrink-0" />
+                            <span className="text-xs font-bold text-slate-400 dark:text-gray-500 uppercase tracking-wider hidden sm:inline">From</span>
                             <input
                                 type="date"
                                 value={dateFrom}
                                 onChange={(e) => setDateFrom(e.target.value)}
-                                className="bg-transparent border-none text-sm font-medium text-slate-700 focus:ring-0 p-0 w-32"
+                                className="bg-transparent border-none text-sm font-medium text-slate-700 dark:text-gray-200 focus:ring-0 p-0 w-32 [color-scheme:light] dark:[color-scheme:dark]"
                             />
                         </div>
 
-                        <div className="w-px h-6 bg-slate-200 shrink-0" />
+                        <div className="w-px h-6 bg-slate-200 dark:bg-gray-700 shrink-0" />
 
                         <div className="flex items-center gap-2 px-2">
-                            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider hidden sm:inline">To</span>
+                            <span className="text-xs font-bold text-slate-400 dark:text-gray-500 uppercase tracking-wider hidden sm:inline">To</span>
                             <input
                                 type="date"
                                 value={dateTo}
                                 onChange={(e) => setDateTo(e.target.value)}
-                                className="bg-transparent border-none text-sm font-medium text-slate-700 focus:ring-0 p-0 w-32"
+                                className="bg-transparent border-none text-sm font-medium text-slate-700 dark:text-gray-200 focus:ring-0 p-0 w-32 [color-scheme:light] dark:[color-scheme:dark]"
                             />
                         </div>
 
@@ -427,10 +427,10 @@ export default function OrderList() {
                                 id={`order-${order.id}`}
                                 key={order.id}
                                 className={`rounded-2xl shadow-sm overflow-hidden transition-all duration-500 ${highlightId === order.id
-                                        ? 'bg-yellow-50 border-2 border-yellow-300'
-                                        : selectedOrderIds.has(order.id)
-                                            ? 'bg-white ring-2 ring-blue-500'
-                                            : 'bg-white'
+                                    ? 'bg-yellow-50 dark:bg-yellow-900/20 border-2 border-yellow-300 dark:border-yellow-700'
+                                    : selectedOrderIds.has(order.id)
+                                        ? 'bg-white dark:bg-gray-800 ring-2 ring-blue-500'
+                                        : 'bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700'
                                     }`}
                             >
 
@@ -448,8 +448,8 @@ export default function OrderList() {
                                             className="mt-1 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                                         />
                                         <div className="flex-1 min-w-0">
-                                            <p className="font-semibold text-gray-900 text-base truncate">{order.customer_name}</p>
-                                            <p className="text-sm text-gray-500">{formatDate(order.created_at)}</p>
+                                            <p className="font-semibold text-gray-900 dark:text-white text-base truncate">{order.customer_name}</p>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400">{formatDate(order.created_at)}</p>
                                         </div>
                                         {expandedOrderIds.has(order.id) ? <ChevronUp size={16} className="text-gray-400 mt-1" /> : <ChevronDown size={16} className="text-gray-400 mt-1" />}
                                     </div>
@@ -483,33 +483,33 @@ export default function OrderList() {
 
                                 {/* DETAIL */}
                                 {expandedOrderIds.has(order.id) && (
-                                    <div className="border-t border-slate-100 p-3 bg-white">
+                                    <div className="border-t border-slate-100 dark:border-gray-700 p-3 bg-white dark:bg-gray-800/50">
                                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                                             {/* LEFT COLUMN */}
                                             <div className="space-y-6">
                                                 {/* Customer Details */}
                                                 <div>
-                                                    <h4 className="font-bold text-sm text-slate-700 mb-3 flex items-center gap-2">
+                                                    <h4 className="font-bold text-sm text-slate-700 dark:text-white mb-3 flex items-center gap-2">
                                                         <User size={16} /> Customer Details
                                                     </h4>
-                                                    <div className="bg-slate-50 p-4 rounded-lg space-y-2 text-sm">
-                                                        <p><span className="text-slate-500 w-20 inline-block">Name:</span> {order.customer_name}</p>
-                                                        <p><span className="text-slate-500 w-20 inline-block">Phone:</span>
-                                                            <a href={`https://wa.me/${order.customer_phone?.replace(/[^0-9]/g, '')}`} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline inline-flex items-center gap-1">
+                                                    <div className="bg-slate-50 dark:bg-gray-700/50 p-4 rounded-lg space-y-2 text-sm">
+                                                        <p><span className="text-slate-500 dark:text-gray-400 w-20 inline-block">Name:</span> <span className="text-slate-900 dark:text-white font-medium">{order.customer_name}</span></p>
+                                                        <p><span className="text-slate-500 dark:text-gray-400 w-20 inline-block">Phone:</span>
+                                                            <a href={`https://wa.me/${order.customer_phone?.replace(/[^0-9]/g, '')}`} target="_blank" rel="noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1">
                                                                 <Phone size={12} /> {order.customer_phone}
                                                             </a>
                                                         </p>
-                                                        <p><span className="text-slate-500 w-20 inline-block">Order ID:</span> <span className="font-mono text-xs">{order.id}</span></p>
+                                                        <p><span className="text-slate-500 dark:text-gray-400 w-20 inline-block">Order ID:</span> <span className="font-mono text-xs text-slate-400">{order.id}</span></p>
                                                     </div>
                                                 </div>
 
                                                 {/* Delivery Address */}
                                                 {order.delivery_address && (
                                                     <div>
-                                                        <h4 className="font-bold text-sm text-slate-700 mb-3 flex items-center gap-2">
+                                                        <h4 className="font-bold text-sm text-slate-700 dark:text-white mb-3 flex items-center gap-2">
                                                             <MapPin size={16} /> Delivery Address
                                                         </h4>
-                                                        <div className="bg-slate-50 p-4 rounded-lg text-sm text-slate-700">
+                                                        <div className="bg-slate-50 dark:bg-gray-700/50 p-4 rounded-lg text-sm text-slate-700 dark:text-gray-300">
                                                             {order.delivery_address}
                                                         </div>
                                                     </div>
@@ -518,18 +518,18 @@ export default function OrderList() {
                                                 {/* Payment Method */}
                                                 {order.payment_method && (
                                                     <div>
-                                                        <h4 className="font-bold text-sm text-slate-700 mb-3 flex items-center gap-2">
+                                                        <h4 className="font-bold text-sm text-slate-700 dark:text-white mb-3 flex items-center gap-2">
                                                             <CreditCard size={16} /> Payment Method
                                                         </h4>
                                                         <div className="space-y-3">
-                                                            <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg text-sm font-medium">
+                                                            <div className="inline-flex items-center gap-2 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-3 py-1.5 rounded-lg text-sm font-medium">
                                                                 {order.payment_method === 'bank_transfer' ? 'Bank Transfer' : order.payment_method === 'cod' ? 'Cash on Delivery' : order.payment_method}
                                                             </div>
 
                                                             {/* Payment Status */}
-                                                            <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium ${order.payment_status === 'paid' ? 'bg-green-50 text-green-700' :
-                                                                order.payment_status === 'pending_verification' ? 'bg-amber-50 text-amber-700' :
-                                                                    'bg-red-50 text-red-700'
+                                                            <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium ${order.payment_status === 'paid' ? 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300' :
+                                                                order.payment_status === 'pending_verification' ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300' :
+                                                                    'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300'
                                                                 }`}>
                                                                 {order.payment_status === 'paid' ? <CheckCircle size={14} /> :
                                                                     order.payment_status === 'pending_verification' ? <Loader2 size={14} className="animate-spin" /> :
@@ -586,10 +586,10 @@ export default function OrderList() {
                                                 {/* Customer Notes */}
                                                 {order.customer_notes && (
                                                     <div>
-                                                        <h4 className="font-bold text-sm text-slate-700 mb-3 flex items-center gap-2">
+                                                        <h4 className="font-bold text-sm text-slate-700 dark:text-white mb-3 flex items-center gap-2">
                                                             <FileText size={16} /> Customer Notes
                                                         </h4>
-                                                        <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg text-sm text-slate-700">
+                                                        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-4 rounded-lg text-sm text-slate-700 dark:text-amber-200">
                                                             {order.customer_notes}
                                                         </div>
                                                     </div>
@@ -600,23 +600,23 @@ export default function OrderList() {
                                             <div className="space-y-6">
                                                 {/* Items Purchased */}
                                                 <div>
-                                                    <h4 className="font-bold text-sm text-slate-700 mb-3 flex items-center gap-2">
+                                                    <h4 className="font-bold text-sm text-slate-700 dark:text-white mb-3 flex items-center gap-2">
                                                         <ShoppingBag size={16} /> Items Purchased
                                                     </h4>
-                                                    <div className="border border-slate-100 rounded-lg divide-y divide-slate-100">
+                                                    <div className="border border-slate-100 dark:border-gray-700 rounded-lg divide-y divide-slate-100 dark:divide-gray-700">
                                                         {order.items && Array.isArray(order.items) ? (
                                                             order.items.map((item: any, idx: number) => (
                                                                 <div key={idx} className="p-3 flex justify-between items-center">
                                                                     <div className="flex items-center gap-3">
-                                                                        <div className="w-10 h-10 bg-slate-100 rounded overflow-hidden">
+                                                                        <div className="w-10 h-10 bg-slate-100 dark:bg-gray-700 rounded overflow-hidden">
                                                                             {item.product.images?.[0] && <img src={item.product.images[0]} alt={item.product.name} className="w-full h-full object-cover" />}
                                                                         </div>
                                                                         <div>
-                                                                            <p className="font-medium text-sm text-slate-800">{item.product.name}</p>
-                                                                            <p className="text-xs text-slate-500">Qty: {item.qty} × RM {item.product.price.toFixed(2)}</p>
+                                                                            <p className="font-medium text-sm text-slate-800 dark:text-gray-200">{item.product.name}</p>
+                                                                            <p className="text-xs text-slate-500 dark:text-gray-400">Qty: {item.qty} × RM {item.product.price.toFixed(2)}</p>
                                                                         </div>
                                                                     </div>
-                                                                    <span className="font-bold text-sm text-slate-600">RM {(item.product.price * item.qty).toFixed(2)}</span>
+                                                                    <span className="font-bold text-sm text-slate-600 dark:text-gray-300">RM {(item.product.price * item.qty).toFixed(2)}</span>
                                                                 </div>
                                                             ))
                                                         ) : (
@@ -627,7 +627,7 @@ export default function OrderList() {
 
                                                 {/* Admin Notes */}
                                                 <div>
-                                                    <h4 className="font-bold text-sm text-slate-700 mb-3 flex items-center gap-2">
+                                                    <h4 className="font-bold text-sm text-slate-700 dark:text-white mb-3 flex items-center gap-2">
                                                         <FileText size={16} /> Admin Notes
                                                     </h4>
                                                     <div className="space-y-2">
@@ -635,7 +635,7 @@ export default function OrderList() {
                                                             value={editingNotes[order.id] ?? order.admin_notes ?? ''}
                                                             onChange={(e) => setEditingNotes({ ...editingNotes, [order.id]: e.target.value })}
                                                             placeholder="Add internal notes (e.g., 'Called customer, out for delivery')"
-                                                            className="w-full p-3 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+                                                            className="w-full p-3 bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none resize-none"
                                                             rows={3}
                                                         />
                                                         <button
