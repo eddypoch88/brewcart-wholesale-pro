@@ -12,16 +12,10 @@ interface PublicStoreState {
 /**
  * usePublicStore — resolves the store ID and settings for the PUBLIC storefront.
  *
- * Key difference from useStore() / StoreContext:
- *   - Does NOT require the user to be authenticated.
- *   - Uses getPublicStoreId() which simply picks the first store in the DB.
- *   - This is correct for single-tenant deployments (one store per app instance).
- *   - For multi-tenant with URL slugs, getProductsBySlug() / getSettingsBySlug() should be used instead.
- *
- * Usage:
- *   const { storeId, settings, loading } = usePublicStore();
+ * Pass a `slug` (from the URL) so the correct store is always loaded.
+ * Without a slug, it falls back to the first store in the DB which may be wrong in multi-tenant apps.
  */
-export function usePublicStore(): PublicStoreState {
+export function usePublicStore(slug?: string): PublicStoreState {
     const [storeId, setStoreId] = useState<string | null>(null);
     const [settings, setSettings] = useState<StoreSettings>(DEFAULT_SETTINGS);
     const [loading, setLoading] = useState(true);
@@ -31,7 +25,7 @@ export function usePublicStore(): PublicStoreState {
 
         async function resolve() {
             try {
-                const id = await getPublicStoreId();
+                const id = await getPublicStoreId(slug);
                 if (cancelled) return;
 
                 setStoreId(id);
@@ -51,7 +45,7 @@ export function usePublicStore(): PublicStoreState {
 
         resolve();
         return () => { cancelled = true; };
-    }, []);
+    }, [slug]);
 
     return { storeId, settings, loading };
 }

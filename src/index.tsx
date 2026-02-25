@@ -46,7 +46,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                     {/* AUTH */}
                     <Route path="/login" element={<LoginPage />} />
 
-                    {/* FRONT STORE */}
+                    {/* FRONT STORE — root (no slug, fallback) */}
                     <Route element={<StoreLayout />}>
                         <Route path="/" element={<StorePage />} />
                         <Route path="/product/:id" element={<ProductPage />} />
@@ -54,6 +54,16 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                         <Route path="/checkout" element={<CheckoutPage />} />
                         <Route path="/order-confirmation" element={<OrderConfirmationPage />} />
                         <Route path="/order-review/:orderId" element={<OrderReviewPage />} />
+                    </Route>
+
+                    {/* FRONT STORE — slug-based (multi-tenant, correct store) */}
+                    <Route element={<StoreLayout />}>
+                        <Route path="/store/:slug" element={<StorePage />} />
+                        <Route path="/store/:slug/product/:id" element={<ProductPage />} />
+                        <Route path="/store/:slug/cart" element={<CartPage />} />
+                        <Route path="/store/:slug/checkout" element={<CheckoutPage />} />
+                        <Route path="/store/:slug/order-confirmation" element={<OrderConfirmationPage />} />
+                        <Route path="/store/:slug/order-review/:orderId" element={<OrderReviewPage />} />
                     </Route>
 
                     {/* ADMIN CMS - PROTECTED */}

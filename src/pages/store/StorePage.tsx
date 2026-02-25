@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useParams } from 'react-router-dom';
 import { getProducts } from '../../lib/storage';
 import { Product } from '../../types';
 import ProductCard from '../../components/store/ProductCard';
@@ -6,8 +7,9 @@ import { ShoppingBag, Sparkles, Loader2, Search, X } from 'lucide-react';
 import { usePublicStore } from '../../hooks/usePublicStore';
 
 export default function StorePage() {
+    const { slug } = useParams<{ slug?: string }>();
     // usePublicStore resolves storeId + settings without requiring user login
-    const { storeId, settings, loading: storeLoading } = usePublicStore();
+    const { storeId, settings, loading: storeLoading } = usePublicStore(slug);
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');

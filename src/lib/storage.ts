@@ -574,16 +574,23 @@ export async function getProductsBySlug(slug: string): Promise<Product[]> {
  *
  * Result is cached in sessionStorage to avoid repeated roundtrips per page load.
  */
-export async function getPublicStoreId(): Promise<string | null> {
-    const CACHE_KEY = 'brewcart_public_store_id';
+export async function getPublicStoreId(slug?: string): Promise<string | null> {
+    const CACHE_KEY = slug ? `brewcart_public_store_id_${slug}` : 'brewcart_public_store_id';
     const cached = sessionStorage.getItem(CACHE_KEY);
     if (cached) return cached;
 
-    const { data, error } = await supabase
-        .from('stores')
-        .select('id')
-        .limit(1)
-        .maybeSingle();
+    let query = supabase.from('stores').select('id');
+
+    if (slug) {
+        // Look up by slug — precise, correct store every time
+        query = query.eq('slug', slug).limit(1);
+    } else {
+        // No slug provided — not recommended for multi-tenant, but kept as fallback
+        console.warn('[getPublicStoreId] No slug provided — fetching first store in DB. This may return the wrong store!');
+        query = query.limit(1);
+    }
+
+    const { data, error } = await query.maybeSingle();
 
     if (error || !data) {
         console.warn('[getPublicStoreId] No store found:', error?.message);
