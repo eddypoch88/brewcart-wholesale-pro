@@ -124,6 +124,26 @@ export function useStore(): UseStoreReturn {
             setLoading(true);
             setError(null);
 
+            // ── Step 1: Check if this user already has a store ───────────────
+            // This prevents the 409 duplicate key conflict on repeated calls.
+            const { data: existing, error: fetchErr } = await supabase
+                .from('stores')
+                .select('*')
+                .eq('owner_id', user.id)
+                .maybeSingle();
+
+            if (fetchErr) {
+                console.error('[useStore] Error checking for existing store:', fetchErr.message);
+            }
+
+            if (existing) {
+                // Store already exists — just return it, no insert needed.
+                console.log('[useStore] Store already exists, skipping insert.');
+                setStore(existing as Store);
+                return existing as Store;
+            }
+
+            // ── Step 2: No existing store — safely insert a new one ──────────
             const { data, error: insertError } = await supabase
                 .from('stores')
                 .insert([{
@@ -136,12 +156,20 @@ export function useStore(): UseStoreReturn {
                 .single();
 
             if (insertError) {
-                // Handle unique slug conflict
+                // 23505 = unique constraint — race condition safety net
                 if (insertError.code === '23505') {
-                    setError('That store name/slug is already taken. Please choose a different name.');
-                } else {
-                    setError(insertError.message);
+                    console.warn('[useStore] Race condition — store was just created by another call. Re-fetching...');
+                    const { data: raceData } = await supabase
+                        .from('stores')
+                        .select('*')
+                        .eq('owner_id', user.id)
+                        .single();
+                    if (raceData) {
+                        setStore(raceData as Store);
+                        return raceData as Store;
+                    }
                 }
+                setError(insertError.message);
                 console.error('[useStore] Error creating store:', insertError.message);
                 return null;
             }

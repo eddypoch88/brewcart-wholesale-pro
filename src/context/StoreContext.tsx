@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { StoreSettings } from '../types';
 import { getSettings } from '../lib/storage';
 import { DEFAULT_SETTINGS } from '../data/mockData';
@@ -45,7 +45,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     const { store, loading: storeLoading, createStore } = useStoreHook();
     const [settings, setSettings] = useState<StoreSettings>(DEFAULT_SETTINGS);
     const [settingsLoading, setSettingsLoading] = useState(true);
-    const [autoCreating, setAutoCreating] = useState(false);
+    // useRef instead of useState so it persists across re-renders without triggering extra effects
+    const autoCreatingRef = useRef(false);
 
     const loadSettings = useCallback(async (storeId: string, canonicalName?: string) => {
         try {
@@ -88,8 +89,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         }
 
         // User logged in but NO store → auto-create (for users pre-dating multi-tenant)
-        if (!store && !autoCreating) {
-            setAutoCreating(true);
+        // Guard with a ref so this only fires ONCE per session, not on every re-render.
+        if (!store && !autoCreatingRef.current) {
+            autoCreatingRef.current = true;
             const storeName = (user.email || '').split('@')[0] || 'My Store';
             console.log('[StoreContext] No store found — auto-creating for user:', user.id);
 
@@ -98,18 +100,16 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
                 slug: generateSlug(storeName) + '-' + user.id.slice(0, 6),
             }).then(newStore => {
                 if (newStore?.id) {
-                    loadSettings(newStore.id);
+                    loadSettings(newStore.id, newStore.name);
                 } else {
                     // stores table likely doesn't exist yet — show warning and use defaults
                     console.warn('[StoreContext] Auto-create failed. Please run DB migration in Supabase!');
                     setSettings(DEFAULT_SETTINGS);
                     setSettingsLoading(false);
                 }
-            }).finally(() => {
-                setAutoCreating(false);
             });
         }
-    }, [authLoading, storeLoading, user, store, autoCreating, createStore, loadSettings]);
+    }, [authLoading, storeLoading, user, store, createStore, loadSettings]);
 
     const reload = useCallback(() => {
         if (store?.id) loadSettings(store.id);
