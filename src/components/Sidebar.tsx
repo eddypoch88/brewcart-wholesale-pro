@@ -25,7 +25,7 @@ export default function Sidebar({
     const { isSuperAdmin } = useAuth();
     const navigate = useNavigate();
     const storeName = settings.store_name || "ORB Commerce";
-    const storeUrl = store?.slug ? `/${store.slug}` : '/';
+    const storeUrl = store?.slug ? `/store/${store.slug}` : '/';
 
     const handleLogout = async () => {
         await supabase.auth.signOut();

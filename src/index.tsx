@@ -16,9 +16,27 @@ window.addEventListener('error', (e) => {
 // Auto-update Service Worker
 const updateSW = registerSW({
     onNeedRefresh() {
+        // New version available — update and reload immediately (no prompt)
         updateSW(true);
-    }
+    },
+    onOfflineReady() {
+        console.info('[PWA] App ready for offline use.');
+    },
 });
+
+// 📱 MOBILE PWA FIX: Force SW update check when user reopens the app from background.
+// Mobile browsers don't check SW updates automatically when app is backgrounded.
+// visibilitychange fires when user switches back to the tab/app.
+const triggerSWUpdate = () => {
+    if (document.visibilityState === 'visible') {
+        navigator.serviceWorker?.getRegistrations().then(regs => {
+            regs.forEach(reg => reg.update());
+        });
+    }
+};
+document.addEventListener('visibilitychange', triggerSWUpdate);
+window.addEventListener('focus', triggerSWUpdate);
+
 
 // Admin
 import App from './App';
