@@ -49,7 +49,7 @@ export default defineConfig(({ mode }) => {
           ]
         },
         devOptions: {
-          enabled: false
+          enabled: true
         }
       })
     ],

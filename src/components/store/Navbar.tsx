@@ -51,18 +51,19 @@ export default function Navbar() {
                     {isSeller ? (
                         <Link
                             to="/admin/dashboard"
-                            className="hidden sm:flex items-center gap-1.5 text-sm font-semibold text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-full transition-all"
+                            className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-2.5 sm:px-3 py-1.5 rounded-full transition-all"
                         >
-                            <Store size={15} />
-                            My Shop
+                            <Store size={14} />
+                            <span>My Shop</span>
                         </Link>
                     ) : (
                         <Link
                             to="/register"
-                            className="hidden sm:flex items-center gap-1.5 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-full transition-all shadow-sm shadow-indigo-200"
+                            className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-2.5 sm:px-3 py-1.5 rounded-full transition-all shadow-sm shadow-indigo-200"
                         >
-                            <TrendingUp size={15} />
-                            Start Selling on ORB
+                            <TrendingUp size={14} />
+                            <span className="hidden sm:inline">Start Selling on ORB</span>
+                            <span className="sm:hidden">Sell</span>
                         </Link>
                     )}
 
