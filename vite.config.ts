@@ -25,9 +25,9 @@ export default defineConfig(({ mode }) => {
           navigateFallbackDenylist: [/^\/api/],
         },
         manifest: {
-          name: 'BrewCart Wholesale Pro',
-          short_name: 'BrewCart',
-          description: 'B2B Wholesale Ordering Application',
+          name: 'ORB Commerce',
+          short_name: 'ORB',
+          description: 'Commerce Management Platform',
           theme_color: '#0f172a',
           background_color: '#0f172a',
           display: 'standalone',
@@ -49,7 +49,7 @@ export default defineConfig(({ mode }) => {
           ]
         },
         devOptions: {
-          enabled: true
+          enabled: false
         }
       })
     ],
