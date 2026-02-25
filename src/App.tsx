@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import ErrorBoundary from './components/system/ErrorBoundary';
 import { Toaster } from 'react-hot-toast';
+import InstallPrompt from './components/system/InstallPrompt';
 
 export default function App() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -16,6 +17,7 @@ export default function App() {
                 </ErrorBoundary>
             </main>
             <Toaster position="top-right" />
+            <InstallPrompt />
         </div>
     );
 }
