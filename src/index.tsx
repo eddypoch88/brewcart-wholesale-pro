@@ -23,6 +23,8 @@ const updateSW = registerSW({
 // Admin
 import App from './App';
 import LoginPage from './pages/auth/LoginPage';
+import RegisterPage from './pages/auth/RegisterPage';
+import OnboardingPage from './pages/auth/OnboardingPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import { useStore } from './context/StoreContext';
 import { NotificationsProvider } from './hooks/useNotifications';
@@ -45,6 +47,8 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                 <Routes>
                     {/* AUTH */}
                     <Route path="/login" element={<LoginPage />} />
+                    <Route path="/register" element={<RegisterPage />} />
+                    <Route path="/onboarding" element={<OnboardingPage />} />
 
                     {/* FRONT STORE — root (no slug, fallback) */}
                     <Route element={<StoreLayout />}>

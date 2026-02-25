@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { LogIn, AlertCircle, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -115,8 +115,11 @@ export default function LoginPage() {
 
                     {/* Footer */}
                     <div className="px-8 py-4 bg-slate-900/50 border-t border-slate-700/50 text-center">
-                        <p className="text-xs text-slate-500">
-                            Secure access is restricted to authorized personnel only.
+                        <p className="text-sm text-slate-400">
+                            Don't have an account?{' '}
+                            <Link to="/register" className="text-blue-400 hover:text-blue-300 font-medium transition-colors">
+                                Create your store →
+                            </Link>
                         </p>
                     </div>
                 </div>
