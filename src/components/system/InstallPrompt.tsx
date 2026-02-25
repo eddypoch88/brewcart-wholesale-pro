@@ -11,10 +11,20 @@ export default function InstallPrompt() {
 
     useEffect(() => {
         setIsClient(true);
+        // Cek kalau user pernah dismiss atau install sebelum ni
+        if (localStorage.getItem('brewcart_pwa_dismissed') === 'true') {
+            setDismissed(true);
+        }
     }, []);
 
     // Only show if client-side, user hasn't dismissed it, and app is NOT already installed
     const shouldShow = isClient && !dismissed && !isInstalled;
+
+    const handleDismiss = (e: any) => {
+        e.stopPropagation();
+        setDismissed(true);
+        localStorage.setItem('brewcart_pwa_dismissed', 'true');
+    };
 
     const handleInstallClick = async (e: any) => {
         e.stopPropagation();
@@ -25,7 +35,16 @@ export default function InstallPrompt() {
         // If native failed (no prompt available, iOS, or blocked), show manual instructions
         if (!success) {
             setShowInstruction(true);
-            setTimeout(() => setShowInstruction(false), 8000);
+            setTimeout(() => {
+                setShowInstruction(false);
+                // Lepas tunjuk macam mana nak install manual, kita hide terus supaya tak semak
+                setDismissed(true);
+                localStorage.setItem('brewcart_pwa_dismissed', 'true');
+            }, 8000);
+        } else {
+            // Kalau berjaya install native
+            setDismissed(true);
+            localStorage.setItem('brewcart_pwa_dismissed', 'true');
         }
     };
 
@@ -94,10 +113,7 @@ export default function InstallPrompt() {
 
                     {/* Close X */}
                     <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            setDismissed(true);
-                        }}
+                        onClick={handleDismiss}
                         className="absolute top-2 right-2 p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors z-10"
                         aria-label="Dismiss"
                     >
