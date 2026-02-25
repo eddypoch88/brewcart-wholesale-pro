@@ -20,17 +20,52 @@ if (typeof window !== 'undefined') {
     });
 }
 
+// ─── PWA Installed Detection ──────────────────────────────────────────────────
+const isAppInstalled = () => {
+    if (typeof window === 'undefined') return false;
+    return window.matchMedia('(display-mode: standalone)').matches ||
+        (window.navigator as any).standalone === true;
+};
+
 export function usePWA() {
     // isReady only matters on desktop (drives custom Install UI visibility)
     const [isReady, setIsReady] = useState(!!deferredPrompt);
+    const [isInstalled, setIsInstalled] = useState(false);
 
     useEffect(() => {
+        // Initial check
+        setIsInstalled(isAppInstalled());
+
+        // Listen for the 'appinstalled' event
+        const handleInstalled = () => {
+            console.log('[PWA] App was installed via event');
+            setIsInstalled(true);
+        };
+        window.addEventListener('appinstalled', handleInstalled);
+
+        // Listen for match-media changes (when user opens the standalone app)
+        const mediaQuery = window.matchMedia('(display-mode: standalone)');
+        const handleChange = (e: MediaQueryListEvent) => {
+            setIsInstalled(e.matches);
+        };
+        
+        // Use modern addEventListener if available, otherwise try addListener (older Safaris)
+        if (mediaQuery.addEventListener) {
+            mediaQuery.addEventListener('change', handleChange);
+        }
+
         // Sync with global state (handles case where event fired before mount)
         setIsReady(!!deferredPrompt);
 
         const listener = (ready: boolean) => setIsReady(ready);
         listeners.add(listener);
-        return () => { listeners.delete(listener); };
+        return () => { 
+            listeners.delete(listener); 
+            window.removeEventListener('appinstalled', handleInstalled);
+            if (mediaQuery.removeEventListener) {
+                mediaQuery.removeEventListener('change', handleChange);
+            }
+        };
     }, []);
 
     const installApp = async (): Promise<boolean> => {
@@ -58,5 +93,5 @@ export function usePWA() {
         }
     };
 
-    return { isReady, installApp, isMobile: isMobileDevice() };
+    return { isReady, installApp, isMobile: isMobileDevice(), isInstalled };
 }

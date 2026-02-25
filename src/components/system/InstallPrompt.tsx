@@ -4,7 +4,7 @@ import { Download, X, Share, MoreVertical } from 'lucide-react'; // Tambah icon 
 import { usePWA } from '../../hooks/usePWA';
 
 export default function InstallPrompt() {
-    const { installApp } = usePWA();
+    const { installApp, isInstalled } = usePWA();
     const [dismissed, setDismissed] = useState(false);
     const [isClient, setIsClient] = useState(false);
     const [showInstruction, setShowInstruction] = useState(false);
@@ -13,7 +13,8 @@ export default function InstallPrompt() {
         setIsClient(true);
     }, []);
 
-    const shouldShow = isClient && !dismissed;
+    // Only show if client-side, user hasn't dismissed it, and app is NOT already installed
+    const shouldShow = isClient && !dismissed && !isInstalled;
 
     const handleInstallClick = async (e: any) => {
         e.stopPropagation();
