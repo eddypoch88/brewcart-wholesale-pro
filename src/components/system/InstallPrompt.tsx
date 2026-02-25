@@ -7,23 +7,36 @@ export default function InstallPrompt() {
     const { isReady, installApp, isMobile } = usePWA();
     const [dismissed, setDismissed] = useState(false);
 
-    // On mobile the browser shows the native "Add to Home Screen" banner automatically.
-    // Our custom UI is only needed on desktop where we captured the deferred prompt.
-    if (isMobile) return null;
+    const shouldShow = !dismissed && (isReady || isMobile);
 
     return (
         <AnimatePresence>
-            {isReady && !dismissed && (
+            {shouldShow && (
                 <motion.div
                     initial={{ y: 150, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     exit={{ y: 150, opacity: 0 }}
                     transition={{ type: "spring", stiffness: 260, damping: 20 }}
-                    className="fixed bottom-6 left-4 right-4 md:left-auto md:right-6 md:w-[380px] z-[100]"
+                    className={`
+                        fixed z-[100]
+                        ${isMobile
+                            ? 'bottom-0 left-0 right-0 rounded-t-[24px] pb-safe'
+                            : 'bottom-6 left-4 right-4 md:left-auto md:right-6 md:w-[380px] rounded-[24px]'
+                        }
+                    `}
                 >
-                    <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 p-4 rounded-[24px] shadow-2xl flex items-center gap-4 relative overflow-hidden group">
-                        {/* Glass reflection */}
-                        <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/40 to-white/0 dark:via-white/5 pointer-events-none rounded-[24px] opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                    <div className={`
+                        bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl 
+                        border border-slate-200/50 dark:border-slate-700/50 
+                        p-4 shadow-2xl flex items-center gap-4 relative overflow-hidden group
+                        ${isMobile ? 'rounded-t-[24px]' : 'rounded-[24px]'}
+                    `}>
+                        <div className={`
+                            absolute inset-0 bg-gradient-to-tr from-white/0 via-white/40 to-white/0 
+                            dark:via-white/5 pointer-events-none opacity-0 group-hover:opacity-100 
+                            transition-opacity duration-700
+                            ${isMobile ? 'rounded-t-[24px]' : 'rounded-[24px]'}
+                        `} />
 
                         <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center shrink-0 shadow-[0_4px_20px_rgba(37,99,235,0.4)] relative overflow-hidden">
                             <div className="absolute inset-0 bg-white/20" />
@@ -31,8 +44,12 @@ export default function InstallPrompt() {
                         </div>
 
                         <div className="flex-1">
-                            <h3 className="text-[15px] font-bold text-slate-900 dark:text-white leading-tight tracking-tight">Install BrewCart</h3>
-                            <p className="text-[13px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug font-medium">Fast, seamless &amp; native experience</p>
+                            <h3 className="text-[15px] font-bold text-slate-900 dark:text-white leading-tight tracking-tight">
+                                Install BrewCart
+                            </h3>
+                            <p className="text-[13px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug font-medium">
+                                Fast, seamless &amp; native experience
+                            </p>
                         </div>
 
                         <div className="flex flex-col gap-2 shrink-0 z-10">

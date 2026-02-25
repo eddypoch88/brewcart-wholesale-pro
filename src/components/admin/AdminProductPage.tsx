@@ -4,7 +4,7 @@ import ProductForm from '../ProductForm';
 import ProductTableRow from './ProductTableRow';
 import { Product } from '../../types';
 import toast from 'react-hot-toast';
-import { getProducts, deleteProduct, seedProducts, deleteProductImage } from '../../lib/storage';
+import { getProducts, deleteProduct, deleteProductImage } from '../../lib/storage';
 import { useStore } from '../../context/StoreContext';
 
 export default function AdminProductPage() {
@@ -83,24 +83,6 @@ export default function AdminProductPage() {
         );
     }
 
-    const handleSeedData = async () => {
-        if (!storeId) {
-            toast.error("Store ID not found");
-            return;
-        }
-        setLoading(true);
-        try {
-            await seedProducts(storeId);
-            toast.success("✅ Sample products added!");
-            await loadProducts();
-        } catch (e) {
-            console.error(e);
-            toast.error("Failed to seed data");
-        } finally {
-            setLoading(false);
-        }
-    };
-
     return (
         <div className="space-y-6 animate-fade-in relative pb-20">
             {/* HEADER */}
@@ -111,9 +93,6 @@ export default function AdminProductPage() {
                 </div>
                 {!isFormOpen && (
                     <div className="flex gap-3">
-                        <button onClick={handleSeedData} className="px-4 py-2 bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 text-slate-500 dark:text-gray-400 rounded-lg hover:bg-slate-50 dark:hover:bg-gray-700 font-medium text-sm transition-colors">
-                            Seed Sample Data
-                        </button>
                         <button onClick={handleCreateNew} className="hidden md:flex bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 shadow-sm transition-all items-center gap-2 font-medium text-base">
                             <Plus size={18} /> Add Product
                         </button>
