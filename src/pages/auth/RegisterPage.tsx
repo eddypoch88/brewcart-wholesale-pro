@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import {
     UserPlus, AlertCircle, Loader2, CheckCircle2, Eye, EyeOff,
-    ShoppingCart, BarChart3, Package, Star, TrendingUp, CheckCircle
+    Layers, BarChart3, Package, Star, TrendingUp, CheckCircle
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -11,9 +11,9 @@ import toast from 'react-hot-toast';
 function MarketingPanel() {
     const perks = [
         { icon: <CheckCircle className="w-4 h-4 text-green-400" />, text: "Free to start — no credit card required" },
-        { icon: <CheckCircle className="w-4 h-4 text-green-400" />, text: "Set up your store in under 5 minutes" },
-        { icon: <CheckCircle className="w-4 h-4 text-green-400" />, text: "Built-in WhatsApp order notifications" },
-        { icon: <CheckCircle className="w-4 h-4 text-green-400" />, text: "Real-time inventory & analytics" },
+        { icon: <CheckCircle className="w-4 h-4 text-green-400" />, text: "Launch your commerce portal in minutes" },
+        { icon: <CheckCircle className="w-4 h-4 text-green-400" />, text: "Built-in order & notification automation" },
+        { icon: <CheckCircle className="w-4 h-4 text-green-400" />, text: "Real-time inventory & revenue analytics" },
     ];
 
     return (
@@ -27,21 +27,21 @@ function MarketingPanel() {
             <div className="relative z-10 max-w-lg w-full">
                 {/* Brand */}
                 <div className="flex items-center gap-3 mb-10">
-                    <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/30">
-                        <ShoppingCart className="w-5 h-5 text-white" />
+                    <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-600/30">
+                        <Layers className="w-5 h-5 text-white" />
                     </div>
-                    <span className="text-white font-bold text-xl tracking-tight">BrewCart</span>
+                    <span className="text-white font-bold text-xl tracking-tight">ORB COMMERCE</span>
                     <span className="px-2 py-0.5 bg-blue-500/20 text-blue-300 text-xs font-semibold rounded-full border border-blue-500/30">PRO</span>
                 </div>
 
                 <h2 className="text-4xl font-extrabold text-white leading-tight mb-4">
-                    Join Hundreds of<br />
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-400">
-                        Coffee Businesses.
+                    Built for Wholesalers<br />
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">
+                        &amp; Retailers Alike.
                     </span>
                 </h2>
                 <p className="text-slate-400 text-lg mb-8 leading-relaxed">
-                    Create your store today and start receiving wholesale orders through your own branded portal.
+                    Launch your commerce portal today and start managing orders, inventory, and customers from one powerful platform.
                 </p>
 
                 {/* Perks list */}
@@ -92,8 +92,8 @@ function MarketingPanel() {
                         ))}
                     </div>
                     <div>
-                        <p className="text-slate-300 text-sm italic">"Setup took 5 minutes. Now I manage all my orders from one screen!"</p>
-                        <p className="text-slate-500 text-xs mt-1">— Siti Aisyah, Coffee Roastery Penang</p>
+                        <p className="text-slate-300 text-sm italic">"Setup took 5 minutes. Now I manage all my wholesale orders from one screen!"</p>
+                        <p className="text-slate-500 text-xs mt-1">— Aisyah R., Wholesale Distributor Penang</p>
                     </div>
                 </div>
             </div>
@@ -169,16 +169,16 @@ export default function RegisterPage() {
 
                     {/* Logo */}
                     <div className="flex items-center gap-3 mb-10">
-                        <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/30">
-                            <ShoppingCart className="w-5 h-5 text-white" />
+                        <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-600/30">
+                            <Layers className="w-5 h-5 text-white" />
                         </div>
-                        <span className="text-white font-bold text-xl tracking-tight">BrewCart</span>
+                        <span className="text-white font-bold text-xl tracking-tight">ORB COMMERCE</span>
                     </div>
 
                     {/* Heading */}
                     <div className="mb-8">
-                        <h1 className="text-3xl font-extrabold text-white">Create Your Store ☕</h1>
-                        <p className="text-slate-400 mt-2">Start selling in minutes.</p>
+                        <h1 className="text-3xl font-extrabold text-white">Create Your Store</h1>
+                        <p className="text-slate-400 mt-2">Launch your commerce portal in minutes.</p>
                     </div>
 
                     {/* Error */}
@@ -247,7 +247,7 @@ export default function RegisterPage() {
 
                     <p className="text-center text-xs text-slate-600 mt-6">
                         <CheckCircle className="inline w-3.5 h-3.5 mr-1 text-green-600" />
-                        Secure & encrypted by Supabase
+                        Enterprise-grade security by Supabase
                     </p>
                 </div>
             </div>
