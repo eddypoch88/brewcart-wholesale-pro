@@ -5,19 +5,21 @@ import ProductTableRow from './ProductTableRow';
 import { Product } from '../../types';
 import toast from 'react-hot-toast';
 import { getProducts, deleteProduct, seedProducts, deleteProductImage } from '../../lib/storage';
+import { useStore } from '../../context/StoreContext';
 
 export default function AdminProductPage() {
+    const { storeId } = useStore();
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
-    useEffect(() => { loadProducts(); }, []);
+    useEffect(() => { if (storeId) loadProducts(); }, [storeId]);
 
     const loadProducts = async () => {
         setLoading(true);
-        setProducts(await getProducts());
+        setProducts(await getProducts(storeId!));
         setLoading(false);
     };
 
@@ -27,9 +29,9 @@ export default function AdminProductPage() {
     const handleFormSuccess = () => { handleCloseForm(); loadProducts(); };
 
     const handleDeleteProduct = async (id: string) => {
-        if (!confirm('Are you sure you want to delete this product?')) return;
+        if (!storeId || !confirm('Are you sure you want to delete this product?')) return;
         const product = products.find(p => p.id === id);
-        await deleteProduct(id);
+        await deleteProduct(id, storeId);
 
         if (product?.images?.length) {
             for (const img of product.images) {
@@ -52,10 +54,10 @@ export default function AdminProductPage() {
     };
 
     const handleBulkDelete = async () => {
-        if (!confirm(`Delete ${selectedIds.length} products?`)) return;
+        if (!storeId || !confirm(`Delete ${selectedIds.length} products?`)) return;
 
         const productsToDelete = products.filter(p => selectedIds.includes(p.id));
-        await Promise.all(selectedIds.map(id => deleteProduct(id)));
+        await Promise.all(selectedIds.map(id => deleteProduct(id, storeId)));
 
         for (const product of productsToDelete) {
             if (product?.images?.length) {

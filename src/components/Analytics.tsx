@@ -7,6 +7,7 @@ import {
 } from 'recharts';
 import { TrendingUp, DollarSign, ShoppingBag, Calendar } from 'lucide-react';
 import Skeleton from './ui/Skeleton';
+import { useStore } from '../context/StoreContext';
 
 interface RevenueData { today: number; week: number; month: number; total: number; }
 interface DailyRevenue { date: string; revenue: number; }
@@ -16,6 +17,7 @@ interface StatusDistribution { status: string; count: number; }
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
 export default function Analytics() {
+    const { storeId } = useStore();
     const [loading, setLoading] = useState(true);
     const [orders, setOrders] = useState<Order[]>([]);
     const [revenueData, setRevenueData] = useState<RevenueData>({ today: 0, week: 0, month: 0, total: 0 });
@@ -24,9 +26,10 @@ export default function Analytics() {
     const [statusDistribution, setStatusDistribution] = useState<StatusDistribution[]>([]);
 
     useEffect(() => {
+        if (!storeId) return;
         const load = async () => {
             try {
-                const fetchedOrders = await getOrders();
+                const fetchedOrders = await getOrders(storeId);
                 const safeOrders = Array.isArray(fetchedOrders) ? fetchedOrders : [];
                 setOrders(safeOrders);
                 calculateRevenueMetrics(safeOrders);
@@ -41,7 +44,7 @@ export default function Analytics() {
             }
         };
         load();
-    }, []);
+    }, [storeId]);
 
     const calculateRevenueMetrics = (orders: Order[]) => {
         const now = new Date();

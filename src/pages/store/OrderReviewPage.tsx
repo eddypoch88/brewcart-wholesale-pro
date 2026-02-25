@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
-import { getOrders, getSettings, uploadPaymentProof, updatePaymentProof } from '../../lib/storage';
+import { getOrder, uploadPaymentProof, updatePaymentProof } from '../../lib/storage';
 import { Order, StoreSettings } from '../../types';
 import { Loader2, CheckCircle, AlertCircle, Copy, MessageSquare, CreditCard, Truck, Upload, X, Camera, QrCode } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useStore } from '../../context/StoreContext';
 
 const methodLabels: Record<string, string> = {
     bank_transfer: 'Bank Transfer',
@@ -13,6 +14,7 @@ const methodLabels: Record<string, string> = {
 
 export default function OrderReviewPage() {
     const { orderId } = useParams();
+    const { settings: ctxSettings } = useStore();
 
     const [order, setOrder] = useState<Order | null>(null);
     const [settings, setSettings] = useState<StoreSettings | null>(null);
@@ -25,15 +27,17 @@ export default function OrderReviewPage() {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
+        if (ctxSettings) setSettings(ctxSettings);
+    }, [ctxSettings]);
+
+    useEffect(() => {
         const fetchData = async () => {
             if (!orderId) return;
             try {
-                const allOrders = await getOrders();
-                const found = allOrders.find(o => o.id === orderId);
-                const sett = await getSettings();
+                // getOrder without storeId — public order review page, no admin auth needed
+                const found = await getOrder(orderId);
 
                 if (found) setOrder(found);
-                setSettings(sett);
             } catch (e) {
                 console.error(e);
                 toast.error("Failed to load order");

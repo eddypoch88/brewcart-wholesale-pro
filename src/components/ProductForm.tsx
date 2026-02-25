@@ -4,6 +4,7 @@ import { Product } from '../types';
 import toast from 'react-hot-toast';
 import VariantBuilder from './ui/VariantBuilder';
 import { addProduct, updateProduct, uploadProductImage } from '../lib/storage';
+import { useStore } from '../context/StoreContext';
 
 interface ProductFormProps {
     onSuccess: () => void;
@@ -12,6 +13,7 @@ interface ProductFormProps {
 }
 
 export default function ProductForm({ onSuccess, onCancel, initialData }: ProductFormProps) {
+    const { storeId } = useStore();
     const [loading, setLoading] = useState(false);
     const [imageUploading, setImageUploading] = useState(false);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -33,7 +35,7 @@ export default function ProductForm({ onSuccess, onCancel, initialData }: Produc
             const file = e.target.files[0];
             setImageUploading(true);
             try {
-                const url = await uploadProductImage(file);
+                const url = await uploadProductImage(file, storeId || 'default');
                 setImagePreview(url);
                 setFormData(prev => ({ ...prev, images: [url] }));
                 toast.success('Image uploaded successfully');
@@ -49,13 +51,14 @@ export default function ProductForm({ onSuccess, onCancel, initialData }: Produc
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!storeId) { toast.error('Store not found. Please refresh.'); return; }
         setLoading(true);
 
         try {
             if (initialData?.id) {
-                await updateProduct(initialData.id, formData);
+                await updateProduct(initialData.id, formData, storeId);
             } else {
-                await addProduct(formData as Omit<Product, 'id' | 'created_at'>);
+                await addProduct(formData as Omit<Product, 'id' | 'created_at'>, storeId);
             }
             toast.success("✅ Product saved successfully!");
             onSuccess();

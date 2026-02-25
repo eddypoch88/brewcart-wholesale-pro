@@ -1,35 +1,32 @@
 import { useState, useEffect, useMemo } from 'react';
-import { getProducts, getSettings } from '../../lib/storage';
-import { Product, StoreSettings } from '../../types';
-import { DEFAULT_SETTINGS } from '../../data/mockData';
+import { getProducts } from '../../lib/storage';
+import { Product } from '../../types';
 import ProductCard from '../../components/store/ProductCard';
 import { ShoppingBag, Sparkles, Loader2, Search, X } from 'lucide-react';
+import { usePublicStore } from '../../hooks/usePublicStore';
 
 export default function StorePage() {
-    const [settings, setSettings] = useState<StoreSettings>(DEFAULT_SETTINGS);
+    // usePublicStore resolves storeId + settings without requiring user login
+    const { storeId, settings, loading: storeLoading } = usePublicStore();
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
-
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All');
 
     useEffect(() => {
+        if (storeLoading || !storeId) return;
         async function loadData() {
             try {
-                const [fetchedProducts, fetchedSettings] = await Promise.all([
-                    getProducts(),
-                    getSettings()
-                ]);
+                const fetchedProducts = await getProducts(storeId!);
                 setProducts(fetchedProducts.filter(p => p.status === 'active'));
-                setSettings(fetchedSettings);
             } catch (error) {
-                console.error('Failed to load store data:', error);
+                console.error('Failed to load products:', error);
             } finally {
                 setLoading(false);
             }
         }
         loadData();
-    }, []);
+    }, [storeId, storeLoading]);
 
     // Derive unique categories
     const categories = useMemo(() => {
@@ -112,8 +109,8 @@ export default function StorePage() {
                                 key={cat}
                                 onClick={() => setSelectedCategory(cat)}
                                 className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${selectedCategory === cat
-                                        ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
-                                        : 'bg-white text-slate-600 border border-slate-200 hover:border-blue-300 hover:text-blue-600'
+                                    ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
+                                    : 'bg-white text-slate-600 border border-slate-200 hover:border-blue-300 hover:text-blue-600'
                                     }`}
                             >
                                 {cat}

@@ -1,7 +1,20 @@
 // ── Types ──
 
+// ── Multi-tenant: Store ──
+export interface Store {
+    id: string;
+    owner_id: string;
+    name: string;
+    slug: string;
+    subdomain: string | null;
+    custom_domain: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
 export interface Product {
     id: string;
+    store_id?: string;              // ← multi-tenant: links product to a store
     name: string;
     slug?: string;
     description?: string;
@@ -36,12 +49,13 @@ export interface OrderItem {
 
 export interface Order {
     id: string;
+    store_id?: string;              // ← multi-tenant: links order to a store
     customer_name: string;
     customer_phone: string;
     items: OrderItem[];
     subtotal?: number;
     delivery_fee?: number;
-    total: number; // Renamed from total_amount to match DB column
+    total: number;
     status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
     created_at: string;
     delivery_address?: string;

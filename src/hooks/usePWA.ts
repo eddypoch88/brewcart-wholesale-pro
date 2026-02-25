@@ -1,49 +1,58 @@
 import { useState, useEffect } from 'react';
 
-// Global state to store the prompt event
+// ─── Mobile detection ──────────────────────────────────────────────────────
+const isMobileDevice = () =>
+    typeof navigator !== 'undefined' &&
+    /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+// Global state to store the deferred prompt (desktop only)
 let deferredPrompt: any = null;
 const listeners = new Set<(isReady: boolean) => void>();
 
-// Attach the listener globally as soon as this file is loaded
 if (typeof window !== 'undefined') {
     window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        listeners.forEach(listener => listener(true));
+        const isMobile = isMobileDevice();
+
+        if (isMobile) {
+            // On mobile: do NOT call preventDefault.
+            // This lets the browser show the native "Add to Home Screen" banner
+            // automatically. We don't need to do anything else.
+            console.log('[PWA] Mobile device — letting browser show native install banner');
+        } else {
+            // On desktop: intercept the event and store it for our custom UI
+            e.preventDefault();
+            deferredPrompt = e;
+            listeners.forEach(l => l(true));
+            console.log('[PWA] Desktop — deferred install prompt captured for custom UI');
+        }
     });
 }
 
 export function usePWA() {
+    // isReady only matters on desktop (drives custom Install UI visibility)
     const [isReady, setIsReady] = useState(!!deferredPrompt);
 
     useEffect(() => {
-        // Sync local state with global state immediately on mount
+        // Sync with global state (handles case where event fired before mount)
         setIsReady(!!deferredPrompt);
 
-        // Register listener for future updates
         const listener = (ready: boolean) => setIsReady(ready);
         listeners.add(listener);
-
-        return () => {
-            listeners.delete(listener);
-        };
+        return () => { listeners.delete(listener); };
     }, []);
 
     const installApp = async () => {
         if (!deferredPrompt) return;
 
-        // Show the prompt
         deferredPrompt.prompt();
-
-        // Wait for user choice
         const { outcome } = await deferredPrompt.userChoice;
 
         if (outcome === 'accepted') {
-            console.log('User accepted the install prompt');
+            console.log('[PWA] User accepted install');
             deferredPrompt = null;
-            listeners.forEach(listener => listener(false));
+            listeners.forEach(l => l(false));
         }
     };
 
-    return { isReady, installApp };
+    return { isReady, installApp, isMobile: isMobileDevice() };
 }

@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
-import { getCart, getSettings, getProducts, createOrder, updateProductStock, clearCart } from '../../lib/storage';
+import { getCart, getProducts, createOrder, updateProductStock, clearCart } from '../../lib/storage';
 import { CartItem, Order, StoreSettings } from '../../types';
 import { ChevronLeft, Truck, AlertCircle, Loader2, CreditCard, QrCode } from 'lucide-react';
 import toast from 'react-hot-toast';
 import PaymentSection from '../../components/store/PaymentSection';
+import { usePublicStore } from '../../hooks/usePublicStore';
 
 export default function CheckoutPage() {
     const navigate = useNavigate();
+    // usePublicStore — no auth required, works for unauthenticated customers
+    const { storeId, settings: publicSettings, loading: storeLoading } = usePublicStore();
     const [cart, setCart] = useState<CartItem[]>([]);
     const [settings, setSettings] = useState<StoreSettings | null>(null);
     const [loading, setLoading] = useState(true);
@@ -22,17 +25,19 @@ export default function CheckoutPage() {
     const [stockError, setStockError] = useState<string | null>(null);
     const [products, setProducts] = useState<any[]>([]);
 
+    // Sync settings from public store hook
     useEffect(() => {
+        if (publicSettings) setSettings(publicSettings);
+    }, [publicSettings]);
+
+    useEffect(() => {
+        if (storeLoading || !storeId) return;
         const init = async () => {
             const currentCart = getCart();
             setCart(currentCart);
 
             try {
-                const [fetchedSettings, fetchedProducts] = await Promise.all([
-                    getSettings(),
-                    getProducts()
-                ]);
-                setSettings(fetchedSettings);
+                const fetchedProducts = await getProducts(storeId!);
                 setProducts(fetchedProducts);
 
                 if (currentCart.length === 0) {
@@ -49,7 +54,7 @@ export default function CheckoutPage() {
             }
         };
         init();
-    }, [navigate]);
+    }, [storeId, storeLoading, navigate]);
 
     const validateStock = (currentCart: CartItem[], currentProducts: any[]) => {
         for (const item of currentCart) {
@@ -87,7 +92,7 @@ export default function CheckoutPage() {
         setIsSubmitting(true);
 
         try {
-            const latestProducts = await getProducts();
+            const latestProducts = await getProducts(storeId!);
 
             if (!validateStock(cart, latestProducts)) {
                 setIsSubmitting(false);
@@ -119,7 +124,7 @@ export default function CheckoutPage() {
                 payment_status: 'unpaid'
             };
 
-            const createdOrder = await createOrder(newOrder);
+            const createdOrder = await createOrder(newOrder, storeId!);
 
             if (!createdOrder) {
                 throw new Error("Failed to create order in database. Check console for details.");
@@ -128,7 +133,7 @@ export default function CheckoutPage() {
             await updateProductStock(cart.map(item => ({
                 product: { id: item.product.id },
                 qty: item.qty
-            })));
+            })), storeId!);
 
             clearCart();
 
@@ -162,7 +167,7 @@ export default function CheckoutPage() {
                     body: {
                         amount: total,
                         orderId: newOrder.id,
-                        storeId: 1, // Assuming global store ID for now
+                        storeId: storeId || '1', // use dynamic storeId from context
                         customerName: fullName,
                         customerEmail: 'customer@brewcart-demo.com', // Optional email
                         customerPhone: phone
@@ -185,7 +190,7 @@ export default function CheckoutPage() {
                     body: {
                         amount: total,
                         orderId: newOrder.id,
-                        storeId: 1,
+                        storeId: storeId || '1',
                         items: cart,
                         customerEmail: 'customer@brewcart-demo.com'
                     }

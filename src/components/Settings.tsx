@@ -1,20 +1,21 @@
 import { useState, useEffect, ChangeEvent } from 'react';
 import { Save, Building2, Phone, Globe, Truck, CreditCard, Clock, Bell, Loader2, BanknoteIcon, Image as ImageIcon, X, ChevronDown, ChevronUp } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { getSettings, saveSettings } from '../lib/storage';
+import { getSettings, saveSettings, updateStoreName } from '../lib/storage';
 import { useStore } from '../context/StoreContext';
 import { StoreSettings } from '../types';
 import { DEFAULT_SETTINGS } from '../data/mockData';
 
 export default function Settings() {
-    const { reload } = useStore();
+    const { reload, storeId } = useStore();
     const [settings, setSettings] = useState<StoreSettings>(DEFAULT_SETTINGS);
     const [saveLoading, setSaveLoading] = useState(false);
     const [isOperatingHoursExpanded, setIsOperatingHoursExpanded] = useState(false);
 
     useEffect(() => {
         const loadSettings = async () => {
-            const currentSettings = await getSettings();
+            if (!storeId) return;                          // wait for store to load
+            const currentSettings = await getSettings(storeId);
             setSettings({
                 ...DEFAULT_SETTINGS,
                 ...currentSettings,
@@ -25,7 +26,7 @@ export default function Settings() {
             });
         };
         loadSettings();
-    }, []);
+    }, [storeId]); // re-fetch when store is resolved
 
     const updateSettings = (updates: Partial<StoreSettings>) => {
         setSettings({ ...settings, ...updates });
@@ -73,14 +74,22 @@ export default function Settings() {
     };
 
     const handleSave = async () => {
+        if (!storeId) {
+            toast.error('❌ Store not found. Please refresh and try again.');
+            return;
+        }
+
         setSaveLoading(true);
-
-        // Simulate API call delay for better UX feedback
-        await new Promise(resolve => setTimeout(resolve, 1500));
-
         try {
-            await saveSettings(settings);
-            reload();
+            // Run both in parallel:
+            // 1. Update stores.name (single source of truth for store name)
+            // 2. Save all other settings to store_settings
+            await Promise.all([
+                updateStoreName(storeId, settings.store_name),
+                saveSettings(settings, storeId),
+            ]);
+
+            reload(); // refresh StoreContext so Navbar/Footer pick up the new name
             toast.success('✅ Settings saved successfully!', {
                 duration: 3000,
                 position: 'top-center',
@@ -94,6 +103,7 @@ export default function Settings() {
                 icon: '✓',
             });
         } catch (error) {
+            console.error('[Settings] Save failed:', error);
             toast.error('❌ Failed to save settings. Please try again.', {
                 duration: 4000,
                 position: 'top-center',

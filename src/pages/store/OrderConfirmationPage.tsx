@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { CheckCircle, ShoppingBag, MessageSquare, AlertCircle, Loader2 } from 'lucide-react';
-import { getSettings, getOrders } from '../../lib/storage';
+import { getOrder } from '../../lib/storage';
+import { useStore } from '../../context/StoreContext';
 
 export default function OrderConfirmationPage() {
     const navigate = useNavigate();
@@ -11,21 +12,20 @@ export default function OrderConfirmationPage() {
     const sessionId = searchParams.get('session_id'); // Stripe
     const billcode = searchParams.get('billcode'); // Toyyibpay
 
+    const { settings: ctxSettings } = useStore();
     const [settings, setSettings] = useState<any>(null);
     const [order, setOrder] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const loadData = async () => {
-            const [fetchedSettings, fetchedOrders] = await Promise.all([
-                getSettings(),
-                getOrders()
-            ]);
-            setSettings(fetchedSettings);
-            let foundOrder = fetchedOrders.find((o: any) => o.id === orderId);
+        if (ctxSettings) setSettings(ctxSettings);
+    }, [ctxSettings]);
 
-            // Note: In a real prod environment, you'd confirm payment server-side via webhook. 
-            // Here, we optimistically set payment_status to 'paid' if they return from gateway
+    useEffect(() => {
+        const loadData = async () => {
+            let foundOrder = orderId ? await getOrder(orderId) : null;
+
+            // Optimistically mark paid if returning from a gateway (real confirmation should be via webhook)
             if (foundOrder && gateway && (sessionId || billcode)) {
                 foundOrder = { ...foundOrder, payment_status: 'paid' };
             }

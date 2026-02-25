@@ -24,6 +24,7 @@ const updateSW = registerSW({
 import App from './App';
 import LoginPage from './pages/auth/LoginPage';
 import ProtectedRoute from './components/ProtectedRoute';
+import { useStore } from './context/StoreContext';
 import { NotificationsProvider } from './hooks/useNotifications';
 
 // Store
@@ -58,9 +59,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                     {/* ADMIN CMS - PROTECTED */}
                     <Route path="/admin" element={
                         <ProtectedRoute>
-                            <NotificationsProvider>
-                                <App />
-                            </NotificationsProvider>
+                            <AdminNotificationsWrapper />
                         </ProtectedRoute>
                     }>
                         <Route index element={<Navigate to="dashboard" replace />} />
@@ -106,3 +105,17 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         </StoreProvider>
     </React.StrictMode>
 );
+
+/**
+ * AdminNotificationsWrapper — reads storeId from StoreContext and passes it
+ * to NotificationsProvider so realtime order subscriptions are scoped to
+ * the current authenticated user's store only (multi-tenant isolation).
+ */
+function AdminNotificationsWrapper() {
+    const { storeId } = useStore();
+    return (
+        <NotificationsProvider storeId={storeId}>
+            <App />
+        </NotificationsProvider>
+    );
+}

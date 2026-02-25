@@ -1,17 +1,13 @@
 import { Link } from 'react-router-dom';
 import { ShoppingCart, Settings } from 'lucide-react';
-import { getCart, getSettings } from '../../lib/storage';
+import { getCart } from '../../lib/storage';
 import { useState, useEffect } from 'react';
-import { StoreSettings } from '../../types';
+import { usePublicStore } from '../../hooks/usePublicStore';
 import { DEFAULT_SETTINGS } from '../../data/mockData';
 
 export default function Navbar() {
-    const [settings, setSettings] = useState<StoreSettings>(DEFAULT_SETTINGS);
+    const { settings } = usePublicStore();
     const [cartCount, setCartCount] = useState(0);
-
-    useEffect(() => {
-        getSettings().then(s => { if (s) setSettings(s); });
-    }, []);
 
     useEffect(() => {
         const updateCount = () => setCartCount(getCart().reduce((s, c) => s + c.qty, 0));

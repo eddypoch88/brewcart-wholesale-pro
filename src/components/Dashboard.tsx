@@ -3,6 +3,7 @@ import { getProducts, getOrders } from '../lib/storage';
 import { Product, Order } from '../types';
 import { Package, ShoppingBag, DollarSign, TrendingUp, BarChart3, Clock, Calendar } from 'lucide-react';
 import Skeleton from './ui/Skeleton';
+import { useStore } from '../context/StoreContext';
 import {
     LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
     XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
@@ -11,22 +12,24 @@ import {
 const PIE_COLORS = ['#f59e0b', '#3b82f6', '#8b5cf6', '#10b981', '#ef4444'];
 
 export default function Dashboard() {
+    const { storeId } = useStore();
     const [orders, setOrders] = useState<Order[]>([]);
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        if (!storeId) return;
         const loadData = async () => {
             const [fetchedProducts, fetchedOrders] = await Promise.all([
-                getProducts(),
-                getOrders()
+                getProducts(storeId),
+                getOrders(storeId)
             ]);
             setProducts(fetchedProducts);
             setOrders(fetchedOrders);
             setLoading(false);
         };
         loadData();
-    }, []);
+    }, [storeId]);
 
     const ordersList = Array.isArray(orders) ? orders : [];
 

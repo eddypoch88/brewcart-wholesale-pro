@@ -6,8 +6,10 @@ import { Order } from '../types';
 import { DEFAULT_SETTINGS } from '../data/mockData';
 import toast from 'react-hot-toast';
 import OrderStatusDropdown from './ui/OrderStatusDropdown';
+import { useStore } from '../context/StoreContext';
 
 export default function OrderList() {
+    const { storeId } = useStore();
     const [orders, setOrders] = useState<Order[]>([]);
     const [settings, setSettings] = useState<any>(DEFAULT_SETTINGS);
     const [loading, setLoading] = useState(true);
@@ -25,8 +27,8 @@ export default function OrderList() {
     const [searchParams, setSearchParams] = useSearchParams();
 
     useEffect(() => {
-        loadData();
-    }, []);
+        if (storeId) loadData();
+    }, [storeId]);
 
     useEffect(() => {
         const orderId = searchParams.get('orderId');
@@ -54,8 +56,8 @@ export default function OrderList() {
         setLoading(true);
         try {
             const [fetchedOrders, fetchedSettings] = await Promise.all([
-                getOrders(),
-                getSettings()
+                getOrders(storeId!),
+                getSettings(storeId!)
             ]);
             setOrders(fetchedOrders);
             setSettings(fetchedSettings);
@@ -70,7 +72,7 @@ export default function OrderList() {
     const handleStatusChange = async (orderId: string, newStatus: Order['status']) => {
         setUpdatingOrderId(orderId);
         try {
-            await updateOrderStatus(orderId, newStatus);
+            await updateOrderStatus(orderId, newStatus, storeId!);
             setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
             toast.success(`Order status updated to ${newStatus}`);
         } catch (error) {
@@ -128,7 +130,7 @@ export default function OrderList() {
         if (window.confirm(`Delete ${selectedOrderIds.size} selected orders? This cannot be undone.`)) {
             const idsToDelete: string[] = Array.from(selectedOrderIds);
             try {
-                await deleteOrders(idsToDelete);
+                await deleteOrders(idsToDelete, storeId!);
 
                 // Update local state
                 setOrders(prev => prev.filter(o => !selectedOrderIds.has(o.id)));
@@ -143,7 +145,7 @@ export default function OrderList() {
     const handleSaveNotes = async (orderId: string) => {
         const notes = editingNotes[orderId] || '';
         try {
-            await updateOrderNotes(orderId, notes);
+            await updateOrderNotes(orderId, notes, storeId!);
             setOrders(prev => prev.map(o => o.id === orderId ? { ...o, admin_notes: notes } : o));
             toast.success('Note saved!');
         } catch (error) {
@@ -566,7 +568,7 @@ export default function OrderList() {
                                                                     onClick={async (e) => {
                                                                         e.stopPropagation();
                                                                         try {
-                                                                            await updatePaymentStatus(order.id, 'paid');
+                                                                            await updatePaymentStatus(order.id, 'paid', storeId!);
                                                                             setOrders(prev => prev.map(o => o.id === order.id ? { ...o, payment_status: 'paid' } : o));
                                                                             toast.success(`Payment verified for ${order.customer_name}`);
                                                                         } catch (err) {

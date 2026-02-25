@@ -23,7 +23,12 @@ const STORAGE_KEY = 'brewcart_notifications';
 
 const NotificationsContext = createContext<NotificationsContextValue | null>(null);
 
-export function NotificationsProvider({ children }: { children: React.ReactNode }) {
+interface NotificationsProviderProps {
+    children: React.ReactNode;
+    storeId?: string | null;          // ← multi-tenant: scope realtime to this store
+}
+
+export function NotificationsProvider({ children, storeId }: NotificationsProviderProps) {
     const [notifications, setNotifications] = useState<NotificationItem[]>(() => {
         try {
             const saved = localStorage.getItem(STORAGE_KEY);
@@ -72,7 +77,7 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
         audioRef.current = new Audio('/notification.mp3');
         audioRef.current.load();
 
-        console.log('[Notifications] Subscribing to Supabase realtime orders...');
+        console.log('[Notifications] Subscribing to Supabase realtime orders...', storeId ? `(storeId: ${storeId})` : '(no storeId — global)');
 
         // Request Web Notification permission
         if ('Notification' in window && Notification.permission !== 'denied') {
@@ -82,11 +87,22 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
         let channel: ReturnType<typeof supabase.channel>;
 
         const setupChannel = () => {
+            // Build the channel filter. If storeId is available, scope realtime
+            // to only this store's orders. This prevents cross-tenant notification bleed.
+            const insertFilter = storeId
+                ? `store_id=eq.${storeId}`
+                : undefined;
+
             channel = supabase
-                .channel(`orders-notifications-global-${Date.now()}`)
+                .channel(`orders-notifications-${storeId ?? 'global'}-${Date.now()}`)
                 .on(
                     'postgres_changes',
-                    { event: 'INSERT', schema: 'public', table: 'orders' },
+                    {
+                        event: 'INSERT',
+                        schema: 'public',
+                        table: 'orders',
+                        ...(insertFilter ? { filter: insertFilter } : {}),
+                    },
                     (payload) => {
                         console.log('[Notification] New order received:', payload.new);
                         const order = payload.new as any;
@@ -124,7 +140,12 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
                 )
                 .on(
                     'postgres_changes',
-                    { event: 'UPDATE', schema: 'public', table: 'orders' },
+                    {
+                        event: 'UPDATE',
+                        schema: 'public',
+                        table: 'orders',
+                        ...(storeId ? { filter: `store_id=eq.${storeId}` } : {}),
+                    },
                     (payload) => {
                         const order = payload.new as any;
                         if (order.status !== 'pending') {
@@ -147,7 +168,7 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
             console.log('[Notifications] Unsubscribing from realtime channel.');
             if (channel) supabase.removeChannel(channel);
         };
-    }, []);
+    }, [storeId]);  // ← re-subscribe when storeId changes (e.g. after login)
 
     const unreadCount = notifications.filter(n => !n.read).length;
     const markAllAsRead = () => setNotifications(prev => prev.map(n => ({ ...n, read: true })));
