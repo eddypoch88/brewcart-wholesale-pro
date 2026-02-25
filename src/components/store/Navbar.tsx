@@ -1,13 +1,26 @@
 import { Link, useParams } from 'react-router-dom';
-import { ShoppingCart, Settings } from 'lucide-react';
+import { ShoppingCart, Store, TrendingUp } from 'lucide-react';
 import { getCart } from '../../lib/storage';
 import { useState, useEffect } from 'react';
 import { usePublicStore } from '../../hooks/usePublicStore';
+import { supabase } from '../../lib/supabase';
 
 export default function Navbar() {
     const { slug } = useParams<{ slug?: string }>();
     const { settings } = usePublicStore(slug);
     const [cartCount, setCartCount] = useState(0);
+    const [isSeller, setIsSeller] = useState(false);
+
+    // Check if user is logged in (seller)
+    useEffect(() => {
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            setIsSeller(!!session?.user);
+        });
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
+            setIsSeller(!!session?.user);
+        });
+        return () => subscription.unsubscribe();
+    }, []);
 
     useEffect(() => {
         const updateCount = () => setCartCount(getCart().reduce((s, c) => s + c.qty, 0));
@@ -20,7 +33,6 @@ export default function Navbar() {
         };
     }, []);
 
-
     return (
         <nav className="sticky top-0 z-30 bg-white/80 backdrop-blur-lg border-b border-slate-200">
             <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
@@ -32,13 +44,29 @@ export default function Navbar() {
                     )}
                 </Link>
 
-                <div className="flex items-center gap-6">
+                <div className="flex items-center gap-3">
                     <Link to="/" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition hidden sm:block">Home</Link>
-                    <Link to="/admin" className="flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-slate-900 transition">
-                        <Settings size={16} />
-                        <span className="hidden sm:block">Admin</span>
-                    </Link>
 
+                    {/* Seller / Buyer CTA */}
+                    {isSeller ? (
+                        <Link
+                            to="/admin/dashboard"
+                            className="hidden sm:flex items-center gap-1.5 text-sm font-semibold text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-full transition-all"
+                        >
+                            <Store size={15} />
+                            My Shop
+                        </Link>
+                    ) : (
+                        <Link
+                            to="/register"
+                            className="hidden sm:flex items-center gap-1.5 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-full transition-all shadow-sm shadow-indigo-200"
+                        >
+                            <TrendingUp size={15} />
+                            Start Selling on ORB
+                        </Link>
+                    )}
+
+                    {/* Cart */}
                     <Link to="/cart" className="relative p-2 text-slate-600 hover:text-slate-900 transition">
                         <ShoppingCart size={22} />
                         {cartCount > 0 && (
@@ -52,3 +80,4 @@ export default function Navbar() {
         </nav>
     );
 }
+

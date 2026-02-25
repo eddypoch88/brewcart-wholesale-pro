@@ -1,7 +1,8 @@
-import { Menu, X, LayoutDashboard, Package, ShoppingBag, Settings, ExternalLink, TrendingUp, LogOut, Sun, Moon, Megaphone, CreditCard, ShieldCheck } from "lucide-react";
+import { Menu, X, LayoutDashboard, Package, ShoppingBag, Settings, ExternalLink, TrendingUp, LogOut, Sun, Moon, Megaphone, CreditCard, ShieldCheck, Store } from "lucide-react";
 import { useCallback } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useStore } from "../context/StoreContext";
+import { useStore as useStoreData } from "../hooks/useStore";
 import NotificationBell from "./NotificationBell";
 import { useNotifications } from "../hooks/useNotifications";
 import { useTheme } from "../hooks/useTheme";
@@ -17,12 +18,14 @@ export default function Sidebar({
     setSidebarOpen: (open: boolean) => void;
 }) {
     const { settings } = useStore();
+    const { store } = useStoreData(); // for slug
     const { addNotification } = useNotifications();
     const { theme, toggleTheme } = useTheme();
     const { isReady: isPWAReady, installApp } = usePWA();
     const { isSuperAdmin } = useAuth();
     const navigate = useNavigate();
-    const storeName = settings.store_name || "BrewCart Pro";
+    const storeName = settings.store_name || "ORB Commerce";
+    const storeUrl = store?.slug ? `/${store.slug}` : '/';
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
@@ -132,14 +135,27 @@ export default function Sidebar({
                 {/* Bottom Actions Section */}
                 <div className="px-3 py-3 border-t border-slate-800">
                     <div className="space-y-1 mb-2">
-                        {/* Install app button was here, moved to InstallPrompt via App.tsx */}
+                        {/* Go to Marketplace (Buyer Mode) */}
                         <a
                             href="/"
                             onClick={closeSidebarOnMobile}
                             className="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/5 hover:text-white rounded-xl transition-all duration-200 group"
                         >
+                            <ShoppingBag size={20} className="transition-transform duration-200 group-hover:scale-105" />
+                            <span className="text-sm font-medium">Go to Marketplace</span>
+                        </a>
+
+                        {/* View My Store — opens in new tab */}
+                        <a
+                            href={storeUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            onClick={closeSidebarOnMobile}
+                            className="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/5 hover:text-white rounded-xl transition-all duration-200 group"
+                        >
                             <ExternalLink size={20} className="transition-transform duration-200 group-hover:scale-105" />
-                            <span className="text-sm font-medium">View Storefront</span>
+                            <span className="text-sm font-medium">View My Store</span>
+                            <span className="ml-auto text-[10px] bg-blue-600/30 text-blue-400 px-1.5 py-0.5 rounded-full font-medium">Live ↗</span>
                         </a>
 
                         <button
@@ -170,7 +186,7 @@ export default function Sidebar({
 
                 {/* Footer */}
                 <div className="px-5 py-3 border-t border-slate-800 text-[11px] text-slate-500 text-center">
-                    © {new Date().getFullYear()} BrewCart Engine
+                    © {new Date().getFullYear()} ORB Commerce
                 </div>
             </aside>
         </>
