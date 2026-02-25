@@ -33,16 +33,28 @@ export function usePWA() {
         return () => { listeners.delete(listener); };
     }, []);
 
-    const installApp = async () => {
-        if (!deferredPrompt) return;
+    const installApp = async (): Promise<boolean> => {
+        if (!deferredPrompt) {
+            console.log('[PWA] No deferred prompt available. Falling back to manual instructions.');
+            return false;
+        }
 
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
+        try {
+            await deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
 
-        if (outcome === 'accepted') {
-            console.log('[PWA] User accepted install');
-            deferredPrompt = null;
-            listeners.forEach(l => l(false));
+            if (outcome === 'accepted') {
+                console.log('[PWA] User accepted install');
+                deferredPrompt = null;
+                listeners.forEach(l => l(false));
+                return true;
+            } else {
+                console.log('[PWA] User dismissed install prompt');
+                return true; // The native prompt worked, they just said no. No manual instructions needed.
+            }
+        } catch (err) {
+            console.error('[PWA] Error showing install prompt:', err);
+            return false;
         }
     };
 

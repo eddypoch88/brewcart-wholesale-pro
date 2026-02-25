@@ -4,30 +4,26 @@ import { Download, X, Share, MoreVertical } from 'lucide-react'; // Tambah icon 
 import { usePWA } from '../../hooks/usePWA';
 
 export default function InstallPrompt() {
-    const { isReady, installApp, isMobile, isIOS } = usePWA(); // Pastikan usePWA return isIOS kalau ada, kalau tiada takpa
+    const { installApp } = usePWA();
     const [dismissed, setDismissed] = useState(false);
     const [isClient, setIsClient] = useState(false);
-    const [showInstruction, setShowInstruction] = useState(false); // State untuk tunjuk ajar manual
+    const [showInstruction, setShowInstruction] = useState(false);
 
     useEffect(() => {
         setIsClient(true);
     }, []);
 
-    // LOGIC: Tunjuk kalau client dah load & user belum tutup
     const shouldShow = isClient && !dismissed;
 
-    // FUNGSI PENTING: Handle bila user tekan button
     const handleInstallClick = async (e: any) => {
         e.stopPropagation();
 
-        // 1. Kalau browser memang sedia nak install (Android Chrome standard)
-        if (isReady && installApp) {
-            installApp();
-        }
-        // 2. Kalau browser "bisu" (iOS atau Android yang dah block pop-up), kita ajar manual
-        else {
+        // Attempt native install flow
+        const success = await installApp();
+
+        // If native failed (no prompt available, iOS, or blocked), show manual instructions
+        if (!success) {
             setShowInstruction(true);
-            // Hilangkan instruction lepas 5 saat
             setTimeout(() => setShowInstruction(false), 8000);
         }
     };
