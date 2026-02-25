@@ -66,7 +66,7 @@ export default function StorePage() {
                         {settings.store_name}
                     </h1>
                     <p className="text-lg md:text-xl text-slate-300 max-w-2xl mx-auto mb-8">
-                        Handcrafted beverages made with love. Browse our collection and order your favorites.
+                        Browse our products and place your order online.
                     </p>
                     <a href="#products" className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-8 py-3.5 rounded-full font-bold shadow-lg shadow-blue-500/25 transition-all hover:shadow-blue-500/40">
                         <ShoppingBag size={18} /> Shop Now
@@ -78,7 +78,7 @@ export default function StorePage() {
             <section id="products" className="max-w-6xl mx-auto px-4 py-16">
                 <div className="text-center mb-8">
                     <h2 className="text-3xl font-bold text-slate-900 mb-2">Our Products</h2>
-                    <p className="text-slate-500">Fresh, handcrafted, and made to order.</p>
+                    <p className="text-slate-500">Explore our range of products available to order.</p>
                 </div>
 
                 {/* Search Bar */}

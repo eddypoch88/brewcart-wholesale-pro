@@ -418,9 +418,9 @@ export default function OrderList() {
                 </div>
 
                 {filteredOrders.length === 0 ? (
-                    <div className="bg-white p-12 rounded-xl border border-dashed border-slate-300 text-center">
-                        <ShoppingBag className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                        <p className="text-slate-500">No orders found.</p>
+                    <div className="bg-slate-800/50 dark:bg-slate-800/50 p-12 rounded-xl border border-dashed border-slate-700 text-center">
+                        <ShoppingBag className="w-12 h-12 text-slate-600 mx-auto mb-4" />
+                        <p className="text-slate-400">No orders found.</p>
                     </div>
                 ) : (
                     <div className="space-y-2">
