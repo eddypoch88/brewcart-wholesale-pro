@@ -4,8 +4,13 @@ import { useAuth } from '../hooks/useAuth';
 import { useStore as useStoreCtx } from '../context/StoreContext';
 import { Loader2 } from 'lucide-react';
 
-export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
-    const { user, loading: authLoading } = useAuth();
+interface ProtectedRouteProps {
+    children: React.ReactNode;
+    requireSuperAdmin?: boolean;
+}
+
+export default function ProtectedRoute({ children, requireSuperAdmin }: ProtectedRouteProps) {
+    const { user, isSuperAdmin, loading: authLoading } = useAuth();
     const { storeId, settingsLoading } = useStoreCtx();
     const location = useLocation();
 
@@ -26,9 +31,14 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
     }
 
     // Logged in but no store yet → send to onboarding
-    // (skip this check if we're already going to /onboarding)
-    if (!storeId && !location.pathname.startsWith('/onboarding')) {
+    // (skip this check if we're already going to /onboarding OR if they are a super_admin)
+    if (!storeId && !location.pathname.startsWith('/onboarding') && !isSuperAdmin) {
         return <Navigate to="/onboarding" replace />;
+    }
+
+    // Super Admin protection
+    if (requireSuperAdmin && !isSuperAdmin) {
+        return <Navigate to="/admin/dashboard" replace />;
     }
 
     return <>{children}</>;

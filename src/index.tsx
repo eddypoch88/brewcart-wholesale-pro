@@ -77,6 +77,15 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                         </ProtectedRoute>
                     }>
                         <Route index element={<Navigate to="dashboard" replace />} />
+
+                        <Route path="super" element={
+                            <ProtectedRoute requireSuperAdmin>
+                                <React.Suspense fallback={<div className="p-8">Loading...</div>}>
+                                    {React.createElement(React.lazy(() => import('./pages/admin/SuperAdminDashboard')))}
+                                </React.Suspense>
+                            </ProtectedRoute>
+                        } />
+
                         <Route path="dashboard" element={
                             <React.Suspense fallback={<div className="p-8">Loading...</div>}>
                                 {React.createElement(React.lazy(() => import('./components/Dashboard')))}

@@ -1,4 +1,4 @@
-import { Menu, X, LayoutDashboard, Package, ShoppingBag, Settings, ExternalLink, TrendingUp, LogOut, Sun, Moon, Megaphone, CreditCard } from "lucide-react";
+import { Menu, X, LayoutDashboard, Package, ShoppingBag, Settings, ExternalLink, TrendingUp, LogOut, Sun, Moon, Megaphone, CreditCard, ShieldCheck } from "lucide-react";
 import { useCallback } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useStore } from "../context/StoreContext";
@@ -6,6 +6,7 @@ import NotificationBell from "./NotificationBell";
 import { useNotifications } from "../hooks/useNotifications";
 import { useTheme } from "../hooks/useTheme";
 import { usePWA } from "../hooks/usePWA";
+import { useAuth } from "../hooks/useAuth";
 import { supabase } from "../lib/supabase";
 
 export default function Sidebar({
@@ -19,6 +20,7 @@ export default function Sidebar({
     const { addNotification } = useNotifications();
     const { theme, toggleTheme } = useTheme();
     const { isReady: isPWAReady, installApp } = usePWA();
+    const { isSuperAdmin } = useAuth();
     const navigate = useNavigate();
     const storeName = settings.store_name || "BrewCart Pro";
 
@@ -117,6 +119,13 @@ export default function Sidebar({
                     {navItem("payment", "Payment", CreditCard)}
                     {navItem("marketing", "Marketing", Megaphone)}
                     {navItem("settings", "Settings", Settings)}
+
+                    {isSuperAdmin && (
+                        <div className="pt-4 mt-4 border-t border-slate-800">
+                            <span className="px-4 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">Platform Master</span>
+                            {navItem("super", "Super Admin", ShieldCheck)}
+                        </div>
+                    )}
 
                 </nav>
 
