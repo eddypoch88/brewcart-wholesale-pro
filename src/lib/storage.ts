@@ -160,15 +160,17 @@ export async function updateProductStock(
  * seedProducts — inserts sample products for demo/testing.
  * Requires a storeId to associate the seeded products with a store.
  */
-export async function seedProducts(storeId?: string): Promise<void> {
-    const target = storeId || 'seed-demo-store';
+export async function seedProducts(storeId: string): Promise<void> {
+    if (!storeId) {
+        throw new Error('[seedProducts] storeId is required');
+    }
 
     const sampleProducts = [
-        { name: 'Tiger Beer 24x330ml', price: 78.00, stock: 50, category: 'Beer', status: 'active' as const, images: [], store_id: target, description: 'Classic Tiger lager in convenient cans.', created_at: new Date().toISOString() },
-        { name: 'Heineken 24x330ml', price: 88.00, stock: 30, category: 'Beer', status: 'active' as const, images: [], store_id: target, description: 'Premium Dutch pilsner, smooth and refreshing.', created_at: new Date().toISOString() },
-        { name: 'Carlsberg 24x330ml', price: 72.00, stock: 40, category: 'Beer', status: 'active' as const, images: [], store_id: target, description: 'Smooth Carlsberg lager, Malaysia\'s favourite.', created_at: new Date().toISOString() },
-        { name: 'Corona Extra 24x355ml', price: 98.00, stock: 20, category: 'Beer', status: 'active' as const, images: [], store_id: target, description: 'Mexican lager best served with a wedge of lime.', created_at: new Date().toISOString() },
-        { name: 'Guinness Stout 24x320ml', price: 92.00, stock: 25, category: 'Stout', status: 'active' as const, images: [], store_id: target, description: 'Rich dark Irish stout with a creamy head.', created_at: new Date().toISOString() },
+        { name: 'Tiger Beer 24x330ml', price: 78.00, stock: 50, category: 'Beer', status: 'active' as const, images: [], store_id: storeId, description: 'Classic Tiger lager in convenient cans.', created_at: new Date().toISOString() },
+        { name: 'Heineken 24x330ml', price: 88.00, stock: 30, category: 'Beer', status: 'active' as const, images: [], store_id: storeId, description: 'Premium Dutch pilsner, smooth and refreshing.', created_at: new Date().toISOString() },
+        { name: 'Carlsberg 24x330ml', price: 72.00, stock: 40, category: 'Beer', status: 'active' as const, images: [], store_id: storeId, description: 'Smooth Carlsberg lager, Malaysia\'s favourite.', created_at: new Date().toISOString() },
+        { name: 'Corona Extra 24x355ml', price: 98.00, stock: 20, category: 'Beer', status: 'active' as const, images: [], store_id: storeId, description: 'Mexican lager best served with a wedge of lime.', created_at: new Date().toISOString() },
+        { name: 'Guinness Stout 24x320ml', price: 92.00, stock: 25, category: 'Stout', status: 'active' as const, images: [], store_id: storeId, description: 'Rich dark Irish stout with a creamy head.', created_at: new Date().toISOString() },
     ];
 
     const { error } = await supabase.from('products').insert(sampleProducts);

@@ -84,9 +84,13 @@ export default function AdminProductPage() {
     }
 
     const handleSeedData = async () => {
+        if (!storeId) {
+            toast.error("Store ID not found");
+            return;
+        }
         setLoading(true);
         try {
-            await seedProducts();
+            await seedProducts(storeId);
             toast.success("✅ Sample products added!");
             await loadProducts();
         } catch (e) {
