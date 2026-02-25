@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { getPublicStoreId, getSettings } from '../lib/storage';
 import { StoreSettings } from '../types';
 import { DEFAULT_SETTINGS } from '../data/mockData';
+import { supabase } from '../lib/supabase';
 
 interface PublicStoreState {
     storeId: string | null;
@@ -12,8 +13,9 @@ interface PublicStoreState {
 /**
  * usePublicStore — resolves the store ID and settings for the PUBLIC storefront.
  *
- * Pass a `slug` (from the URL) so the correct store is always loaded.
- * Without a slug, it falls back to the first store in the DB which may be wrong in multi-tenant apps.
+ * Uses stores.name as the CANONICAL source of truth for the store name.
+ * This ensures the storefront always reflects what the admin saved in Settings,
+ * even if store_settings.store_name is stale from an old migration.
  */
 export function usePublicStore(slug?: string): PublicStoreState {
     const [storeId, setStoreId] = useState<string | null>(null);
@@ -31,9 +33,20 @@ export function usePublicStore(slug?: string): PublicStoreState {
                 setStoreId(id);
 
                 if (id) {
-                    const fetchedSettings = await getSettings(id);
+                    // Fetch settings AND canonical store name in parallel
+                    const [fetchedSettings, storeRow] = await Promise.all([
+                        getSettings(id),
+                        supabase.from('stores').select('name').eq('id', id).maybeSingle(),
+                    ]);
+
                     if (!cancelled) {
-                        setSettings({ ...DEFAULT_SETTINGS, ...fetchedSettings });
+                        // stores.name is the single source of truth — overrides store_settings.store_name
+                        const canonicalName = storeRow.data?.name;
+                        setSettings({
+                            ...DEFAULT_SETTINGS,
+                            ...fetchedSettings,
+                            ...(canonicalName ? { store_name: canonicalName } : {}),
+                        });
                     }
                 }
             } catch (e) {
