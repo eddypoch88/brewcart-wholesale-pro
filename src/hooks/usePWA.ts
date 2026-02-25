@@ -11,20 +11,12 @@ const listeners = new Set<(isReady: boolean) => void>();
 
 if (typeof window !== 'undefined') {
     window.addEventListener('beforeinstallprompt', (e) => {
-        const isMobile = isMobileDevice();
-
-        if (isMobile) {
-            // On mobile: do NOT call preventDefault.
-            // This lets the browser show the native "Add to Home Screen" banner
-            // automatically. We don't need to do anything else.
-            console.log('[PWA] Mobile device — letting browser show native install banner');
-        } else {
-            // On desktop: intercept the event and store it for our custom UI
-            e.preventDefault();
-            deferredPrompt = e;
-            listeners.forEach(l => l(true));
-            console.log('[PWA] Desktop — deferred install prompt captured for custom UI');
-        }
+        // ALWAYS intercept the event and store it for our custom UI
+        // This stops the browser's default mini-infobar and lets our "Get App" button trigger the real install popup
+        e.preventDefault();
+        deferredPrompt = e;
+        listeners.forEach(l => l(true));
+        console.log('[PWA] Deferred install prompt captured for custom UI');
     });
 }
 
