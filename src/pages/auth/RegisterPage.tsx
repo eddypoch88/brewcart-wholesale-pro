@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
-import { UserPlus, AlertCircle, Loader2, CheckCircle2 } from 'lucide-react';
+import { UserPlus, AlertCircle, Loader2, CheckCircle2, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function RegisterPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirm, setConfirm] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirm, setShowConfirm] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
@@ -79,13 +81,22 @@ export default function RegisterPage() {
         <div className="min-h-screen flex items-center justify-center bg-slate-900 px-4">
             <div className="w-full max-w-md">
 
+                {/* Back button */}
+                <Link
+                    to="/login"
+                    className="inline-flex items-center gap-1.5 text-slate-400 hover:text-white text-sm font-medium transition-colors mb-6"
+                >
+                    <ArrowLeft size={16} />
+                    Back
+                </Link>
+
                 {/* Header */}
                 <div className="text-center mb-8">
                     <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-600/30">
                         <UserPlus className="w-8 h-8 text-white" />
                     </div>
                     <h1 className="text-2xl font-bold text-white">Create Your Store</h1>
-                    <p className="text-slate-400 mt-2 text-sm">Start selling in minutes. No credit card required.</p>
+                    <p className="text-slate-400 mt-2 text-sm">Start selling in minutes.</p>
                 </div>
 
                 {/* Card */}
@@ -114,26 +125,46 @@ export default function RegisterPage() {
 
                             <div>
                                 <label className="block text-sm font-medium text-slate-300 mb-2">Password</label>
-                                <input
-                                    type="password"
-                                    required
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full h-12 px-4 bg-slate-900/50 border border-slate-700 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                                    placeholder="Min. 6 characters"
-                                />
+                                <div className="relative">
+                                    <input
+                                        type={showPassword ? 'text' : 'password'}
+                                        required
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        className="w-full h-12 px-4 pr-12 bg-slate-900/50 border border-slate-700 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                        placeholder="Min. 6 characters"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 transition-colors p-1"
+                                        tabIndex={-1}
+                                    >
+                                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                    </button>
+                                </div>
                             </div>
 
                             <div>
                                 <label className="block text-sm font-medium text-slate-300 mb-2">Confirm Password</label>
-                                <input
-                                    type="password"
-                                    required
-                                    value={confirm}
-                                    onChange={(e) => setConfirm(e.target.value)}
-                                    className="w-full h-12 px-4 bg-slate-900/50 border border-slate-700 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                                    placeholder="••••••••"
-                                />
+                                <div className="relative">
+                                    <input
+                                        type={showConfirm ? 'text' : 'password'}
+                                        required
+                                        value={confirm}
+                                        onChange={(e) => setConfirm(e.target.value)}
+                                        className="w-full h-12 px-4 pr-12 bg-slate-900/50 border border-slate-700 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                        placeholder="••••••••"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowConfirm(!showConfirm)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 transition-colors p-1"
+                                        tabIndex={-1}
+                                    >
+                                        {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                                    </button>
+                                </div>
                             </div>
 
                             <button
