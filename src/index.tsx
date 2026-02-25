@@ -14,19 +14,21 @@ window.addEventListener('error', (e) => {
 });
 
 // Auto-update Service Worker
+// When a new version is available → fire custom event → show banner to user
+// User taps "Update Now" → triggers reload
 const updateSW = registerSW({
     onNeedRefresh() {
-        // New version available — update and reload immediately (no prompt)
-        updateSW(true);
+        // Store the update fn globally so PWAUpdatePrompt can call it
+        (window as any).__pwaDoUpdate = () => updateSW(true);
+        // Notify React component to show the update banner
+        window.dispatchEvent(new CustomEvent('pwa-update-available'));
     },
     onOfflineReady() {
         console.info('[PWA] App ready for offline use.');
     },
 });
 
-// 📱 MOBILE PWA FIX: Force SW update check when user reopens the app from background.
-// Mobile browsers don't check SW updates automatically when app is backgrounded.
-// visibilitychange fires when user switches back to the tab/app.
+// 📱 MOBILE PWA FIX: Force SW update check when user reopens app from background
 const triggerSWUpdate = () => {
     if (document.visibilityState === 'visible') {
         navigator.serviceWorker?.getRegistrations().then(regs => {
@@ -46,6 +48,7 @@ import OnboardingPage from './pages/auth/OnboardingPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import { useStore } from './context/StoreContext';
 import { NotificationsProvider } from './hooks/useNotifications';
+import PWAUpdatePrompt from './components/PWAUpdatePrompt';
 
 // Store
 import StoreLayout from './pages/store/StoreLayout';
@@ -142,6 +145,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                     </Route>
                 </Routes>
                 <Toaster position="top-right" />
+                <PWAUpdatePrompt />
             </BrowserRouter>
         </StoreProvider>
     </React.StrictMode>
