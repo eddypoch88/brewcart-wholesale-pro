@@ -1,10 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
-import { getOrder, uploadPaymentProof, updatePaymentProof } from '../../lib/storage';
+import { getOrder, getSettings, uploadPaymentProof, updatePaymentProof } from '../../lib/storage';
 import { Order, StoreSettings } from '../../types';
 import { Loader2, CheckCircle, AlertCircle, Copy, MessageSquare, CreditCard, Truck, Upload, X, Camera, QrCode } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { useStore } from '../../context/StoreContext';
 
 const methodLabels: Record<string, string> = {
     bank_transfer: 'Bank Transfer',
@@ -14,7 +13,6 @@ const methodLabels: Record<string, string> = {
 
 export default function OrderReviewPage() {
     const { orderId } = useParams();
-    const { settings: ctxSettings } = useStore();
 
     const [order, setOrder] = useState<Order | null>(null);
     const [settings, setSettings] = useState<StoreSettings | null>(null);
@@ -26,18 +24,24 @@ export default function OrderReviewPage() {
     const [uploadProgress, setUploadProgress] = useState(0);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    useEffect(() => {
-        if (ctxSettings) setSettings(ctxSettings);
-    }, [ctxSettings]);
-
+    // Fetch order + settings from DB (no auth context needed — customer-facing)
     useEffect(() => {
         const fetchData = async () => {
             if (!orderId) return;
             try {
-                // getOrder without storeId — public order review page, no admin auth needed
+                // 1. Fetch order (public — no storeId filter)
                 const found = await getOrder(orderId);
+                if (!found) {
+                    setLoading(false);
+                    return;
+                }
+                setOrder(found);
 
-                if (found) setOrder(found);
+                // 2. Fetch settings using the order's store_id
+                if (found.store_id) {
+                    const storeSettings = await getSettings(found.store_id);
+                    setSettings(storeSettings);
+                }
             } catch (e) {
                 console.error(e);
                 toast.error("Failed to load order");
@@ -47,6 +51,7 @@ export default function OrderReviewPage() {
         };
         fetchData();
     }, [orderId]);
+
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];

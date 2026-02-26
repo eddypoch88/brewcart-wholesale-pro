@@ -45,6 +45,15 @@ export interface VariantOption {
 export interface OrderItem {
     product: Pick<Product, 'id' | 'name' | 'price' | 'images'>;
     qty: number;
+    selectedVariant?: SelectedVariant;     // ← variant the customer chose
+}
+
+/** Stores the customer's variant selection for a cart/order item */
+export interface SelectedVariant {
+    /** e.g. "Size: 1kg" or "Size: 1kg, Color: Dark Roast" */
+    label: string;
+    /** Price modifier from base price (can be positive or negative) */
+    priceModifier: number;
 }
 
 export interface Order {
@@ -122,5 +131,6 @@ export interface StoreSettings {
 export interface CartItem {
     product: Pick<Product, 'id' | 'name' | 'price' | 'images'>;
     qty: number;
+    selectedVariant?: SelectedVariant;     // ← variant the customer chose
 }
 

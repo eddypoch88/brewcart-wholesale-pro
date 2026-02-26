@@ -1,9 +1,13 @@
 import React, { useState, useEffect, ChangeEvent } from 'react';
-import { supabase } from '../../lib/supabase';
 import { Save, CreditCard, Banknote, ShieldCheck, ChevronRight, ChevronDown, CheckCircle2, Wallet, Building2, ImageIcon, AlertCircle, X, Truck, Landmark, ChevronLeft } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { getSettings, saveSettings } from '../../lib/storage';
+import { useStore } from '../../context/StoreContext';
+import { StoreSettings } from '../../types';
+import { DEFAULT_SETTINGS } from '../../data/mockData';
 
 export default function PaymentSettings() {
+    const { storeId, settings: ctxSettings, reload } = useStore();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [expandedSection, setExpandedSection] = useState<string | null>(null);
@@ -23,44 +27,48 @@ export default function PaymentSettings() {
     });
 
     useEffect(() => {
-        async function getPaymentSettings() {
-            const { data } = await supabase
-                .from('settings')
-                .select('stripe_publishable_key, stripe_secret_key, is_stripe_enabled, toyyibpay_secret_key, toyyibpay_category_code, is_toyyibpay_enabled, accept_cod, accept_bank_transfer, bank_name, bank_holder_name, bank_account_number, qr_code_url')
-                .eq('id', 1)
-                .single();
-
-            if (data) {
-                setFormData({
-                    ...data,
-                    stripe_publishable_key: data.stripe_publishable_key || '',
-                    stripe_secret_key: data.stripe_secret_key || '',
-                    is_stripe_enabled: data.is_stripe_enabled || false,
-                    toyyibpay_secret_key: data.toyyibpay_secret_key || '',
-                    toyyibpay_category_code: data.toyyibpay_category_code || '',
-                    is_toyyibpay_enabled: data.is_toyyibpay_enabled || false,
-                    accept_cod: data.accept_cod || false,
-                    accept_bank_transfer: data.accept_bank_transfer || false,
-                    bank_name: data.bank_name || '',
-                    bank_holder_name: data.bank_holder_name || '',
-                    bank_account_number: data.bank_account_number || '',
-                    qr_code_url: data.qr_code_url || ''
-                });
-            }
+        async function loadPaymentSettings() {
+            if (!storeId) return;
+            const settings = await getSettings(storeId);
+            setFormData({
+                stripe_publishable_key: settings.stripe_publishable_key || '',
+                stripe_secret_key: settings.stripe_secret_key || '',
+                is_stripe_enabled: settings.is_stripe_enabled || false,
+                toyyibpay_secret_key: settings.toyyibpay_secret_key || '',
+                toyyibpay_category_code: settings.toyyibpay_category_code || '',
+                is_toyyibpay_enabled: settings.is_toyyibpay_enabled || false,
+                accept_cod: settings.accept_cod ?? false,
+                accept_bank_transfer: settings.accept_bank_transfer ?? false,
+                bank_name: settings.bank_name || '',
+                bank_holder_name: settings.bank_holder_name || '',
+                bank_account_number: settings.bank_account_number || '',
+                qr_code_url: settings.qr_code_url || ''
+            });
             setLoading(false);
         }
-        getPaymentSettings();
-    }, []);
+        loadPaymentSettings();
+    }, [storeId]);
 
     const handleSave = async () => {
+        if (!storeId) {
+            toast.error('Store not found. Please refresh.');
+            return;
+        }
         setSaving(true);
-        const { error } = await supabase.from('settings').update(formData).eq('id', 1);
-
-        if (!error) {
+        try {
+            // Merge payment-specific fields into full settings object and save
+            const fullSettings: StoreSettings = {
+                ...DEFAULT_SETTINGS,
+                ...ctxSettings,
+                ...formData,
+            };
+            await saveSettings(fullSettings, storeId);
+            reload();
             toast.success('Payment Settings Saved! 💰');
-            setExpandedSection(null); // fold accordion back
-        } else {
-            toast.error('Failed to save settings. Please verify database columns.');
+            setExpandedSection(null);
+        } catch (error) {
+            console.error('[PaymentSettings] Save failed:', error);
+            toast.error('Failed to save settings. Please try again.');
         }
         setSaving(false);
     };
@@ -93,7 +101,14 @@ export default function PaymentSettings() {
                 </div>
             </div>
 
-            {/* CASH PAYMENTS */}
+            {/* COMING SOON INFO BANNER */}
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 flex items-start gap-3">
+                <AlertCircle size={18} className="text-blue-500 mt-0.5 shrink-0" />
+                <div className="text-sm text-blue-700 dark:text-blue-300">
+                    <p className="font-medium">💡 Online payments (Stripe, ToyyibPay) are coming soon.</p>
+                    <p className="text-xs text-blue-500 dark:text-blue-400 mt-1">Your customers currently see: <strong>Cash on Delivery</strong> and <strong>Bank Transfer / DuitNow QR</strong>. You can save your Stripe & ToyyibPay keys now — they'll activate automatically when integration is ready.</p>
+                </div>
+            </div>
             <div>
                 <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-3 px-1">Cash Payments</h3>
                 <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">

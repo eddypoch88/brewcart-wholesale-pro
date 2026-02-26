@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabase';
 import { Save, Facebook, BarChart3, Music2, CheckCircle2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { getSettings, saveSettings } from '../../lib/storage';
+import { useStore } from '../../context/StoreContext';
+import { StoreSettings } from '../../types';
+import { DEFAULT_SETTINGS } from '../../data/mockData';
 
 export default function MarketingSettings() {
+    const { storeId, settings: ctxSettings, reload } = useStore();
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
     const [formData, setFormData] = useState({
@@ -12,45 +16,43 @@ export default function MarketingSettings() {
         tiktok_pixel_id: ''
     });
 
-    // 1. Fetch from 'settings' table (id=1 for single tenant)
+    // 1. Fetch from store_settings table (multi-tenant, scoped by store_id)
     useEffect(() => {
-        async function getSettings() {
+        async function loadSettings() {
+            if (!storeId) return;
             setLoading(true);
-            const { data, error } = await supabase
-                .from('settings')
-                .select('fb_pixel_id, google_analytics_id, tiktok_pixel_id')
-                .eq('id', 1)
-                .single();
-
-            if (data) {
-                setFormData({
-                    fb_pixel_id: data.fb_pixel_id || '',
-                    google_analytics_id: data.google_analytics_id || '',
-                    tiktok_pixel_id: data.tiktok_pixel_id || ''
-                });
-            }
+            const settings = await getSettings(storeId);
+            setFormData({
+                fb_pixel_id: settings.fb_pixel_id || '',
+                google_analytics_id: settings.google_analytics_id || '',
+                tiktok_pixel_id: settings.tiktok_pixel_id || ''
+            });
             setLoading(false);
         }
-        getSettings();
-    }, []);
+        loadSettings();
+    }, [storeId]);
 
-    // 2. Save data baru (Socket Connection)
+    // 2. Save to store_settings table (multi-tenant)
     const handleSave = async () => {
+        if (!storeId) {
+            toast.error('Store not found. Please refresh.');
+            return;
+        }
         setSaving(true);
-        const { error } = await supabase
-            .from('settings')
-            .update({
+        try {
+            const fullSettings: StoreSettings = {
+                ...DEFAULT_SETTINGS,
+                ...ctxSettings,
                 fb_pixel_id: formData.fb_pixel_id,
                 google_analytics_id: formData.google_analytics_id,
                 tiktok_pixel_id: formData.tiktok_pixel_id,
-            })
-            .eq('id', 1); // Single tenant ID
-
-        if (!error) {
+            };
+            await saveSettings(fullSettings, storeId);
+            reload();
             toast.success('Integrations Connected! 🚀');
-        } else {
-            console.error(error);
-            toast.error('Connection failed. Database columns might be missing.');
+        } catch (error) {
+            console.error('[MarketingSettings] Save failed:', error);
+            toast.error('Connection failed. Please try again.');
         }
         setSaving(false);
     };

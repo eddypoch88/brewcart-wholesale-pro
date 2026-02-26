@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
-import { getCart, getProducts, createOrder, updateProductStock, clearCart } from '../../lib/storage';
+import { getCart, getProducts, createOrderWithStockCheck, clearCart } from '../../lib/storage';
 import { CartItem, Order, StoreSettings } from '../../types';
 import { ChevronLeft, Truck, AlertCircle, Loader2, CreditCard, QrCode } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -92,14 +92,6 @@ export default function CheckoutPage() {
         setIsSubmitting(true);
 
         try {
-            const latestProducts = await getProducts(storeId!);
-
-            if (!validateStock(cart, latestProducts)) {
-                setIsSubmitting(false);
-                toast.error('Stock issue detected. Please check alert.');
-                return;
-            }
-
             const subtotal = cart.reduce((sum, item) => sum + (item.product.price * item.qty), 0);
             const deliveryFee = subtotal >= (settings.free_delivery_threshold || Infinity) ? 0 : (settings.delivery_fee || 0);
             const total = subtotal + deliveryFee;
@@ -124,16 +116,15 @@ export default function CheckoutPage() {
                 payment_status: 'unpaid'
             };
 
-            const createdOrder = await createOrder(newOrder, storeId!);
+            // Atomic: validate stock + create order + deduct stock in one call
+            const result = await createOrderWithStockCheck(newOrder, storeId!);
 
-            if (!createdOrder) {
-                throw new Error("Failed to create order in database. Check console for details.");
+            if ('error' in result) {
+                setStockError(result.error);
+                setIsSubmitting(false);
+                toast.error(result.error);
+                return;
             }
-
-            await updateProductStock(cart.map(item => ({
-                product: { id: item.product.id },
-                qty: item.qty
-            })), storeId!);
 
             clearCart();
 
@@ -325,7 +316,7 @@ export default function CheckoutPage() {
                             </div>
                         ) : (
                             <PaymentSection
-                                storeId="1"
+                                storeId={storeId!}
                                 amount={total}
                                 onPay={handleProcessPayment}
                             />

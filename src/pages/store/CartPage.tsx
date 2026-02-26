@@ -16,21 +16,23 @@ export default function CartPage() {
 
     const notifyCartUpdate = () => window.dispatchEvent(new Event('cart-updated'));
 
-    const handleQtyChange = (productId: string, delta: number) => {
-        const item = cart.find(c => c.product.id === productId);
-        if (!item) return;
+    // Composite key for variant-aware cart operations
+    const cartKey = (item: CartItem) =>
+        item.product.id + (item.selectedVariant?.label || '');
+
+    const handleQtyChange = (item: CartItem, delta: number) => {
         const newQty = item.qty + delta;
         if (newQty <= 0) {
-            removeFromCart(productId);
+            removeFromCart(item.product.id);
         } else {
-            updateCartQty(productId, newQty);
+            updateCartQty(item.product.id, newQty);
         }
         loadCart();
         notifyCartUpdate();
     };
 
-    const handleRemove = (productId: string) => {
-        removeFromCart(productId);
+    const handleRemove = (item: CartItem) => {
+        removeFromCart(item.product.id);
         loadCart();
         notifyCartUpdate();
         toast.success('Item removed');
@@ -43,7 +45,11 @@ export default function CartPage() {
         toast.success('Cart cleared');
     };
 
-    const total = cart.reduce((sum, c) => sum + c.product.price * c.qty, 0);
+    // Calculate item price including variant modifier
+    const itemPrice = (item: CartItem) =>
+        item.product.price + (item.selectedVariant?.priceModifier || 0);
+
+    const total = cart.reduce((sum, c) => sum + itemPrice(c) * c.qty, 0);
 
     if (cart.length === 0) {
         return (
@@ -67,7 +73,7 @@ export default function CartPage() {
 
             <div className="space-y-4 mb-8">
                 {cart.map(item => (
-                    <div key={item.product.id} className="bg-white border border-slate-200 rounded-xl p-4 flex items-center justify-between gap-3 w-full">
+                    <div key={cartKey(item)} className="bg-white border border-slate-200 rounded-xl p-4 flex items-center justify-between gap-3 w-full">
                         {/* Image */}
                         {item.product.images?.[0] ? (
                             <img src={item.product.images[0]} alt={item.product.name} className="w-16 h-16 rounded-lg object-cover flex-shrink-0 border border-slate-200" />
@@ -77,30 +83,33 @@ export default function CartPage() {
                             </div>
                         )}
 
-                        {/* Name + Price */}
+                        {/* Name + Variant + Price */}
                         <div className="flex-1 min-w-0">
                             <p className="font-medium text-sm text-slate-900 truncate">{item.product.name}</p>
-                            <p className="text-blue-600 font-semibold text-sm">RM {item.product.price.toFixed(2)}</p>
+                            {item.selectedVariant && (
+                                <p className="text-xs text-slate-500 truncate">{item.selectedVariant.label}</p>
+                            )}
+                            <p className="text-blue-600 font-semibold text-sm">RM {itemPrice(item).toFixed(2)}</p>
                         </div>
 
                         {/* Quantity controls */}
                         <div className="flex items-center gap-2 flex-shrink-0 border border-slate-200 rounded-lg overflow-hidden bg-slate-50">
-                            <button onClick={() => handleQtyChange(item.product.id, -1)} className="px-2 py-1 text-slate-500 hover:bg-slate-200 transition">
+                            <button onClick={() => handleQtyChange(item, -1)} className="px-2 py-1 text-slate-500 hover:bg-slate-200 transition">
                                 <Minus size={14} />
                             </button>
                             <span className="w-6 text-center font-bold text-sm">{item.qty}</span>
-                            <button onClick={() => handleQtyChange(item.product.id, 1)} className="px-2 py-1 text-slate-500 hover:bg-slate-200 transition">
+                            <button onClick={() => handleQtyChange(item, 1)} className="px-2 py-1 text-slate-500 hover:bg-slate-200 transition">
                                 <Plus size={14} />
                             </button>
                         </div>
 
                         {/* Total */}
                         <p className="text-sm font-bold flex-shrink-0 w-16 text-right text-slate-900 hidden sm:block">
-                            RM {(item.product.price * item.qty).toFixed(2)}
+                            RM {(itemPrice(item) * item.qty).toFixed(2)}
                         </p>
 
                         {/* Remove */}
-                        <button onClick={() => handleRemove(item.product.id)} className="text-slate-400 hover:text-red-500 transition p-2 flex-shrink-0">
+                        <button onClick={() => handleRemove(item)} className="text-slate-400 hover:text-red-500 transition p-2 flex-shrink-0">
                             <Trash2 size={16} />
                         </button>
                     </div>

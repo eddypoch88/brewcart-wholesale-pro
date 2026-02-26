@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { CreditCard, Banknote, Loader2, Lock, QrCode, Truck } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { getSettings } from '../../lib/storage';
 import { toast } from 'react-hot-toast';
 
 interface PaymentProps {
@@ -9,27 +9,24 @@ interface PaymentProps {
     onPay: (method: string) => void;
 }
 
+// ── Only show payment methods that actually have backend integration ─────────
+// When Stripe/ToyyibPay are wired up, add 'stripe' / 'toyyibpay' here.
+const IMPLEMENTED_METHODS = ['cod', 'bank_transfer'] as const;
+
 export default function PaymentSection({ storeId, amount, onPay }: PaymentProps) {
     const [loading, setLoading] = useState(true);
     const [settings, setSettings] = useState<any>(null);
     const [selectedMethod, setSelectedMethod] = useState<string>('');
 
-    // 1. Check Database for enabled payment methods
+    // Fetch payment settings from store_settings table (multi-tenant)
     useEffect(() => {
         async function loadSettings() {
-            const { data } = await supabase
-                .from('settings')
-                .select('is_stripe_enabled, is_toyyibpay_enabled, accept_cod, accept_bank_transfer')
-                .single();
-
-            if (data) {
-                setSettings(data);
-                // Auto-select first available method
-                if (data.is_stripe_enabled) setSelectedMethod('stripe');
-                else if (data.is_toyyibpay_enabled) setSelectedMethod('toyyibpay');
-                else if (data.accept_bank_transfer) setSelectedMethod('bank_transfer');
-                else if (data.accept_cod) setSelectedMethod('cod');
-            }
+            if (!storeId) return;
+            const data = await getSettings(storeId);
+            setSettings(data);
+            // Auto-select first available AND implemented method
+            if (IMPLEMENTED_METHODS.includes('bank_transfer') && data.accept_bank_transfer) setSelectedMethod('bank_transfer');
+            else if (IMPLEMENTED_METHODS.includes('cod') && data.accept_cod) setSelectedMethod('cod');
             setLoading(false);
         }
         loadSettings();
@@ -37,8 +34,12 @@ export default function PaymentSection({ storeId, amount, onPay }: PaymentProps)
 
     if (loading) return <div className="p-4 flex gap-2 text-slate-400"><Loader2 className="animate-spin" /> Checking payment gates...</div>;
 
-    // If no gateways are enabled
-    if (!settings?.is_stripe_enabled && !settings?.is_toyyibpay_enabled && !settings?.accept_bank_transfer && !settings?.accept_cod) {
+    // Check if any IMPLEMENTED method is enabled
+    const hasAvailableMethods =
+        (IMPLEMENTED_METHODS.includes('cod') && settings?.accept_cod) ||
+        (IMPLEMENTED_METHODS.includes('bank_transfer') && settings?.accept_bank_transfer);
+
+    if (!hasAvailableMethods) {
         return (
             <div className="p-4 bg-red-50 text-red-600 rounded-xl border border-red-100 text-sm">
                 ⚠️ No payment methods available. Please contact admin.
@@ -53,8 +54,8 @@ export default function PaymentSection({ storeId, amount, onPay }: PaymentProps)
             {/* PAYMENT OPTIONS CARD */}
             <div className="grid gap-3">
 
-                {/* OPTION 1: STRIPE (Card) */}
-                {settings.is_stripe_enabled && (
+                {/* OPTION 1: STRIPE (Card) — only shown when implemented */}
+                {IMPLEMENTED_METHODS.includes('stripe' as any) && settings.is_stripe_enabled && (
                     <label className={`relative flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${selectedMethod === 'stripe' ? 'border-indigo-600 bg-indigo-50' : 'border-slate-200 hover:border-indigo-200'}`}>
                         <input
                             type="radio"
@@ -75,8 +76,8 @@ export default function PaymentSection({ storeId, amount, onPay }: PaymentProps)
                     </label>
                 )}
 
-                {/* OPTION 2: TOYYIBPAY (FPX Banking) */}
-                {settings.is_toyyibpay_enabled && (
+                {/* OPTION 2: TOYYIBPAY (FPX Banking) — only shown when implemented */}
+                {IMPLEMENTED_METHODS.includes('toyyibpay' as any) && settings.is_toyyibpay_enabled && (
                     <label className={`relative flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${selectedMethod === 'toyyibpay' ? 'border-orange-500 bg-orange-50' : 'border-slate-200 hover:border-orange-200'}`}>
                         <input
                             type="radio"

@@ -121,6 +121,75 @@ export async function deleteProduct(id: string, storeId: string): Promise<void> 
     if (error) console.error('[deleteProduct] Error:', error.message);
 }
 
+/**
+ * createOrderWithStockCheck — atomic stock validation + order creation + stock deduction.
+ *
+ * Flow:
+ *  1. Re-fetch current stock for every item in the cart
+ *  2. If ANY item has insufficient stock → return error with product name
+ *  3. Create the order row
+ *  4. Deduct stock for all items
+ *
+ * This prevents overselling. While not a true DB transaction (would need an RPC
+ * for that), it's a significant improvement over the old fire-and-forget pattern.
+ * When you add a Supabase RPC function later, swap the internals here.
+ */
+export async function createOrderWithStockCheck(
+    order: Order,
+    storeId: string
+): Promise<{ success: true; order: Order } | { success: false; error: string }> {
+    if (!storeId) return { success: false, error: 'Store ID is required' };
+
+    // ── Step 1: Validate stock for ALL items ────────────────────────────────
+    for (const item of order.items) {
+        const { data: product, error: fetchError } = await supabase
+            .from('products')
+            .select('stock, name')
+            .eq('id', item.product.id)
+            .eq('store_id', storeId)
+            .single();
+
+        if (fetchError || !product) {
+            return { success: false, error: `Product not found: ${item.product.name}` };
+        }
+
+        if (product.stock < item.qty) {
+            return {
+                success: false,
+                error: `"${product.name}" only has ${product.stock} left in stock (you requested ${item.qty}).`
+            };
+        }
+    }
+
+    // ── Step 2: Create the order ────────────────────────────────────────────
+    const createdOrder = await createOrder(order, storeId);
+    if (!createdOrder) {
+        return { success: false, error: 'Failed to create order in database.' };
+    }
+
+    // ── Step 3: Deduct stock for all items ──────────────────────────────────
+    for (const item of order.items) {
+        const { data: product } = await supabase
+            .from('products')
+            .select('stock')
+            .eq('id', item.product.id)
+            .eq('store_id', storeId)
+            .single();
+
+        if (product) {
+            const newStock = Math.max(0, product.stock - item.qty);
+            await supabase
+                .from('products')
+                .update({ stock: newStock })
+                .eq('id', item.product.id)
+                .eq('store_id', storeId);
+        }
+    }
+
+    return { success: true, order: createdOrder };
+}
+
+/** @deprecated Use createOrderWithStockCheck instead for atomic stock handling */
 export async function updateProductStock(
     items: { product: { id: string }; qty: number }[],
     storeId: string
@@ -619,7 +688,13 @@ export function saveCart(cart: CartItem[]) {
 
 export function addToCart(item: CartItem) {
     const cart = getCart();
-    const existing = cart.find(c => c.product.id === item.product.id);
+    // Variant-aware dedup: same product + same variant = merge qty
+    // Same product + different variant = separate cart lines
+    const variantKey = item.selectedVariant?.label || '';
+    const existing = cart.find(c =>
+        c.product.id === item.product.id &&
+        (c.selectedVariant?.label || '') === variantKey
+    );
     if (existing) {
         existing.qty += item.qty;
     } else {

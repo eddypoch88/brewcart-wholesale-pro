@@ -1,6 +1,6 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { getProduct, addToCart } from '../../lib/storage';
-import { Product } from '../../types';
+import { getProductPublic, addToCart } from '../../lib/storage';
+import { Product, SelectedVariant } from '../../types';
 import { ArrowLeft, ShoppingCart, Package, Minus, Plus, Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
@@ -12,11 +12,14 @@ export default function ProductPage() {
     const [loading, setLoading] = useState(true);
     const [qty, setQty] = useState(1);
 
+    // Track selected option index per variant group: { "Size": 0, "Color": 1 }
+    const [selectedOptions, setSelectedOptions] = useState<Record<string, number>>({});
+
     useEffect(() => {
         async function loadProduct() {
             if (!id) return;
             try {
-                const fetchedProduct = await getProduct(id);
+                const fetchedProduct = await getProductPublic(id);
                 setProduct(fetchedProduct);
             } catch (error) {
                 console.error("Failed to load product", error);
@@ -39,8 +42,47 @@ export default function ProductPage() {
         );
     }
 
+    // ── Variant helpers ─────────────────────────────────────────────────────
+    const hasVariants = product.variants && product.variants.length > 0;
+
+    // Calculate total price modifier from all selected variant options
+    const totalPriceModifier = hasVariants
+        ? Object.entries(selectedOptions).reduce((sum, [variantName, optionIdx]) => {
+            const variant = product.variants!.find(v => v.name === variantName);
+            const option = variant?.options[optionIdx];
+            return sum + (option?.price_modifier || 0);
+        }, 0)
+        : 0;
+
+    const displayPrice = product.price + totalPriceModifier;
+
+    // Check if all variant groups have a selection
+    const allVariantsSelected = !hasVariants ||
+        product.variants!.every(v => selectedOptions[v.name] !== undefined);
+
+    // Build the SelectedVariant object for cart/order
+    const buildSelectedVariant = (): SelectedVariant | undefined => {
+        if (!hasVariants) return undefined;
+        const label = Object.entries(selectedOptions)
+            .map(([variantName, optionIdx]) => {
+                const variant = product.variants!.find(v => v.name === variantName);
+                const option = variant?.options[optionIdx];
+                return `${variantName}: ${option?.name || '?'}`;
+            })
+            .join(', ');
+        return { label, priceModifier: totalPriceModifier };
+    };
+
     const handleAddToCart = () => {
-        addToCart({ product: { id: product.id, name: product.name, price: product.price, images: product.images }, qty });
+        if (hasVariants && !allVariantsSelected) {
+            toast.error('Please select all options before adding to cart');
+            return;
+        }
+        addToCart({
+            product: { id: product.id, name: product.name, price: product.price, images: product.images },
+            qty,
+            selectedVariant: buildSelectedVariant(),
+        });
         window.dispatchEvent(new Event('cart-updated'));
         toast.success(`${product.name} added to cart!`);
     };
@@ -88,11 +130,49 @@ export default function ProductPage() {
 
                     {/* Pricing */}
                     <div className="flex items-center gap-3 mb-6">
-                        <span className="text-3xl font-bold text-blue-600">RM {product.price.toFixed(2)}</span>
+                        <span className="text-3xl font-bold text-blue-600">RM {displayPrice.toFixed(2)}</span>
                         {product.compare_at_price && product.compare_at_price > product.price && (
                             <span className="text-lg text-slate-400 line-through">RM {product.compare_at_price.toFixed(2)}</span>
                         )}
                     </div>
+
+                    {/* ── VARIANT SELECTOR ─────────────────────────────────── */}
+                    {hasVariants && (
+                        <div className="space-y-4 mb-6">
+                            {product.variants!.map((variant) => (
+                                <div key={variant.name}>
+                                    <label className="block text-sm font-semibold text-slate-700 mb-2">
+                                        {variant.name}
+                                        {selectedOptions[variant.name] === undefined && (
+                                            <span className="text-red-400 ml-1">*</span>
+                                        )}
+                                    </label>
+                                    <div className="flex flex-wrap gap-2">
+                                        {variant.options.map((option, optIdx) => {
+                                            const isSelected = selectedOptions[variant.name] === optIdx;
+                                            return (
+                                                <button
+                                                    key={option.name}
+                                                    onClick={() => setSelectedOptions(prev => ({ ...prev, [variant.name]: optIdx }))}
+                                                    className={`px-4 py-2 rounded-xl text-sm font-medium border-2 transition-all ${isSelected
+                                                        ? 'border-blue-600 bg-blue-50 text-blue-700'
+                                                        : 'border-slate-200 bg-white text-slate-700 hover:border-blue-300'
+                                                        }`}
+                                                >
+                                                    {option.name}
+                                                    {option.price_modifier ? (
+                                                        <span className="ml-1 text-xs text-slate-400">
+                                                            {option.price_modifier > 0 ? '+' : ''}RM{option.price_modifier.toFixed(2)}
+                                                        </span>
+                                                    ) : null}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
 
                     {/* Stock */}
                     <p className={`text-sm font-medium mb-6 ${product.stock > 0 ? 'text-emerald-600' : 'text-red-500'}`}>
@@ -113,7 +193,8 @@ export default function ProductPage() {
                             </div>
                             <button
                                 onClick={handleAddToCart}
-                                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-8 py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 transition-all"
+                                disabled={hasVariants && !allVariantsSelected}
+                                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-8 py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 <ShoppingCart size={18} /> Add to Cart
                             </button>
@@ -124,3 +205,4 @@ export default function ProductPage() {
         </div>
     );
 }
+
