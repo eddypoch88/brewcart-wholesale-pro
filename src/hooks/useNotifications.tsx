@@ -29,20 +29,44 @@ interface NotificationsProviderProps {
 }
 
 export function NotificationsProvider({ children, storeId }: NotificationsProviderProps) {
-    const [notifications, setNotifications] = useState<NotificationItem[]>(() => {
-        try {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            return saved ? JSON.parse(saved) : [];
-        } catch { return []; }
-    });
-
+    const [notifications, setNotifications] = useState<NotificationItem[]>([]);
     const audioRef = useRef<HTMLAudioElement | null>(null);
-    const seenOrderIds = useRef<Set<string>>(new Set(notifications.map(n => n.id)));
+    const seenOrderIds = useRef<Set<string>>(new Set());
 
-    // Persist to localStorage whenever notifications change
+    // Load initial notifications from database
     useEffect(() => {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(notifications));
-    }, [notifications]);
+        if (!storeId) return;
+
+        const loadNotifications = async () => {
+            try {
+                // Fetch recent 10 orders
+                const { data, error } = await supabase
+                    .from('orders')
+                    .select('id, customer_name, total_amount, total, created_at, status')
+                    .eq('store_id', storeId)
+                    .order('created_at', { ascending: false })
+                    .limit(10);
+
+                if (error) throw error;
+
+                if (data) {
+                    const loaded = data.map(order => ({
+                        id: order.id,
+                        customerName: order.customer_name || 'Unknown',
+                        total: order.total_amount || order.total || 0,
+                        createdAt: order.created_at,
+                        read: order.status !== 'pending' // Consider it read if not pending
+                    }));
+                    setNotifications(loaded);
+                    loaded.forEach(n => seenOrderIds.current.add(n.id));
+                }
+            } catch (error) {
+                console.error('[Notifications] Error loading initial DB notifications:', error);
+            }
+        };
+
+        loadNotifications();
+    }, [storeId]);
 
     const playBeep = () => {
         try {
@@ -77,39 +101,28 @@ export function NotificationsProvider({ children, storeId }: NotificationsProvid
         audioRef.current = new Audio('/notification.mp3');
         audioRef.current.load();
 
-        console.log('[Notifications] Subscribing to Supabase realtime orders...', storeId ? `(storeId: ${storeId})` : '(no storeId — global)');
+        if (!storeId) return;
 
-        // Request Web Notification permission
-        if ('Notification' in window && Notification.permission !== 'denied') {
-            Notification.requestPermission();
-        }
+        console.log('[Notifications] Subscribing to Supabase realtime orders for store:', storeId);
 
         let channel: ReturnType<typeof supabase.channel>;
 
         const setupChannel = () => {
-            // Build the channel filter. If storeId is available, scope realtime
-            // to only this store's orders. This prevents cross-tenant notification bleed.
-            const insertFilter = storeId
-                ? `store_id=eq.${storeId}`
-                : undefined;
-
             channel = supabase
-                .channel(`orders-notifications-${storeId ?? 'global'}-${Date.now()}`)
+                .channel(`orders-${storeId}-${Date.now()}`)
                 .on(
                     'postgres_changes',
                     {
                         event: 'INSERT',
                         schema: 'public',
                         table: 'orders',
-                        ...(insertFilter ? { filter: insertFilter } : {}),
+                        filter: `store_id=eq.${storeId}`,
                     },
                     (payload) => {
-                        console.log('[Notification] New order received:', payload.new);
+                        console.log('[Notification] Real-time new order received:', payload.new);
                         const order = payload.new as any;
 
-                        // Deduplicate events to prevent double-processing and React key warnings
                         if (seenOrderIds.current.has(order.id)) {
-                            console.log('[Notification] Duplicate event ignored for order:', order.id);
                             return;
                         }
                         seenOrderIds.current.add(order.id);
@@ -128,14 +141,6 @@ export function NotificationsProvider({ children, storeId }: NotificationsProvid
                             `🛒 New Order from ${newNotification.customerName}! RM ${Number(newNotification.total).toFixed(2)}`,
                             { duration: 6000, position: 'top-center' }
                         );
-
-                        // Web Notifications API (System Push Notification)
-                        if ('Notification' in window && Notification.permission === 'granted') {
-                            new Notification('🛒 New Order!', {
-                                body: `${newNotification.customerName} - RM ${Number(newNotification.total).toFixed(2)}`,
-                                icon: '/pwa-192x192.png',
-                            });
-                        }
                     }
                 )
                 .on(
@@ -144,19 +149,18 @@ export function NotificationsProvider({ children, storeId }: NotificationsProvid
                         event: 'UPDATE',
                         schema: 'public',
                         table: 'orders',
-                        ...(storeId ? { filter: `store_id=eq.${storeId}` } : {}),
+                        filter: `store_id=eq.${storeId}`,
                     },
                     (payload) => {
                         const order = payload.new as any;
                         if (order.status !== 'pending') {
-                            setNotifications(prev => prev.filter(n => n.id !== order.id));
+                            setNotifications(prev => prev.map(n => n.id === order.id ? { ...n, read: true } : n));
                         }
                     }
                 )
                 .subscribe((status) => {
                     console.log('[Notifications] Channel status:', status);
                     if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
-                        console.warn('[Notifications] Connection lost. Reconnecting in 3 seconds...');
                         setTimeout(setupChannel, 3000);
                     }
                 });
@@ -168,7 +172,7 @@ export function NotificationsProvider({ children, storeId }: NotificationsProvid
             console.log('[Notifications] Unsubscribing from realtime channel.');
             if (channel) supabase.removeChannel(channel);
         };
-    }, [storeId]);  // ← re-subscribe when storeId changes (e.g. after login)
+    }, [storeId]);
 
     const unreadCount = notifications.filter(n => !n.read).length;
     const markAllAsRead = () => setNotifications(prev => prev.map(n => ({ ...n, read: true })));
