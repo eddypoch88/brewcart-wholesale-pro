@@ -80,7 +80,9 @@ export function useStore(): UseStoreReturn {
                 .from('stores')
                 .select('*')
                 .eq('owner_id', user.id)
-                .single();
+                .order('created_at', { ascending: true })
+                .limit(1)
+                .maybeSingle();
 
             if (fetchError) {
                 // PGRST116 = no rows found → user hasn't created a store yet (normal for new signups)
@@ -130,6 +132,8 @@ export function useStore(): UseStoreReturn {
                 .from('stores')
                 .select('*')
                 .eq('owner_id', user.id)
+                .order('created_at', { ascending: true })
+                .limit(1)
                 .maybeSingle();
 
             if (fetchErr) {
@@ -163,7 +167,9 @@ export function useStore(): UseStoreReturn {
                         .from('stores')
                         .select('*')
                         .eq('owner_id', user.id)
-                        .single();
+                        .order('created_at', { ascending: true })
+                        .limit(1)
+                        .maybeSingle();
                     if (raceData) {
                         setStore(raceData as Store);
                         return raceData as Store;

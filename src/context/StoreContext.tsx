@@ -91,6 +91,12 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         // User logged in but NO store → auto-create (for users pre-dating multi-tenant)
         // Guard with a ref so this only fires ONCE per session, not on every re-render.
         if (!store && !autoCreatingRef.current) {
+            // Prevent auto-creation during the onboarding flow
+            if (window.location.pathname.includes('/onboarding')) {
+                setSettingsLoading(false);
+                return;
+            }
+
             autoCreatingRef.current = true;
             const storeName = (user.email || '').split('@')[0] || 'My Store';
             console.log('[StoreContext] No store found — auto-creating for user:', user.id);

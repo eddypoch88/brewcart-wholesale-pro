@@ -135,16 +135,6 @@ export default function Sidebar({
                 {/* Bottom Actions Section */}
                 <div className="px-3 py-3 border-t border-slate-800">
                     <div className="space-y-1 mb-2">
-                        {/* Go to Marketplace (Buyer Mode) */}
-                        <a
-                            href="/"
-                            onClick={closeSidebarOnMobile}
-                            className="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/5 hover:text-white rounded-xl transition-all duration-200 group"
-                        >
-                            <ShoppingBag size={20} className="transition-transform duration-200 group-hover:scale-105" />
-                            <span className="text-sm font-medium">Go to Marketplace</span>
-                        </a>
-
                         {/* View My Store — opens in new tab */}
                         <a
                             href={storeUrl}
