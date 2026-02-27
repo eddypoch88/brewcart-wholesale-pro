@@ -1,0 +1,5 @@
+--- ALL STORES ordered by updated_at DESC ---
+manteps! | COD: false | Bank: false
+Priscilia store | COD: true | Bank: true
+KUPI KUPI | COD: true | Bank: true
+My coffee shop | COD: true | Bank: true

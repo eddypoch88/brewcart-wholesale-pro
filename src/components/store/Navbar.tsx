@@ -36,7 +36,7 @@ export default function Navbar() {
     return (
         <nav className="sticky top-0 z-30 bg-white/80 backdrop-blur-lg border-b border-slate-200">
             <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-                <Link to="/" className="flex items-center hover:opacity-80 transition">
+                <Link to={slug ? `/store/${slug}` : '/'} className="flex items-center hover:opacity-80 transition">
                     {settings.logo_url ? (
                         <img src={settings.logo_url} alt={settings.store_name} className="h-10 object-contain" />
                     ) : (
@@ -45,7 +45,7 @@ export default function Navbar() {
                 </Link>
 
                 <div className="flex items-center gap-3">
-                    <Link to="/" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition hidden sm:block">Home</Link>
+                    <Link to={slug ? `/store/${slug}` : '/'} className="text-sm font-medium text-slate-600 hover:text-slate-900 transition hidden sm:block">Home</Link>
 
                     {/* Seller / Buyer CTA */}
                     {isSeller ? (
@@ -68,7 +68,7 @@ export default function Navbar() {
                     )}
 
                     {/* Cart */}
-                    <Link to="/cart" className="relative p-2 text-slate-600 hover:text-slate-900 transition">
+                    <Link to={slug ? `/store/${slug}/cart` : '/cart'} className="relative p-2 text-slate-600 hover:text-slate-900 transition">
                         <ShoppingCart size={22} />
                         {cartCount > 0 && (
                             <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">

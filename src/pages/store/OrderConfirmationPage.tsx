@@ -1,16 +1,19 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useParams } from 'react-router-dom';
 import { CheckCircle, ShoppingBag, MessageSquare, AlertCircle, Loader2 } from 'lucide-react';
 import { getOrder } from '../../lib/storage';
 import { useStore } from '../../context/StoreContext';
 
 export default function OrderConfirmationPage() {
     const navigate = useNavigate();
+    const { slug } = useParams<{ slug?: string }>();
     const [searchParams] = useSearchParams();
     const orderId = searchParams.get('orderId');
     const gateway = searchParams.get('gateway');
     const sessionId = searchParams.get('session_id'); // Stripe
     const billcode = searchParams.get('billcode'); // Toyyibpay
+
+    const storeLink = slug ? `/store/${slug}` : '/';
 
     const { settings: ctxSettings } = useStore();
     const [settings, setSettings] = useState<any>(null);
@@ -99,7 +102,7 @@ export default function OrderConfirmationPage() {
                     </button>
 
                     <button
-                        onClick={() => navigate('/')}
+                        onClick={() => navigate(storeLink)}
                         className="w-full bg-blue-600 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all"
                     >
                         <ShoppingBag size={18} />

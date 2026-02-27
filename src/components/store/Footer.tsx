@@ -1,8 +1,10 @@
+import { useParams } from 'react-router-dom';
 import { usePublicStore } from '../../hooks/usePublicStore';
 import { DEFAULT_SETTINGS } from '../../data/mockData';
 
 export default function Footer() {
-    const { settings } = usePublicStore();
+    const { slug } = useParams<{ slug?: string }>();
+    const { settings } = usePublicStore(slug);
     const storeName = settings?.store_name || DEFAULT_SETTINGS.store_name;
 
     return (

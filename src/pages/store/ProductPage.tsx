@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 
 export default function ProductPage() {
-    const { id } = useParams();
+    const { id, slug } = useParams<{ id: string; slug?: string }>();
     const navigate = useNavigate();
     const [product, setProduct] = useState<Product | null>(null);
     const [loading, setLoading] = useState(true);
@@ -32,12 +32,14 @@ export default function ProductPage() {
 
     if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin text-blue-600" /></div>;
 
+    const storeLink = slug ? `/store/${slug}` : '/';
+
     if (!product) {
         return (
             <div className="max-w-6xl mx-auto px-4 py-20 text-center">
                 <Package className="w-16 h-16 text-slate-300 mx-auto mb-4" />
                 <h2 className="text-2xl font-bold text-slate-800 mb-2">Product Not Found</h2>
-                <Link to="/" className="text-blue-600 hover:underline font-medium">← Back to store</Link>
+                <Link to={storeLink} className="text-blue-600 hover:underline font-medium">← Back to store</Link>
             </div>
         );
     }

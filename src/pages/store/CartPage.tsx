@@ -1,12 +1,16 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { getCart, updateCartQty, removeFromCart, clearCart } from '../../lib/storage';
 import { CartItem } from '../../types';
 import { Trash2, ShoppingBag, Plus, Minus, ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function CartPage() {
+    const { slug } = useParams<{ slug?: string }>();
     const [cart, setCart] = useState<CartItem[]>([]);
+
+    const storeLink = slug ? `/store/${slug}` : '/';
+    const checkoutLink = slug ? `/store/${slug}/checkout` : '/checkout';
 
     const loadCart = () => setCart(getCart());
 
@@ -57,7 +61,7 @@ export default function CartPage() {
                 <ShoppingBag className="w-20 h-20 text-slate-200 mx-auto mb-6" />
                 <h2 className="text-2xl font-bold text-slate-800 mb-2">Your cart is empty</h2>
                 <p className="text-slate-500 mb-6">Browse our products and add your favorites!</p>
-                <Link to="/" className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700 transition">
+                <Link to={storeLink} className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700 transition">
                     <ArrowLeft size={16} /> Continue Shopping
                 </Link>
             </div>
@@ -123,12 +127,12 @@ export default function CartPage() {
                     <span className="text-3xl font-bold text-slate-900">RM {total.toFixed(2)}</span>
                 </div>
                 <Link
-                    to="/checkout"
+                    to={checkoutLink}
                     className="w-full bg-green-600 hover:bg-green-700 text-white py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-3 shadow-lg shadow-green-500/20 transition-all text-center"
                 >
                     Proceed to Checkout
                 </Link>
-                <Link to="/" className="block text-center mt-4 text-sm text-slate-500 hover:text-slate-900 font-medium transition">
+                <Link to={storeLink} className="block text-center mt-4 text-sm text-slate-500 hover:text-slate-900 font-medium transition">
                     ← Continue Shopping
                 </Link>
             </div>

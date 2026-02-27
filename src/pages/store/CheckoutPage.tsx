@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { getCart, getProducts, createOrderWithStockCheck, clearCart } from '../../lib/storage';
 import { CartItem, Order, StoreSettings } from '../../types';
@@ -10,8 +10,12 @@ import { usePublicStore } from '../../hooks/usePublicStore';
 
 export default function CheckoutPage() {
     const navigate = useNavigate();
-    // usePublicStore — no auth required, works for unauthenticated customers
-    const { storeId, settings: publicSettings, loading: storeLoading } = usePublicStore();
+    const { slug } = useParams<{ slug?: string }>();
+    const cartLink = slug ? `/store/${slug}/cart` : '/cart';
+    const confirmLinkBase = slug ? `/store/${slug}/order-confirmation` : '/order-confirmation';
+
+    // pass slug to usePublicStore so it fetches the correct tenant settings
+    const { storeId, settings: publicSettings, loading: storeLoading } = usePublicStore(slug);
     const [cart, setCart] = useState<CartItem[]>([]);
     const [settings, setSettings] = useState<StoreSettings | null>(null);
     const [loading, setLoading] = useState(true);
@@ -41,7 +45,7 @@ export default function CheckoutPage() {
                 setProducts(fetchedProducts);
 
                 if (currentCart.length === 0) {
-                    navigate('/cart');
+                    navigate(cartLink);
                     return;
                 }
 
@@ -198,7 +202,7 @@ export default function CheckoutPage() {
 
             } else {
                 toast.success('Order Placed Successfully!');
-                navigate(`/order-confirmation?orderId=${newOrder.id}`);
+                navigate(`${confirmLinkBase}?orderId=${newOrder.id}`);
             }
 
         } catch (error: any) {
@@ -218,7 +222,7 @@ export default function CheckoutPage() {
     return (
         <div className="min-h-screen bg-slate-50 pb-20">
             <div className="bg-white px-4 py-4 flex items-center gap-4 border-b border-slate-200 sticky top-0 z-10">
-                <button onClick={() => navigate('/cart')} className="p-2 hover:bg-slate-100 rounded-full transition">
+                <button onClick={() => navigate(cartLink)} className="p-2 hover:bg-slate-100 rounded-full transition">
                     <ChevronLeft size={24} className="text-slate-600" />
                 </button>
                 <h1 className="text-lg font-bold text-slate-800">Checkout</h1>

@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { Product } from '../../types';
 import { Package } from 'lucide-react';
 
@@ -7,8 +7,11 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
+    const { slug } = useParams<{ slug?: string }>();
+    const linkPath = slug ? `/store/${slug}/product/${product.id}` : `/product/${product.id}`;
+
     return (
-        <Link to={`/product/${product.id}`} className="group bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+        <Link to={linkPath} className="group bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
             {/* Image */}
             <div className="aspect-square bg-slate-100 overflow-hidden relative">
                 {product.images?.[0] ? (
