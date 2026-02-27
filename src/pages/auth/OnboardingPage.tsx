@@ -107,7 +107,7 @@ export default function OnboardingPage() {
                         <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Your Storefront URL</p>
                         <div className="flex items-center gap-3">
                             <p className="text-blue-400 font-mono text-sm flex-1 truncate">{storeUrl}</p>
-                            <a href={storeUrl} target="_blank" rel="noopener noreferrer"
+                            <a href={storeUrl} target="_self"
                                 className="shrink-0 p-2 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors">
                                 <ExternalLink className="w-4 h-4 text-slate-300" />
                             </a>

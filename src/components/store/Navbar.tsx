@@ -13,8 +13,8 @@ export default function Navbar() {
 
     // Check if user is logged in (seller)
     useEffect(() => {
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setIsSeller(!!session?.user);
+        supabase.auth.getUser().then(({ data: { user } }) => {
+            setIsSeller(!!user);
         });
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
             setIsSeller(!!session?.user);
