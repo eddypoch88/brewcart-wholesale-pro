@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getProducts, getOrders } from '../lib/storage';
 import { Product, Order } from '../types';
+import { NotificationPrompt } from './admin/NotificationPrompt';
 import { Package, ShoppingBag, DollarSign, TrendingUp, BarChart3, Clock, Calendar } from 'lucide-react';
 import Skeleton from './ui/Skeleton';
 import { useStore } from '../context/StoreContext';
@@ -101,6 +102,7 @@ export default function Dashboard() {
 
     return (
         <div className="space-y-6">
+            <NotificationPrompt />
             <h2 className="text-xl font-bold text-slate-800 dark:text-white">Business Overview</h2>
 
             {/* STATS GRID */}

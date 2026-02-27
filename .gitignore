@@ -10,7 +10,8 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
-# Keep .env.local excluded - use Vercel dashboard for production env vars
+# Keep .env, .env.local excluded - use Vercel dashboard for production env vars
+.env
 .env.local
 .env.*.local
 
