@@ -126,7 +126,7 @@ export default function Sidebar({
                     {isSuperAdmin && (
                         <div className="pt-4 mt-4 border-t border-slate-800">
                             <span className="px-4 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">Platform Master</span>
-                            {navItem("super", "Super Admin", ShieldCheck)}
+                            {navItem("/super-admin", "Super Admin", ShieldCheck)}
                         </div>
                     )}
 

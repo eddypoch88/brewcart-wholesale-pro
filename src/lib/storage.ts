@@ -74,10 +74,12 @@ export async function addProduct(
         return null;
     }
 
+    const { variants, ...restProduct } = product as any;
+
     const payload = {
-        ...product,
+        ...restProduct,
         store_id: storeId,                        // ← attach to store
-        status: product.status || 'active',
+        status: restProduct.status || 'active',
     };
 
     const { data, error } = await supabase
@@ -100,9 +102,11 @@ export async function updateProduct(
 ): Promise<void> {
     if (!storeId) { console.error('[updateProduct] No storeId — aborting'); return; }
 
+    const { variants, ...updatePayload } = updates as any;
+
     const { error } = await supabase
         .from('products')
-        .update(updates)
+        .update(updatePayload)
         .eq('id', id)
         .eq('store_id', storeId);                 // ← safety: only own store
 

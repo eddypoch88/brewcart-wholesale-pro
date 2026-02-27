@@ -6,6 +6,7 @@ import { Product } from '../../types';
 import toast from 'react-hot-toast';
 import { getProducts, deleteProduct, deleteProductImage } from '../../lib/storage';
 import { useStore } from '../../context/StoreContext';
+import { SkeletonTable } from '../ui/Skeleton';
 
 export default function AdminProductPage() {
     const { storeId } = useStore();
@@ -76,9 +77,8 @@ export default function AdminProductPage() {
 
     if (loading && !isFormOpen) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-screen bg-slate-100 dark:bg-gray-900 transition-colors duration-300 text-slate-400 animate-pulse">
-                <Loader2 className="h-8 w-8 animate-spin mb-2" />
-                <p>Loading products...</p>
+            <div className="w-full space-y-4 pt-4">
+                <SkeletonTable columns={4} rows={5} />
             </div>
         );
     }

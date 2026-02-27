@@ -99,14 +99,6 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                     }>
                         <Route index element={<Navigate to="dashboard" replace />} />
 
-                        <Route path="super" element={
-                            <ProtectedRoute requireSuperAdmin>
-                                <React.Suspense fallback={<div className="p-8">Loading...</div>}>
-                                    {React.createElement(React.lazy(() => import('./pages/admin/SuperAdminDashboard')))}
-                                </React.Suspense>
-                            </ProtectedRoute>
-                        } />
-
                         <Route path="dashboard" element={
                             <React.Suspense fallback={<div className="p-8">Loading...</div>}>
                                 {React.createElement(React.lazy(() => import('./components/Dashboard')))}
@@ -142,6 +134,23 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                                 {React.createElement(React.lazy(() => import('./pages/admin/PaymentSettings')))}
                             </React.Suspense>
                         } />
+                    </Route>
+
+                    {/* SUPER ADMIN CMS - PROTECTED */}
+                    <Route path="/super-admin" element={
+                        <ProtectedRoute requireSuperAdmin>
+                            <AdminNotificationsWrapper />
+                        </ProtectedRoute>
+                    }>
+                        <Route element={
+                            <React.Suspense fallback={<div className="p-8">Loading...</div>}>
+                                {React.createElement(React.lazy(() => import('./pages/SuperAdmin')))}
+                            </React.Suspense>
+                        }>
+                            <Route index element={<React.Suspense fallback={<div className="p-8">Loading...</div>}>{React.createElement(React.lazy(() => import('./pages/SuperAdmin/StoresOverview')))}</React.Suspense>} />
+                            <Route path="stores/:storeId" element={<React.Suspense fallback={<div className="p-8">Loading...</div>}>{React.createElement(React.lazy(() => import('./pages/SuperAdmin/StoreDetail')))}</React.Suspense>} />
+                            <Route path="analytics" element={<React.Suspense fallback={<div className="p-8">Loading...</div>}>{React.createElement(React.lazy(() => import('./pages/SuperAdmin/Analytics')))}</React.Suspense>} />
+                        </Route>
                     </Route>
                 </Routes>
                 <Toaster position="top-right" />
